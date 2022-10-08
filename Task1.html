@@ -36,8 +36,25 @@
     </div>
 </header>
 <div class="page">
-<h1>Task 1</h1>
-    <p>Task 1 is in progress...</p>
+    <h1>Task 1</h1>
+    <p>Option to select a single file from computer.</p>
+    <input type="file" id="file-selector">
+    <p>Output:</p>
+    <div id="output"></div>
 </div>
+<script>
+    const output = document.getElementById('output');
+    if(window.FileList && window.File){
+        document.getElementById('file-selector').addEventListener('change', event => {
+            const file = event.target.files[0];
+            output.innerHTML = '';
+            const reader = new FileReader();
+            reader.addEventListener('load', event => {
+                output.innerHTML = (event.target.result);
+            })
+            reader.readAsText(file);
+        })
+    }
+</script>
 </body>
 </html>
