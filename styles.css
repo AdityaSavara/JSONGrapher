@@ -47,10 +47,13 @@ a:hover div.button{
   background: #43cec6;
 }
 
-
-
-
 .button p {
   margin: 0;
+}
+
+.page {
+  padding: 20px;
+  margin: 0 auto;
+  max-width: 1000px;
 }
 
