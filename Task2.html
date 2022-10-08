@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Task 2</title>
+    <script src="https://cdn.plot.ly/plotly-2.14.0.min.js"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -37,7 +38,21 @@
 </header>
 <div class="page">
 <h1>Task 2</h1>
-    <p>Task 2 is in progress...</p>
+    <div id='myDiv'><!-- Plotly chart will be drawn inside this DIV --></div>
+    <div id="errorDiv"></div>
 </div>
+<script>
+    fetch("./data/8248.json")
+        .then(response => response.json())
+        .then(data => {
+            Plotly.newPlot('myDiv', data.data, data.layout);
+        })
+        .catch(error => {
+            console.log(error);
+            const errorDiv = document.getElementById('errorDiv');
+            errorDiv.innerText = 'Error fetching data file...'
+        }
+    )
+</script>
 </body>
 </html>
