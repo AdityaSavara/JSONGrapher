@@ -71,10 +71,22 @@
                     const file = event.target.files[0];
                     const reader = new FileReader();
                     reader.addEventListener('load', event => {
+                        clearData();
                         const dataLoaded = event.target.result;
-                        const jsonified = JSON.parse(dataLoaded);
-                        Plotly.newPlot('myDiv', jsonified.data, jsonified.layout);
-                        // output.innerHTML = (event.target.result);
+                        let jsonified;
+                        try {
+                            jsonified = JSON.parse(dataLoaded);
+                        } catch(e) {
+                            errorDiv.innerText = `Json file has some errors. ${e.message}`
+                        }
+                        const validate = ajv.compile(schema);
+                        const valid = validate(jsonified);
+                        if(!valid) {
+                            console.log('validate errors: ', JSON.stringify(validate.errors));
+                            errorDiv.innerText = `Json file does not match the schema. ${JSON.stringify(validate.errors)}`
+                        }else{
+                            Plotly.newPlot('myDiv', jsonified.data, jsonified.layout);
+                        }
                     })
                     reader.readAsText(file);
                 })
@@ -94,22 +106,18 @@
                     reader.addEventListener('load', event => {
                         clearData();
                         const dataLoaded = event.target.result;
-                        console.log('check1...')
                         let jsonified;
                         try {
                             jsonified = JSON.parse(dataLoaded);
                         } catch(e) {
                             errorDiv.innerText = `Json file has some errors. ${e.message}`
                         }
-                        console.log('check2...');
                         const validate = ajv.compile(schema);
                         const valid = validate(jsonified);
-                        console.log('check3...');
                         if(!valid) {
                             console.log('validate errors: ', JSON.stringify(validate.errors));
                             errorDiv.innerText = `Json file does not match the schema. ${JSON.stringify(validate.errors)}`
                         }else{
-                            console.log('trying to plot...');
                             Plotly.newPlot('myDiv', jsonified.data, jsonified.layout);
                         }
                     })
