@@ -5,11 +5,11 @@ https://adityasavara.github.io/JSONGrapher/
 
 JSON grapher allows creating scatter-line plots from one or more JSON files containing x-y data.
 
-The direct links to the example files are:
- https://github.com/AdityaSavara/JSONGrapher/raw/main/data/8259_edited_Series1.json
- https://github.com/AdityaSavara/JSONGrapher/raw/main/data/8259_edited_Series2.json
- https://github.com/AdityaSavara/JSONGrapher/raw/main/data/8259_edited_Series3.json
- https://github.com/AdityaSavara/JSONGrapher/raw/main/data/8259_edited_both_series.json
+The direct links to the example files are: \
+ https://github.com/AdityaSavara/JSONGrapher/raw/main/data/8259_edited_Series1.json \ 
+ https://github.com/AdityaSavara/JSONGrapher/raw/main/data/8259_edited_Series2.json \
+ https://github.com/AdityaSavara/JSONGrapher/raw/main/data/8259_edited_Series3.json \
+ https://github.com/AdityaSavara/JSONGrapher/raw/main/data/8259_edited_both_series.json \
 
 Some additional files, including invalid files, are inside https://github.com/AdityaSavara/JSONGrapher/tree/main/data .
 
