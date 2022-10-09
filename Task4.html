@@ -109,7 +109,10 @@
                         const dataLoaded = event.target.result;
                         let jsonified;
                         try {
+                            console.log(dataLoaded);
                             jsonified = JSON.parse(dataLoaded);
+                            console.log('just jsonified');
+                            console.log(jsonified);
                         } catch(e) {
                             errorDiv.innerText = `Json file has some errors. ${e.message}`
                         }
@@ -120,18 +123,22 @@
                             errorDiv.innerText = `Json file does not match the schema. ${JSON.stringify(validate.errors)}`
                         }else{
                             if(!globalData){
+                                console.log('valideted jsonified');
+                                console.log(jsonified);
                                 globalData = jsonified;
                                 Plotly.newPlot('myDiv', jsonified.data, jsonified.layout);
                             } else {
                                 console.log(globalData);
                                 console.log(jsonified);
-                                if(globalData.title === jsonified.title){
+                                if(globalData.title === jsonified.title &&
+                                    globalData.layout.xaxis.title.text === jsonified.layout.xaxis.title &&
+                                    globalData.layout.yaxis.title.text === jsonified.layout.yaxis.title){
                                    // merge
                                     globalData.data = [...globalData.data, ...jsonified.data];
                                     Plotly.newPlot('myDiv', globalData.data, globalData.layout);
                                 }else{
                                     clearData();
-                                    errorDiv.innerText = `Titles does not match.`;
+                                    errorDiv.innerText = `Chart or axis titles does not match.`;
                                 }
                             }
                         }
