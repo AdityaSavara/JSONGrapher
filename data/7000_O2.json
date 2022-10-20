@@ -1,0 +1,8 @@
+{
+    "compoundName": "O2,
+    "compoundFormula": "O2",
+    "time": [0.0, 1.0, 2.0, 10.0, 50.0],
+    "timeUnit": "s",
+    "massFraction": [0.2, 0.19, 0.15, 0.1, 0.09],
+    "massFractionUnit": "-",
+}
