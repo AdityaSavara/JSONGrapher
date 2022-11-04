@@ -20,7 +20,7 @@
         "type": "number"
       },
       "minItems": 1,
-    }
+    },
     "timeUnit": {
       "description": "Unit used to measure time",
       "type": "string"
@@ -32,11 +32,11 @@
         "type": "number"
       },
       "minItems": 1,
-    }
+    },
     "massFractionUnit": {
       "description": "Unit used to quantity the mass fraction",
       "type": "string"
-    },
+    }
   },
   "required": [ "compoundName", "compoundFormula", "time", "timeUnit", "massFraction", "massFractionUnit" ]
 }
