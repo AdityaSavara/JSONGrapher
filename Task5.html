@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Task 4</title>
+    <title>Task 5</title>
     <script src="https://cdn.plot.ly/plotly-2.14.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ajv/6.12.6/ajv.bundle.min.js" integrity="sha512-Xl0g/DHU98OkfXTsDfAAuTswzkniYQWPwLyGXzcpgDxCeH52eePfaHj/ictLAv2GvlPX2qZ6YV+3oDsw17L9qw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/danfojs@1.1.2/lib/bundle.min.js"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -36,7 +37,7 @@
             </div>
         </a>
         <a href="Task5.html">
-            <div class="button">
+            <div class="button active">
                 <p>Task 5</p>
             </div>
         </a>
@@ -58,6 +59,157 @@
     const ajv = new Ajv();
     const errorDiv = document.getElementById('errorDiv');
 
+    function uniqueId() {
+        // desired length of Id
+        var idStrLen = 32;
+        // always start with a letter -- base 36 makes for a nice shortcut
+        var idStr = (Math.floor((Math.random() * 25)) + 10).toString(36) + "_";
+        // add a timestamp in milliseconds (base 36 again) as the base
+        idStr += (new Date()).getTime().toString(36) + "_";
+        // similar to above, complete the Id using random, alphanumeric characters
+        do {
+            idStr += (Math.floor((Math.random() * 35))).toString(36);
+        } while (idStr.length < idStrLen);
+
+        return (idStr);
+    }
+
+    // ref: http://stackoverflow.com/a/1293163/2343
+    // This will parse a delimited string into an array of
+    // arrays. The default delimiter is the comma, but this
+    // can be overriden in the second argument.
+    function CSVToArray( strData, strDelimiter ){
+        // Check to see if the delimiter is defined. If not,
+        // then default to comma.
+        strDelimiter = (strDelimiter || ",");
+
+        // Create a regular expression to parse the CSV values.
+        var objPattern = new RegExp(
+            (
+                // Delimiters.
+                "(\\" + strDelimiter + "|\\r?\\n|\\r|^)" +
+
+                // Quoted fields.
+                "(?:\"([^\"]*(?:\"\"[^\"]*)*)\"|" +
+
+                // Standard fields.
+                "([^\"\\" + strDelimiter + "\\r\\n]*))"
+            ),
+            "gi"
+            );
+
+        // Create an array to hold our data. Give the array
+        // a default empty first row.
+        var arrData = [[]];
+
+        // Create an array to hold our individual pattern
+        // matching groups.
+        var arrMatches = null;
+
+        // Keep looping over the regular expression matches
+        // until we can no longer find a match.
+        while (arrMatches = objPattern.exec( strData )){
+
+            // Get the delimiter that was found.
+            var strMatchedDelimiter = arrMatches[ 1 ];
+
+            // Check to see if the given delimiter has a length
+            // (is not the start of string) and if it matches
+            // field delimiter. If id does not, then we know
+            // that this delimiter is a row delimiter.
+            if (
+                strMatchedDelimiter.length &&
+                strMatchedDelimiter !== strDelimiter
+                ){
+
+                // Since we have reached a new row of data,
+                // add an empty row to our data array.
+                arrData.push( [] );
+            }
+
+            var strMatchedValue;
+
+            // Now that we have our delimiter out of the way,
+            // let's check to see which kind of value we
+            // captured (quoted or unquoted).
+            if (arrMatches[ 2 ]){
+                // We found a quoted value. When we capture
+                // this value, unescape any double quotes.
+                strMatchedValue = arrMatches[ 2 ].replace(
+                    new RegExp( "\"\"", "g" ),
+                    "\""
+                    );
+            }
+            else {
+                // We found a non-quoted value.
+                strMatchedValue = arrMatches[ 3 ];
+            }
+
+
+            // Now that we have our value string, let's add
+            // it to the data array.
+            arrData[ arrData.length - 1 ].push( strMatchedValue );
+        }
+
+        // Return the parsed data.
+        return( arrData );
+    }
+
+    function process_arrData(arrData){
+        var dict0 = {};
+        var x=[];var y=[];
+        let header=false;
+        // first get the parameters
+        for (const element of arrData) {
+            let str0 = element[0];
+            if(Array.from(str0)[0]=='#'){
+                // new parameter we split the str0
+                array0 = str0.split(':');
+                if(array0.length ==2){dict0[array0[0].replace('#','')]=array0[1];}
+            }
+            // fill the array
+            if(Array.from(str0)[0]!='#' && header==true){
+                x.push(element[0]);
+                y.push(element[1]);
+            }
+            // get the column names
+            if(Array.from(str0)[0]!='#' && header==false){
+                dict0["xlabel"] = element[0];
+                dict0["ylabel"] = element[1];
+                header=true;
+            }
+        }
+        dict0["x"] = x;
+        dict0["y"] = y;
+        
+        return dict0;
+    }
+
+    function convert(dict0){
+        var dict1 = {};
+        dict1["title"] = "";
+        data_dict = {
+            "uid": uniqueId(),
+            "line": {
+                "shape": "spline",
+                "width": 3
+            }, 
+            "name": dict0["name"], 
+            "type": "scatter",
+            "x": dict0["x"],
+            "y": dict0["y"],};
+        dict1["data"] = [data_dict];
+
+        layout_dict = {
+            "title": "",
+            "xaxis": {"title": dict0["xlabel"]},
+            "yaxis": {"title": dict0["ylabel"]},
+        };
+        dict1["layout"] = layout_dict;
+
+        return dict1;
+    }
+
     function clearData(){
         globalData = null;
         document.getElementById('errorDiv').innerHTML = "";
@@ -76,15 +228,42 @@
                 // input file button
                 document.getElementById('file-selector').addEventListener('change', event => {
                     const file = event.target.files[0];
+                    
                     const reader = new FileReader();
                     reader.addEventListener('load', event => {
                         const dataLoaded = event.target.result;
-                        let jsonified;
-                        try {
-                            jsonified = JSON.parse(dataLoaded);
-                        } catch(e) {
-                            errorDiv.innerText = `Json file has some errors. ${e.message}`
+                        console.log(dataLoaded);
+                        let jsonified_raw;
+                        if (file.type == "text/csv"){
+                            console.log("file type is text/csv");
+                            // we need to produce a jsonified_raw
+                            csv_raw = CSVToArray( dataLoaded, ",");
+                            console.log("using CSVToArray");
+                            console.log(csv_raw);
+                            jsonified_raw = process_arrData(csv_raw);
+                            console.log(csv_raw);
+                            console.log("end of parsing");
                         }
+                        // assuming that it is a json file
+                        else{
+                            try {
+                                jsonified_raw = JSON.parse(dataLoaded);
+                            } catch(e) {
+                                errorDiv.innerText = `Json file has some errors. ${e.message}`
+                            }
+                        }
+                        
+                        // insert the conversion step from data_json to plot_json
+                        let jsonified;
+                        if (jsonified_raw["format"]=="array_data"){
+                            jsonified = convert(jsonified_raw);
+                        }
+                        else{
+                            jsonified = jsonified_raw;
+                        }
+                        
+                        console.log(jsonified);
+
                         const validate = ajv.compile(schema);
                         const valid = validate(jsonified);
                         if(!valid) {

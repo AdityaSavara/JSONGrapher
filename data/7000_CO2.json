@@ -1,0 +1,8 @@
+{
+    "compoundName": "CO2",
+    "compoundFormula": "CO2",
+    "time": [0.0, 1.0, 2.0, 10.0, 50.0],
+    "timeUnit": "s",
+    "massFraction": [0.0, 0.01, 0.1, 0.2, 0.25],
+    "massFractionUnit": "-"
+}
