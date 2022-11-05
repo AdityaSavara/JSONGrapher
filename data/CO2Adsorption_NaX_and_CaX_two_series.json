@@ -1,0 +1,93 @@
+{   
+    "comments": "// A JSON record can have any name, and any extension (such as .txt or .json). For example, CO2AdsorptionNaX.json. The top level title field defines which schema to use. The user can create custom fields to store additional information. Remember to add a comma at the end of any fields added.",
+	"title": "CO2_Adsorption_Isotherm", 
+    "data": [
+        {
+            "comments": "// The curly bracket starts each data series. A file can have more than one data series. The uid is an optional unique ID and can even be a doi, for example.  The name field is the name of the series and will appear in the legend.",
+			"uid": "45c0a4a",
+            "line": {
+                "shape": "spline",
+                "width": 3
+            }, 
+            "name": "CO2 Adsorption on NaX", 
+            "type": "scatter",
+            "x": [
+                "2007",
+                "2008",
+                "2009",
+                "2010",
+                "2011",
+                "2012",
+                "2013",
+                "2014",
+                "2015"
+            ],
+            "y": [
+                "0",
+                "45560506.663365364",
+                "91145081.21192169",
+                "232447635.15836716",
+                "580348915.5698586",
+                "1182888421.2842617",
+                "1928559640.2194986",
+                "2578825762.2643065",
+                "3022276546.8773637"
+            ],
+			"extraInformation": "This is just an example of how to add extra information for a series."
+        },
+        {
+            "comments": "// The curly bracket starts each data series. A file can have more than one data series. The uid is an optional unique ID and can even be a doi, for example.  The name field is the name of the series and will appear in the legend.",
+			"uid": "45c0a4b",
+            "line": {
+                "shape": "spline",
+                "width": 3
+            }, 
+            "name": "CO2 Adsorption on CaX", 
+            "type": "scatter",
+            "x": [
+                "2007",
+                "2008",
+                "2009",
+                "2010",
+                "2011",
+                "2012",
+                "2013",
+                "2014",
+                "2015"
+            ],
+            "y": [
+                "0",
+                "65560506.663365364",
+                "111145081.21192169",
+                "252447635.15836716",
+                "680348915.5698586",
+                "1382888421.2842617",
+                "2128559640.2194986",
+                "2678825762.2643065",
+                "3222276546.8773637"
+            ],
+			"extraInformation": "This is just an example of how to add extra information for a series."
+        }
+    ],
+    "layout": {
+		"comments": "// The title field of the layout is the title of the graph (not of a series).",
+        "title": "CO2 Adsorption", 
+        "xaxis": {
+			"comments": "// The x axis title must include the units that are expected.",
+            "title": "CO2 Pressure (Bar)", 
+            "showgrid": false,
+            "autorange": true
+        },
+        "yaxis": {
+			"comments": "// The y axis title must include the units that are expected.",
+            "title": "CO2 Adsorbed (mol/kg)",
+            "autorange": true,
+            "gridcolor": "rgb(208, 208, 208)",
+            "ticksuffix": "  "
+        },
+        "legend": {},
+        "autosize": true,
+        "plot_bgcolor": "rgb(242, 242, 242)",
+        "paper_bgcolor": "rgb(242, 242, 242)"
+    }
+}

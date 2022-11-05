@@ -1,0 +1,60 @@
+{   
+    "comments": "// A JSON record can have any name, and any extension (such as .txt or .json). For example, CO2AdsorptionNaX.json. The top level title field defines which schema to use. The user can create custom fields to store additional information. Remember to add a comma at the end of any fields added.",
+	"title": "Plotly_Template", 
+    "data": [
+        {
+            "comments": "// The curly bracket starts a data series. A file can have more than one data series. The uid is an optional unique ID and can even be a doi, for example.  The name field is the name of the series and will appear in the legend.",
+			"uid": "45c0a4",
+            "line": {
+                "shape": "spline",
+                "width": 3
+            }, 
+            "name": "SeriesName", 
+            "type": "scatter",
+            "x": [
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15
+            ],
+            "y": [
+                0,
+                4,
+                9,
+                2,
+                5,
+                1,
+                1,
+                2,
+                3
+            ],
+			"extraInformation": "This is just an example of how to add extra information for a series."
+        }
+    ],
+    "layout": {
+		"comments": "// The title field of the layout is the title of the graph (not of a series).",
+        "title": "Chart Title", 
+        "xaxis": {
+			"comments": "// The x axis title must include the units that are expected.",
+            "title": "x_label with units", 
+            "showgrid": false,
+            "autorange": true
+        },
+        "yaxis": {
+			"comments": "// The y axis title must include the units that are expected.",
+            "title": "y_label with units",
+            "autorange": true,
+            "gridcolor": "rgb(208, 208, 208)",
+            "ticksuffix": "  "
+        },
+        "legend": {},
+        "autosize": true,
+        "plot_bgcolor": "rgb(242, 242, 242)",
+        "paper_bgcolor": "rgb(242, 242, 242)"
+    }
+}
