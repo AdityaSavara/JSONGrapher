@@ -44,7 +44,7 @@
 </header>
 <div class="page">
 <h1>Task 5</h1>
-    <p>Option to select a single file from computer and reset button to clear data. (including csv files) </p>
+    <p>Option to select a single file from computer and reset button to clear data.</p>
     <input type="file" id="file-selector"><button id="reset" onclick="clearData()">Reset data</button>
     <p>Option to drop a file on the browser:</p>
     <div id="file-drop-area" >
@@ -54,9 +54,81 @@
     <div id="errorDiv"></div>
 </div>
 <script>
+    import {CSVToArray} from './CSVToArray/CSVToArray.js';
     let globalData = null;
     const ajv = new Ajv();
     const errorDiv = document.getElementById('errorDiv');
+
+    function uniqueId() {
+        // desired length of Id
+        var idStrLen = 32;
+        // always start with a letter -- base 36 makes for a nice shortcut
+        var idStr = (Math.floor((Math.random() * 25)) + 10).toString(36) + "_";
+        // add a timestamp in milliseconds (base 36 again) as the base
+        idStr += (new Date()).getTime().toString(36) + "_";
+        // similar to above, complete the Id using random, alphanumeric characters
+        do {
+            idStr += (Math.floor((Math.random() * 35))).toString(36);
+        } while (idStr.length < idStrLen);
+
+        return (idStr);
+    }
+
+
+    function process_arrData(arrData){
+        var dict0 = {};
+        var x=[];var y=[];
+        let header=false;
+        // first get the parameters
+        for (const element of arrData) {
+            let str0 = element[0];
+            if(Array.from(str0)[0]=='#'){
+                // new parameter we split the str0
+                array0 = str0.split(':');
+                if(array0.length ==2){dict0[array0[0].replace('#','')]=array0[1];}
+            }
+            // fill the array
+            if(Array.from(str0)[0]!='#' && header==true){
+                x.push(element[0]);
+                y.push(element[1]);
+            }
+            // get the column names
+            if(Array.from(str0)[0]!='#' && header==false){
+                dict0["xlabel"] = element[0];
+                dict0["ylabel"] = element[1];
+                header=true;
+            }
+        }
+        dict0["x"] = x;
+        dict0["y"] = y;
+        
+        return dict0;
+    }
+
+    function convert(dict0){
+        var dict1 = {};
+        dict1["title"] = "";
+        data_dict = {
+            "uid": uniqueId(),
+            "line": {
+                "shape": "spline",
+                "width": 3
+            }, 
+            "name": dict0["name"], 
+            "type": "scatter",
+            "x": dict0["x"],
+            "y": dict0["y"],};
+        dict1["data"] = [data_dict];
+
+        layout_dict = {
+            "title": "",
+            "xaxis": {"title": dict0["xlabel"]},
+            "yaxis": {"title": dict0["ylabel"]},
+        };
+        dict1["layout"] = layout_dict;
+
+        return dict1;
+    }
 
     function clearData(){
         globalData = null;
@@ -76,15 +148,43 @@
                 // input file button
                 document.getElementById('file-selector').addEventListener('change', event => {
                     const file = event.target.files[0];
+                    
                     const reader = new FileReader();
                     reader.addEventListener('load', event => {
                         const dataLoaded = event.target.result;
-                        let jsonified;
-                        try {
-                            jsonified = JSON.parse(dataLoaded);
-                        } catch(e) {
-                            errorDiv.innerText = `Json file has some errors. ${e.message}`
+                        console.log(dataLoaded);
+                        let jsonified_raw;
+                        //TODO: Here we should check for .csv and .tsv file extension. Else it will be assumed to be JSON.
+                        if (file.type == "text/csv"){
+                            console.log("file type is text/csv");
+                            // we need to produce a jsonified_raw
+                            csv_raw = CSVToArray( dataLoaded, ",");
+                            console.log("using CSVToArray");
+                            console.log(csv_raw);
+                            jsonified_raw = process_arrData(csv_raw);
+                            console.log(csv_raw);
+                            console.log("end of parsing");
                         }
+                        // assuming that it is a json file
+                        else{
+                            try {
+                                jsonified_raw = JSON.parse(dataLoaded);
+                            } catch(e) {
+                                errorDiv.innerText = `Json file has some errors. ${e.message}`
+                            }
+                        }
+                        
+                        // insert the conversion step from data_json to plot_json
+                        let jsonified;
+                        if (jsonified_raw["format"]=="array_data"){
+                            jsonified = convert(jsonified_raw);
+                        }
+                        else{
+                            jsonified = jsonified_raw;
+                        }
+                        
+                        console.log(jsonified);
+
                         const validate = ajv.compile(schema);
                         const valid = validate(jsonified);
                         if(!valid) {
