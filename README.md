@@ -6,10 +6,10 @@ https://adityasavara.github.io/JSONGrapher/
 JSON grapher allows creating scatter-line plots from one or more JSON files containing x-y data.
 
 The direct links to the example files are:  
- https://github.com/AdityaSavara/JSONGrapher/raw/main/data/8259_edited_Series1.json  
- https://github.com/AdityaSavara/JSONGrapher/raw/main/data/8259_edited_Series2.json  
- https://github.com/AdityaSavara/JSONGrapher/raw/main/data/8259_edited_Series3.json  
- https://github.com/AdityaSavara/JSONGrapher/raw/main/data/8259_edited_both_series.json  
+ https://github.com/AdityaSavara/JSONGrapher/raw/main/data/CO2AdsorptionNaX2.json
+ https://github.com/AdityaSavara/JSONGrapher/raw/main/data/CO2Adsorption_NaX_and_CaX_two_series.json
+ https://github.com/AdityaSavara/JSONGrapher/raw/main/data/CO2AdsorptionNaX2.csv
+ https://github.com/AdityaSavara/JSONGrapher/raw/main/data/CO2AdsorptionNaX2.tsv.txt
 
 Some additional files, including invalid files, are inside https://github.com/AdityaSavara/JSONGrapher/tree/main/data .
 
@@ -19,4 +19,4 @@ Additional Information:
 
 The format that is recommended to be used is shown in the files with names that begin with "8259_edited". When using this format, it is possible to add additional series onto the existing plot from multiple json files.  When doing so, the top-level title must match, as well as the X axis title and Y axis title. The axes titles are meant to be used for units. All other settings, such as chart title, will be taken from the first json file loaded.
 
-JSON Grapher was made by Piotr Paszek. He has significant experience with javascript and data visiualization, and he may be hired at https://www.upwork.com/freelancers/paszek
+JSON Grapher was made by Piotr Paszek. He has significant experience with javascript and data visualization, and he may be hired at https://www.upwork.com/freelancers/paszek
