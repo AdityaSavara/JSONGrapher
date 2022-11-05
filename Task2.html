@@ -47,7 +47,7 @@
     <div id="errorDiv"></div>
 </div>
 <script>
-    fetch("./data/8248.json")
+    fetch("./data/CO2AdsorptionNaX2.json")
         .then(response => response.json())
         .then(data => {
             Plotly.newPlot('myDiv', data.data, data.layout);
