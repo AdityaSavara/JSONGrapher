@@ -17,6 +17,6 @@ The top level field of "title" describes the data type (such as CO2_Adsorption_I
 
 Additional Information:
 
-The format that is recommended to be used is shown in the files with names that begin with "8259_edited". When using this format, it is possible to add additional series onto the existing plot from multiple json files.  When doing so, the top-level title must match, as well as the X axis title and Y axis title. The axes titles are meant to be used for units. All other settings, such as chart title, will be taken from the first json file loaded.
+The format that is recommended to be used is shown in the file CO2AdsorptionNaX2.json. When using this format, it is possible to add additional series onto the existing plot from multiple json files.  When doing so, the top-level title must match, as well as the X axis title and Y axis title. The axes titles are meant to be used for units. All other settings, such as chart title, will be taken from the first json file loaded.
 
 JSON Grapher was made by Piotr Paszek. He has significant experience with javascript and data visualization, and he may be hired at https://www.upwork.com/freelancers/paszek
