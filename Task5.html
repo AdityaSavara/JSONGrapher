@@ -234,6 +234,64 @@
         return [schema1json, schema2json];
     }
 
+    function loadFile(event){
+
+            event.stopPropagation();
+            event.preventDefault();
+            const file = event.dataTransfer.files[0];
+            const reader = new FileReader();
+            reader.fileName = file.name;
+            reader.addEventListener('load', event => {
+                const dataLoaded = event.target.result;
+
+                // test what is incoming
+                let fileType = findFileType(event.target.fileName);
+                let jsonified;
+
+                try {
+                    jsonified = jsonifyData(fileType, dataLoaded);
+                } catch(e) {
+                    errorDiv.innerText = `Json file has some errors. ${e.message}`
+                }
+
+                const validate = ajv.compile(schema);
+                const valid = validate(jsonified);
+                if(!valid) {
+                    console.log('validate errors: ', JSON.stringify(validate.errors));
+                    errorDiv.innerText = `Json file does not match the schema. ${JSON.stringify(validate.errors)}`
+                }else{
+
+                    // if necessary create download button with json
+                    if(fileType !== "json"){
+                        createDownloadButton(event.target.fileName, JSON.stringify(jsonified));
+                    }
+
+                    if(!globalData){
+                        globalData = jsonified;
+                        let copyForPlotly = JSON.parse(JSON.stringify(globalData)); // Plotly mutates the input !!!
+                        Plotly.newPlot('myDiv', copyForPlotly.data, copyForPlotly.layout);
+                    } else {
+                        if(
+                            globalData.title === jsonified.title
+                            &&
+                            globalData.layout.xaxis.title.text === jsonified.layout.xaxis.title.text
+                            &&
+                            globalData.layout.yaxis.title.text === jsonified.layout.yaxis.title.text
+                        ){
+                            // merge
+                            globalData.data = [...globalData.data, ...jsonified.data];
+                            let copyForPlotly = JSON.parse(JSON.stringify(globalData)); // Plotly mutates the input !!!
+                            Plotly.newPlot('myDiv', copyForPlotly.data, copyForPlotly.layout);
+                        }else{
+                            clearData();
+                            errorDiv.innerText = `Chart or axis titles does not match.`;
+                        }
+                    }
+                }
+            })
+            reader.readAsText(file);
+        }
+
     prepareSchemas().then(resp => {
         schema = resp[0];
         plotlyTemplate = resp[1];
@@ -249,65 +307,7 @@
                     reader.fileName = file.name;
                     reader.addEventListener('load', event => {
                         const dataLoaded = event.target.result;
-
-
-                        let fileType = findFileType(event.target.fileName);
-                        let jsonified;
-
-                        try {
-                            jsonified = jsonifyData(fileType, dataLoaded);
-                        } catch(e) {
-                            errorDiv.innerText = `Json file has some errors. ${e.message}`
-                        }
-                        const validate = ajv.compile(schema);
-                        const valid = validate(jsonified);
-                        if(!valid) {
-                            console.log('validate errors: ', JSON.stringify(validate.errors));
-                            errorDiv.innerText = `Json file does not match the schema. ${JSON.stringify(validate.errors)}`
-                        }else{
-
-                            // if necessary create download button with json
-                            if(fileType !== "json"){
-                                createDownloadButton(event.target.fileName, JSON.stringify(jsonified));
-                            }
-
-                            if(!globalData){
-                                globalData = jsonified;
-                                let copyForPlotly = JSON.parse(JSON.stringify(globalData)); // Plotly mutates the input !!!
-                                Plotly.newPlot('myDiv', copyForPlotly.data, copyForPlotly.layout);
-                            } else {
-                                if(globalData.title === jsonified.title &&
-                                    globalData.layout.xaxis.title.text === jsonified.layout.xaxis.title.text &&
-                                    globalData.layout.yaxis.title.text === jsonified.layout.yaxis.title.text){
-                                    // merge
-                                    globalData.data = [...globalData.data, ...jsonified.data];
-                                    let copyForPlotly = JSON.parse(JSON.stringify(globalData)); // Plotly mutates the input !!!
-                                    Plotly.newPlot('myDiv', copyForPlotly.data, copyForPlotly.layout);
-                                }else{
-                                    clearData();
-                                    errorDiv.innerText = `Chart or axis titles does not match.`;
-                                }
-                            }
-                        }
-                    })
-                    reader.readAsText(file);
-                })
-
-                // drop area
-                const dropArea = document.getElementById('file-drop-area');
-                dropArea.addEventListener('dragover', event => {
-                    event.stopPropagation();
-                    event.preventDefault();
-                    event.dataTransfer.dropEffect = 'copy';
-                });
-                dropArea.addEventListener('drop', event => {
-                    event.stopPropagation();
-                    event.preventDefault();
-                    const file = event.dataTransfer.files[0];
-                    const reader = new FileReader();
-                    reader.fileName = file.name;
-                    reader.addEventListener('load', event => {
-                        const dataLoaded = event.target.result;
+                        document.getElementById('file-selector').value = "";
 
                         // test what is incoming
                         let fileType = findFileType(event.target.fileName);
@@ -331,19 +331,15 @@
                                 createDownloadButton(event.target.fileName, JSON.stringify(jsonified));
                             }
 
-                            if(!globalData){
-                                globalData = jsonified;
-                                let copyForPlotly = JSON.parse(JSON.stringify(globalData)); // Plotly mutates the input !!!
-                                Plotly.newPlot('myDiv', copyForPlotly.data, copyForPlotly.layout);
+                             if(!globalData){
+                                 globalData = jsonified;
+                                 let copyForPlotly = JSON.parse(JSON.stringify(globalData)); // Plotly mutates the input !!!
+                                 Plotly.newPlot('myDiv', copyForPlotly.data, copyForPlotly.layout);
                             } else {
-                                if(
-                                    globalData.title === jsonified.title
-                                    &&
-                                    globalData.layout.xaxis.title.text === jsonified.layout.xaxis.title.text
-                                    &&
-                                    globalData.layout.yaxis.title.text === jsonified.layout.yaxis.title.text
-                                ){
-                                    // merge
+                                if(globalData.title === jsonified.title &&
+                                    globalData.layout.xaxis.title.text === jsonified.layout.xaxis.title.text &&
+                                    globalData.layout.yaxis.title.text === jsonified.layout.yaxis.title.text){
+                                   // merge
                                     globalData.data = [...globalData.data, ...jsonified.data];
                                     let copyForPlotly = JSON.parse(JSON.stringify(globalData)); // Plotly mutates the input !!!
                                     Plotly.newPlot('myDiv', copyForPlotly.data, copyForPlotly.layout);
@@ -356,6 +352,15 @@
                     })
                     reader.readAsText(file);
                 })
+
+                // drop area
+                const dropArea = document.getElementById('file-drop-area');
+                dropArea.addEventListener('dragover', event => {
+                    event.stopPropagation();
+                    event.preventDefault();
+                    event.dataTransfer.dropEffect = 'copy';
+                });
+                dropArea.addEventListener('drop', (event) => loadFile(event))
             }
 
     }
