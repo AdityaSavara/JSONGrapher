@@ -45,7 +45,9 @@
 <div class="page">
 <h1>Task 5</h1>
     <p>Option to select a single file from computer and reset button to clear data. (including csv files) </p>
-    <input type="file" id="file-selector"><button id="reset" onclick="clearData()">Reset data</button>
+    <input type="file" id="file-selector">
+    <button id="reset" onclick="clearData()">Reset data</button>
+    <button id="download" style="display: none">Download JSON</button>
     <p>Option to drop a file on the browser:</p>
     <div id="file-drop-area" >
         Drop a file here:
@@ -65,6 +67,7 @@
         globalData = null;
         document.getElementById('errorDiv').innerHTML = "";
         document.getElementById('file-selector').value = "";
+        document.getElementById("download").style.display = "none";
         Plotly.purge('myDiv');
     }
 
@@ -77,6 +80,17 @@
             return "tsv";
         }
         return 'json';
+    }
+
+    function getJsonFileName(fileName){
+        let arrayName = fileName.split('.');
+        if(arrayName.includes("csv")){
+            return arrayName[0] + ".json";
+        }
+        if(arrayName.includes("tsv")){
+            return arrayName[0] + ".json"
+        }
+        return arrayName.join();
     }
 
     function jsonifyTSV(fileContent){
@@ -187,6 +201,29 @@
         }
     }
 
+    function createDownloadButton(inputFilename, inputText){
+
+        function download(filename, text) {
+            const element = document.createElement('a');
+            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+            element.setAttribute('download', filename);
+            element.style.display = 'none';
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+            document.getElementById("download").style.display = "none";
+        }
+
+        let jsonifiedFilename = getJsonFileName(inputFilename);
+
+        let button = document.getElementById("download");
+
+        button.style.display = null;
+        button
+            .addEventListener("click", () => download(jsonifiedFilename, inputText));
+    }
+
+
     async function prepareSchemas(){
         const schema1 = await fetch('./schema/plot-schema.json');
         const schema1body = await schema1.text();
@@ -206,42 +243,55 @@
             if(window.FileList && window.File){
 
                 // input file button
-                // document.getElementById('file-selector').addEventListener('change', event => {
-                //     const file = event.target.files[0];
-                //     const reader = new FileReader();
-                //     reader.addEventListener('load', event => {
-                //         const dataLoaded = event.target.result;
-                //         let jsonified;
-                //         try {
-                //             jsonified = JSON.parse(dataLoaded);
-                //         } catch(e) {
-                //             errorDiv.innerText = `Json file has some errors. ${e.message}`
-                //         }
-                //         const validate = ajv.compile(schema);
-                //         const valid = validate(jsonified);
-                //         if(!valid) {
-                //             console.log('validate errors: ', JSON.stringify(validate.errors));
-                //             errorDiv.innerText = `Json file does not match the schema. ${JSON.stringify(validate.errors)}`
-                //         }else{
-                //             if(!globalData){
-                //                 globalData = jsonified;
-                //                 Plotly.newPlot('myDiv', jsonified.data, jsonified.layout);
-                //             } else {
-                //                 if(globalData.title === jsonified.title &&
-                //                     globalData.layout.xaxis.title.text === jsonified.layout.xaxis.title &&
-                //                     globalData.layout.yaxis.title.text === jsonified.layout.yaxis.title){
-                //                     // merge
-                //                     globalData.data = [...globalData.data, ...jsonified.data];
-                //                     Plotly.newPlot('myDiv', globalData.data, globalData.layout);
-                //                 }else{
-                //                     clearData();
-                //                     errorDiv.innerText = `Chart or axis titles does not match.`;
-                //                 }
-                //             }
-                //         }
-                //     })
-                //     reader.readAsText(file);
-                // })
+                document.getElementById('file-selector').addEventListener('change', event => {
+                    const file = event.target.files[0];
+                    const reader = new FileReader();
+                    reader.fileName = file.name;
+                    reader.addEventListener('load', event => {
+                        const dataLoaded = event.target.result;
+
+
+                        let fileType = findFileType(event.target.fileName);
+                        let jsonified;
+
+                        try {
+                            jsonified = jsonifyData(fileType, dataLoaded);
+                        } catch(e) {
+                            errorDiv.innerText = `Json file has some errors. ${e.message}`
+                        }
+                        const validate = ajv.compile(schema);
+                        const valid = validate(jsonified);
+                        if(!valid) {
+                            console.log('validate errors: ', JSON.stringify(validate.errors));
+                            errorDiv.innerText = `Json file does not match the schema. ${JSON.stringify(validate.errors)}`
+                        }else{
+
+                            // if necessary create download button with json
+                            if(fileType !== "json"){
+                                createDownloadButton(event.target.fileName, JSON.stringify(jsonified));
+                            }
+
+                            if(!globalData){
+                                globalData = jsonified;
+                                let copyForPlotly = JSON.parse(JSON.stringify(globalData)); // Plotly mutates the input !!!
+                                Plotly.newPlot('myDiv', copyForPlotly.data, copyForPlotly.layout);
+                            } else {
+                                if(globalData.title === jsonified.title &&
+                                    globalData.layout.xaxis.title.text === jsonified.layout.xaxis.title.text &&
+                                    globalData.layout.yaxis.title.text === jsonified.layout.yaxis.title.text){
+                                    // merge
+                                    globalData.data = [...globalData.data, ...jsonified.data];
+                                    let copyForPlotly = JSON.parse(JSON.stringify(globalData)); // Plotly mutates the input !!!
+                                    Plotly.newPlot('myDiv', copyForPlotly.data, copyForPlotly.layout);
+                                }else{
+                                    clearData();
+                                    errorDiv.innerText = `Chart or axis titles does not match.`;
+                                }
+                            }
+                        }
+                    })
+                    reader.readAsText(file);
+                })
 
                 // drop area
                 const dropArea = document.getElementById('file-drop-area');
@@ -268,12 +318,19 @@
                         } catch(e) {
                             errorDiv.innerText = `Json file has some errors. ${e.message}`
                         }
+
                         const validate = ajv.compile(schema);
                         const valid = validate(jsonified);
                         if(!valid) {
                             console.log('validate errors: ', JSON.stringify(validate.errors));
                             errorDiv.innerText = `Json file does not match the schema. ${JSON.stringify(validate.errors)}`
                         }else{
+
+                            // if necessary create download button with json
+                            if(fileType !== "json"){
+                                createDownloadButton(event.target.fileName, JSON.stringify(jsonified));
+                            }
+
                             if(!globalData){
                                 globalData = jsonified;
                                 let copyForPlotly = JSON.parse(JSON.stringify(globalData)); // Plotly mutates the input !!!
@@ -307,12 +364,6 @@
             console.log(e);
             errorDiv.innerText = 'Error fetching json-schema files...'
         });
-
-
-
-
-
-
 
 
 </script>
