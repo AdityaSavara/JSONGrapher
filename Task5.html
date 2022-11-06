@@ -86,42 +86,22 @@
         if(arr[arr.length - 1].length < 2){
             arr = arr.slice(0,arr.length-1)
         }
-        console.log(arr);
-        let number_of_rows = arr.length;
-        console.log('number of rows');
-        console.log(number_of_rows);
 
         //count number of columns
-        let number_of_columns = arr[0].split(",").length;
-        console.log('number of columns: ', number_of_columns);
+        let number_of_columns = arr[0].split("\t").length;
 
         //extract the config information
-        let comments = arr[0].split(",")[0].split(":")[1].trim();
-        console.log('comments');
-        console.log(comments);
-        let data_type = arr[1].split(",")[0].split(":")[1].trim();
-        console.log('data_type');
-        console.log(data_type);
-        let chart_label = arr[2].split(",")[0].split(":")[1].trim();
-        console.log('chart_label');
-        console.log(chart_label);
-        let x_label = arr[3].split(",")[0].split(":")[1].trim();
-        console.log('x_label');
-        console.log(x_label);
-        let y_label = arr[4].split(",")[0].split(":")[1].trim();
-        console.log('y_label');
-        console.log(y_label);
+        let comments = arr[0].split("\t")[0].split(":")[1].trim();
+        let data_type = arr[1].split("\t")[0].split(":")[1].trim();
+        let chart_label = arr[2].split("\t")[0].split(":")[1].trim();
+        let x_label = arr[3].split("\t")[0].split(":")[1].trim();
+        let y_label = arr[4].split("\t")[0].split(":")[1].trim();
 
         //extract the series names
-        let series_names_array = arr[5].split(":")[1].split("\"")[0].split(",").splice(0,number_of_columns-1).map(n => n.trim());
-        console.log('series_names');
-        console.log(series_names_array);
+        let series_names_array = arr[5].split(":")[1].split("\"")[0].split("\t").splice(0,number_of_columns-1).map(n => n.trim());
 
         //extract the data
-        let data = arr.slice(7).map(r => r.split(",").map(str => Number(str)));
-        console.log(data);
-
-        console.log(data.map(r => r[0]));
+        let data = arr.slice(7).map(r => r.split("\t").map(str => Number(str)));
 
         let resultJSON = JSON.parse(JSON.stringify(plotlyTemplate)); // clone of the template
 
@@ -143,8 +123,6 @@
 
         resultJSON.data = newData;
 
-        console.log(resultJSON);
-
         return resultJSON;
     }
 
@@ -155,7 +133,6 @@
         if(arr[arr.length - 1].length < 2){
             arr = arr.slice(0,arr.length-1)
         }
-        let number_of_rows = arr.length;
 
         //count number of columns
         let number_of_columns = arr[0].split(",").length;
