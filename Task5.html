@@ -118,7 +118,7 @@
         //extract the data
         let data = arr.slice(7).map(r => r.split("\t").map(str => Number(str)));
 
-        let resultJSON = JSON.parse(JSON.stringify(plotlyTemplate)); // clone of the template
+        let resultJSON = JSON.parse(JSON.stringify(plotlyTemplate, null, 2)); // clone of the template. The ", null, 2" is optional to make the json more human readable.
 
         resultJSON.comments = comments;
         resultJSON.title = data_type;
@@ -128,7 +128,7 @@
 
         let newData = [];
         series_names_array.forEach((series_name, index) => {
-            let dataClone = JSON.parse(JSON.stringify(plotlyTemplate.data[0]));
+            let dataClone = JSON.parse(JSON.stringify(plotlyTemplate.data[0], null, 2)); // the ", null, 2" is optional to make the json more human readable.
             dataClone.name = series_name;
             dataClone.x = data.map(r => r[0]);
             dataClone.y = data.map(r => r[index + 1]);
@@ -165,7 +165,7 @@
         //extract the data
         let data = arr.slice(7).map(r => r.split(",").map(str => Number(str)));
 
-        let resultJSON = JSON.parse(JSON.stringify(plotlyTemplate)); // clone of the template
+        let resultJSON = JSON.parse(JSON.stringify(plotlyTemplate, null, 2)); // clone of the template. The "null, 2" are optional arguments that increase human readability.
 
         resultJSON.comments = comments;
         resultJSON.title = data_type;
@@ -175,7 +175,7 @@
 
         let newData = [];
         series_names_array.forEach((series_name, index) => {
-            let dataClone = JSON.parse(JSON.stringify(plotlyTemplate.data[0]));
+            let dataClone = JSON.parse(JSON.stringify(plotlyTemplate.data[0]), null, 2); // the ", null, 2" are optional arguments to increase human readability.
             dataClone.name = series_name;
             dataClone.x = data.map(r => r[0]);
             dataClone.y = data.map(r => r[index + 1]);
@@ -263,12 +263,12 @@
 
                     // if necessary create download button with json
                     if(fileType !== "json"){
-                        createDownloadButton(event.target.fileName, JSON.stringify(jsonified, null, 2));
+                        createDownloadButton(event.target.fileName, JSON.stringify(jsonified, null, 2)); // The ", null, 2" is optional to increase human readability.
                     }
 
                     if(!globalData){
                         globalData = jsonified;
-                        let copyForPlotly = JSON.parse(JSON.stringify(globalData)); // Plotly mutates the input !!!
+                        let copyForPlotly = JSON.parse(JSON.stringify(globalData, null, 2)); // Plotly mutates the input !!! The ", null, 2" is optional to increase human readability.
                         Plotly.newPlot('myDiv', copyForPlotly.data, copyForPlotly.layout);
                     } else {
                         if(
@@ -280,7 +280,7 @@
                         ){
                             // merge
                             globalData.data = [...globalData.data, ...jsonified.data];
-                            let copyForPlotly = JSON.parse(JSON.stringify(globalData)); // Plotly mutates the input !!!
+                            let copyForPlotly = JSON.parse(JSON.stringify(globalData, null, 2)); // Plotly mutates the input !!! the ", null, 2" is optional to increase human readability.
                             Plotly.newPlot('myDiv', copyForPlotly.data, copyForPlotly.layout);
                         }else{
                             clearData();
