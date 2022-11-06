@@ -82,6 +82,7 @@
     function jsonifyTSV(fileContent){
         //separate rows
         let arr = fileContent.split("\n");
+
         //if last row is empty remove it
         if(arr[arr.length - 1].length < 2){
             arr = arr.slice(0,arr.length-1)
@@ -185,8 +186,6 @@
             }
         }
     }
-
-
 
     async function prepareSchemas(){
         const schema1 = await fetch('./schema/plot-schema.json');
