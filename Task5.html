@@ -44,7 +44,7 @@
 </header>
 <div class="page">
 <h1>Task 5</h1>
-    <p>Option to select a single file from computer and reset button to clear data. (including csv files) </p>
+    <p>Option to select a single file from computer and reset button to clear data. (including .csv and .tsv files) </p>
     <input type="file" id="file-selector">
     <button id="reset" onclick="clearData()">Reset data</button>
     <button id="download" style="display: none">Download JSON</button>
@@ -127,9 +127,9 @@
         resultJSON.layout.yaxis.title = y_label;
 
         let newData = [];
-        series_names_array.forEach((sn, index) => {
+        series_names_array.forEach((series_name, index) => {
             let dataClone = JSON.parse(JSON.stringify(plotlyTemplate.data[0]));
-            dataClone.name = sn;
+            dataClone.name = series_name;
             dataClone.x = data.map(r => r[0]);
             dataClone.y = data.map(r => r[index + 1]);
             dataClone.uid = dataClone.uid + String(index);
@@ -174,9 +174,9 @@
         resultJSON.layout.yaxis.title = y_label;
 
         let newData = [];
-        series_names_array.forEach((sn, index) => {
+        series_names_array.forEach((series_name, index) => {
             let dataClone = JSON.parse(JSON.stringify(plotlyTemplate.data[0]));
-            dataClone.name = sn;
+            dataClone.name = series_name;
             dataClone.x = data.map(r => r[0]);
             dataClone.y = data.map(r => r[index + 1]);
             dataClone.uid = dataClone.uid + String(index);
