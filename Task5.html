@@ -328,7 +328,7 @@
 
                             // if necessary create download button with json
                             if(fileType !== "json"){
-                                createDownloadButton(event.target.fileName, JSON.stringify(jsonified));
+                                createDownloadButton(event.target.fileName, JSON.stringify(jsonified, null, 2));
                             }
 
                              if(!globalData){
