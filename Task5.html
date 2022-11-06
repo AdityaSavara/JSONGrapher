@@ -127,9 +127,9 @@
         resultJSON.layout.yaxis.title = y_label;
 
         let newData = [];
-        series_names_array.forEach((sn, index) => {
+        series_names_array.forEach((series_name, index) => {
             let dataClone = JSON.parse(JSON.stringify(plotlyTemplate.data[0]));
-            dataClone.name = sn;
+            dataClone.name = series_name;
             dataClone.x = data.map(r => r[0]);
             dataClone.y = data.map(r => r[index + 1]);
             dataClone.uid = dataClone.uid + String(index);
@@ -174,9 +174,9 @@
         resultJSON.layout.yaxis.title = y_label;
 
         let newData = [];
-        series_names_array.forEach((sn, index) => {
+        series_names_array.forEach((series_name, index) => {
             let dataClone = JSON.parse(JSON.stringify(plotlyTemplate.data[0]));
-            dataClone.name = sn;
+            dataClone.name = series_name;
             dataClone.x = data.map(r => r[0]);
             dataClone.y = data.map(r => r[index + 1]);
             dataClone.uid = dataClone.uid + String(index);
