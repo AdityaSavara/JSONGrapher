@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Task 6</title>
+    <script src="https://cdn.plot.ly/plotly-2.14.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ajv/6.12.6/ajv.bundle.min.js" integrity="sha512-Xl0g/DHU98OkfXTsDfAAuTswzkniYQWPwLyGXzcpgDxCeH52eePfaHj/ictLAv2GvlPX2qZ6YV+3oDsw17L9qw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="styles.css">
+    <script src="./assets/convert.js"></script>
+    <script src="./assets/convert_parse.js"></script>
+    <script src="./assets/convert_macro.js"></script>
+    <script src="./assets/data.js"></script>
+</head>
+<body>
+<header>
+    <div class="container">
+       <a href="index.html">
+            <div class="button">
+                <p>JSONGrapher</p>
+            </div>
+        </a>
+<!--        <a href="Task1.html">-->
+<!--            <div class="button">-->
+<!--                <p>Task 1</p>-->
+<!--            </div>-->
+<!--        </a>-->
+<!--        <a href="Task2.html">-->
+<!--            <div class="button">-->
+<!--                <p>Task 2</p>-->
+<!--            </div>-->
+<!--        </a>-->
+<!--        <a href="Task3.html">-->
+<!--            <div class="button">-->
+<!--                <p>Task 3</p>-->
+<!--            </div>-->
+<!--        </a>-->
+<!--        <a href="Task4.html">-->
+<!--            <div class="button">-->
+<!--                <p>Task 4</p>-->
+<!--            </div>-->
+<!--        </a>-->
+        <a href="Task5.html">
+            <div class="button active">
+                <p>Task 6</p>
+            </div>
+        </a>
+    </div>
+</header>
+<div class="page">
+<h1>Task 5</h1>
+    <p>Option to select a single file from computer and reset button to clear data. (including .csv and .tsv files) </p>
+    <input type="file" id="file-selector">
+    <button id="reset" onclick="clearData()">Reset data</button>
+    <button id="download" style="display: none">Download JSON</button>
+    <p>Option to drop a file on the browser:</p>
+    <div id="file-drop-area" >
+        Drop a file here:
+    </div>
+    <div id='myDiv'><!-- Plotly chart will be drawn inside this DIV --></div>
+    <div id="errorDiv"></div>
+</div>
+<script>
+    let globalData = null;
+    let plotlyTemplate = null;
+    let schema = null;
+
+    const ajv = new Ajv();
+    const errorDiv = document.getElementById('errorDiv');
+
+    // Initiating the UUC converter function
+    const convert = new Convert();
+
+    function clearData(){
+        globalData = null;
+        document.getElementById('errorDiv').innerHTML = "";
+        document.getElementById('file-selector').value = "";
+        document.getElementById("download").style.display = "none";
+        Plotly.purge('myDiv');
+    }
+
+    function findFileType(fileName) {
+        let arrayName = fileName.split('.');
+        if(arrayName.includes("csv")){
+            return "csv";
+        }
+        if(arrayName.includes("tsv")){
+            return "tsv";
+        }
+        return 'json';
+    }
+
+    function getJsonFileName(fileName){
+        let arrayName = fileName.split('.');
+        if(arrayName.includes("csv")){
+            return arrayName[0] + ".json";
+        }
+        if(arrayName.includes("tsv")){
+            return arrayName[0] + ".json"
+        }
+        return arrayName.join();
+    }
+
+    function jsonifyTSV(fileContent){
+        //separate rows
+        let arr = fileContent.split("\n");
+
+        //if last row is empty remove it
+        if(arr[arr.length - 1].length < 2){
+            arr = arr.slice(0,arr.length-1)
+        }
+
+        //count number of columns
+        let number_of_columns = arr[0].split("\t").length;
+
+        //extract the config information
+        let comments = arr[0].split("\t")[0].split(":")[1].trim();
+        let data_type = arr[1].split("\t")[0].split(":")[1].trim();
+        let chart_label = arr[2].split("\t")[0].split(":")[1].trim();
+        let x_label = arr[3].split("\t")[0].split(":")[1].trim();
+        let y_label = arr[4].split("\t")[0].split(":")[1].trim();
+
+        //extract the series names
+        let series_names_array = arr[5].split(":")[1].split("\"")[0].split("\t").splice(0,number_of_columns-1).map(n => n.trim());
+
+        //extract the data
+        let data = arr.slice(7).map(r => r.split("\t").map(str => Number(str)));
+
+        let resultJSON = JSON.parse(JSON.stringify(plotlyTemplate, null, 2)); // clone of the template. The ", null, 2" is optional to make the json more human readable.
+
+        resultJSON.comments = comments;
+        resultJSON.title = data_type;
+        resultJSON.layout.title = chart_label;
+        resultJSON.layout.xaxis.title = x_label;
+        resultJSON.layout.yaxis.title = y_label;
+
+        let newData = [];
+        series_names_array.forEach((series_name, index) => {
+            let dataClone = JSON.parse(JSON.stringify(plotlyTemplate.data[0], null, 2)); // the ", null, 2" is optional to make the json more human readable.
+            dataClone.name = series_name;
+            dataClone.x = data.map(r => r[0]);
+            dataClone.y = data.map(r => r[index + 1]);
+            dataClone.uid = dataClone.uid + String(index);
+            newData.push(dataClone);
+        })
+
+        resultJSON.data = newData;
+
+        return resultJSON;
+    }
+
+    function jsonifyCSV(fileContent){
+        //separate rows
+        let arr = fileContent.split("\n");
+        //if last row is empty remove it
+        if(arr[arr.length - 1].length < 2){
+            arr = arr.slice(0,arr.length-1)
+        }
+
+        //count number of columns
+        let number_of_columns = arr[0].split(",").length;
+
+        //extract the config information
+        let comments = arr[0].split(",")[0].split(":")[1].trim();
+        let data_type = arr[1].split(",")[0].split(":")[1].trim();
+        let chart_label = arr[2].split(",")[0].split(":")[1].trim();
+        let x_label = arr[3].split(",")[0].split(":")[1].trim();
+        let y_label = arr[4].split(",")[0].split(":")[1].trim();
+
+        //extract the series names
+        let series_names_array = arr[5].split(":")[1].split("\"")[0].split(",").splice(0,number_of_columns-1).map(n => n.trim());
+
+        //extract the data
+        let data = arr.slice(7).map(r => r.split(",").map(str => Number(str)));
+
+        let resultJSON = JSON.parse(JSON.stringify(plotlyTemplate, null, 2)); // clone of the template. The "null, 2" are optional arguments that increase human readability.
+
+        resultJSON.comments = comments;
+        resultJSON.title = data_type;
+        resultJSON.layout.title = chart_label;
+        resultJSON.layout.xaxis.title = x_label;
+        resultJSON.layout.yaxis.title = y_label;
+
+        let newData = [];
+        series_names_array.forEach((series_name, index) => {
+            let dataClone = JSON.parse(JSON.stringify(plotlyTemplate.data[0]), null, 2); // the ", null, 2" are optional arguments to increase human readability.
+            dataClone.name = series_name;
+            dataClone.x = data.map(r => r[0]);
+            dataClone.y = data.map(r => r[index + 1]);
+            dataClone.uid = dataClone.uid + String(index);
+            newData.push(dataClone);
+        })
+
+        resultJSON.data = newData;
+        return resultJSON;
+    }
+
+    function jsonifyData(filetype, dataLoaded){
+        switch (filetype) {
+            case "csv": {
+                return jsonifyCSV(dataLoaded);
+            }
+            case "tsv": {
+                return jsonifyTSV(dataLoaded);
+            }
+            default: {
+                return JSON.parse(dataLoaded);
+            }
+        }
+    }
+
+    function createDownloadButton(inputFilename, inputText){
+
+        function download(filename, text) {
+            const element = document.createElement('a');
+            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+            element.setAttribute('download', filename);
+            element.style.display = 'none';
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+            document.getElementById("download").style.display = "none";
+        }
+
+        let jsonifiedFilename = getJsonFileName(inputFilename);
+
+        let button = document.getElementById("download");
+
+        button.style.display = null;
+        button
+            .addEventListener("click", () => download(jsonifiedFilename, inputText));
+    }
+
+
+    async function prepareSchemas(){
+        const schema1 = await fetch('./schema/plot-schema.json');
+        const schema1body = await schema1.text();
+        const schema1json = JSON.parse(schema1body);
+        const schema2 = await fetch('./schema/0_PlotlyTemplate.json');
+        const schema2body = await schema2.text();
+        const schema2json = await JSON.parse(schema2body);
+        return [schema1json, schema2json];
+    }
+
+    function getUnitFromLabel(label){
+        let unit = label.match(/\(([^)]+)\)/);
+        if(unit){
+            return unit[1];
+        }
+        return "";
+    }
+
+    function loadFile(event){
+            event.stopPropagation();
+            event.preventDefault();
+            const file = event.dataTransfer.files[0];
+            const reader = new FileReader();
+            reader.fileName = file.name;
+            reader.addEventListener('load', event => {
+                const dataLoaded = event.target.result;
+
+                // test what is incoming
+                let fileType = findFileType(event.target.fileName);
+                let jsonified;
+
+                try {
+                    jsonified = jsonifyData(fileType, dataLoaded);
+                } catch(e) {
+                    errorDiv.innerText = `Json file has some errors. ${e.message}`
+                }
+
+                const validate = ajv.compile(schema);
+                const valid = validate(jsonified);
+                if(!valid) {
+                    console.log('validate errors: ', JSON.stringify(validate.errors));
+                    errorDiv.innerText = `Json file does not match the schema. ${JSON.stringify(validate.errors)}`
+                }else{
+
+                    // if necessary create download button with json
+                    if(fileType !== "json"){
+                        createDownloadButton(event.target.fileName, JSON.stringify(jsonified, null, 2)); // The ", null, 2" is optional to increase human readability.
+                    }
+
+                    if(!globalData){
+                        globalData = jsonified;
+                        let copyForPlotly = JSON.parse(JSON.stringify(globalData, null, 2)); // Plotly mutates the input !!! The ", null, 2" is optional to increase human readability.
+                        Plotly.newPlot('myDiv', copyForPlotly.data, copyForPlotly.layout);
+                    } else {
+                        if(
+                            globalData.title === jsonified.title
+                            &&
+                            globalData.layout.xaxis.title.text === jsonified.layout.xaxis.title.text
+                            &&
+                            globalData.layout.yaxis.title.text === jsonified.layout.yaxis.title.text
+                        ){
+                            // merge
+                            globalData.data = [...globalData.data, ...jsonified.data];
+                            let copyForPlotly = JSON.parse(JSON.stringify(globalData, null, 2)); // Plotly mutates the input !!! the ", null, 2" is optional to increase human readability.
+                            Plotly.newPlot('myDiv', copyForPlotly.data, copyForPlotly.layout);
+                        }else{
+                            clearData();
+                            errorDiv.innerText = `Chart or axis titles does not match.`;
+                        }
+                    }
+                }
+            })
+            reader.readAsText(file);
+        }
+
+    prepareSchemas().then(resp => {
+        schema = resp[0];
+        plotlyTemplate = resp[1];
+
+        // normal code here
+
+            if(window.FileList && window.File){
+
+                // input file button
+                document.getElementById('file-selector').addEventListener('change', event => {
+                    const file = event.target.files[0];
+                    // TODO: CHECK IF THOSE TWO LINES ARE NEEDED
+                    const reader = new FileReader();
+                    reader.fileName = file.name;
+                    reader.addEventListener('load', event => {
+                        const dataLoaded = event.target.result;
+                        document.getElementById('file-selector').value = "";
+
+                        // test what is incoming
+                        let fileType = findFileType(event.target.fileName);
+                        let jsonified;
+
+                        try {
+                            jsonified = jsonifyData(fileType, dataLoaded);
+                        } catch(e) {
+                            errorDiv.innerText = `Json file has some errors. ${e.message}`
+                        }
+
+                        const validate = ajv.compile(schema);
+                        const valid = validate(jsonified);
+                        if(!valid) {
+                            console.log('validate errors: ', JSON.stringify(validate.errors));
+                            errorDiv.innerText = `Json file does not match the schema. ${JSON.stringify(validate.errors)}`
+                        }else{
+
+                            // if necessary create download button with json
+                            if(fileType !== "json"){
+                                createDownloadButton(event.target.fileName, JSON.stringify(jsonified, null, 2));
+                            }
+
+                             if(!globalData){
+                                 globalData = jsonified;
+
+                                 // Get the unit from the label
+                                 const xUnit = getUnitFromLabel(globalData.layout.xaxis.title);
+                                 const yUnit = getUnitFromLabel(globalData.layout.yaxis.title);
+
+                                 // Adding the extracted units to globalData
+                                globalData.unit = {
+                                    x: xUnit,
+                                    y: yUnit
+                                };
+
+
+                                 let copyForPlotly = JSON.parse(JSON.stringify(globalData)); // Plotly mutates the input !!!
+
+                                 Plotly.newPlot('myDiv', copyForPlotly.data, copyForPlotly.layout);
+                            } else {
+                                if(globalData.title === jsonified.title &&
+                                    globalData.layout.xaxis.title.text === jsonified.layout.xaxis.title.text &&
+                                    globalData.layout.yaxis.title.text === jsonified.layout.yaxis.title.text){
+                                        const newXUnit = getUnitFromLabel(jsonified.layout.xaxis.title);
+                                        const newYUnit = getUnitFromLabel(jsonified.layout.yaxis.title);
+
+                                        if( newYUnit !== globalData.unit.Y ) {
+                                            const yConvertFactor = convert.fullConversion(newYUnit, globalData.unit.y);
+                                            jsonified.data.forEach( (data) => {
+                                                data.y = data.y.map( (y) => {
+                                                    return parseInt(y) * yConvertFactor.output.num;
+                                                });
+                                            });
+                                        }
+
+                                        if( newXUnit !== globalData.unit.x ) {
+                                            const xConvertFactor = convert.fullConversion(newXUnit, globalData.unit.x);
+                                            jsonified.data.forEach( (data) => {
+                                                data.x = data.x.map( (x) => {
+                                                    return parseInt(x) * xConvertFactor.output.num;
+                                                });
+                                            });
+                                        }
+
+
+                                   // merge
+                                    globalData.data = [...globalData.data, ...jsonified.data];
+                                    let copyForPlotly = JSON.parse(JSON.stringify(globalData)); // Plotly mutates the input !!!
+                                    Plotly.newPlot('myDiv', copyForPlotly.data, copyForPlotly.layout);
+                                }else{
+                                    clearData();
+                                    errorDiv.innerText = `Chart or axis titles does not match.`;
+                                }
+                            }
+                        }
+                    })
+                    reader.readAsText(file);
+                })
+
+                // Drop Area
+                // TODO: FIXED DRAG AND DROP
+                const dropArea = document.getElementById('file-drop-area');
+                dropArea.addEventListener('dragover', event => {
+                    event.stopPropagation();
+                    event.preventDefault();
+                    event.dataTransfer.dropEffect = 'copy';
+                });
+                dropArea.addEventListener('drop', (event) => loadFile(event))
+            }
+
+    }
+    )
+        .catch(e => {
+            console.log(e);
+            errorDiv.innerText = 'Error fetching json-schema files...'
+        });
+
+
+</script>
+</body>
+</html>
