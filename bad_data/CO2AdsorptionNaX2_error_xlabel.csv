@@ -1,0 +1,16 @@
+﻿comments: The CSV file must have the same number of rows and fields before the data. Any extra information must be in this comments line.,
+DataType: CO2_Adsorption_Isotherm,
+Chart_label: CO2 Adsorption,
+x_label: CO2 presure (Bar),
+y_label: CO2 Adsorbed (mol/kg),
+seriesnames: CO2 Adsorption on NaX error unit,
+x_values,y_values
+2007000,0
+2008000,45560506.66
+2009000,91145081.21
+2010000,232447635.2
+2011000,580348915.6
+2012000,1182888421
+2013000,1928559640
+2014000,2578825762
+2015000,3022276547
