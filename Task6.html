@@ -102,7 +102,7 @@
         if(arrayName.includes("tsv")){
             return arrayName[0] + ".json"
         }
-        return arrayName.join();
+        return arrayName.join(".");
     }
 
     function jsonifyTSV(fileContent){
@@ -225,7 +225,6 @@
         downloadContainer.appendChild(element);
         element.click();
         downloadContainer.removeChild(element);
-        document.getElementById("download").style.display = "none";
     }
 
     // A function that will display the download link and download the recent file as soon as the user clicks on the "Download JSON" button
