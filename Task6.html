@@ -58,6 +58,9 @@
     </div>
     <div id='myDiv'><!-- Plotly chart will be drawn inside this DIV --></div>
     <div id="errorDiv"></div>
+    <div id="downloadLink">
+    
+    </div>
 </div>
 <script>
     let globalData = null;
@@ -66,6 +69,8 @@
 
     const ajv = new Ajv();
     const errorDiv = document.getElementById('errorDiv');
+
+    let recentFileName = null;
 
     // Initiating the UUC converter function
     const convert = new Convert();
@@ -208,26 +213,33 @@
         }
     }
 
+    // A function that will create a download link for the json file as soon as the user clicks on the "Download JSON" button
+    function download(filename, text) {
+        // Getting the div that contains the json download link
+        const downloadContainer = document.getElementById("downloadLink");
+        const element = document.createElement('a');
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+        element.setAttribute('download', filename);
+
+        // element.style.display = 'none';
+        downloadContainer.appendChild(element);
+        element.click();
+        downloadContainer.removeChild(element);
+        document.getElementById("download").style.display = "none";
+    }
+
+    // A function that will display the download link and download the recent file as soon as the user clicks on the "Download JSON" button
     function createDownloadButton(inputFilename, inputText){
-
-        function download(filename, text) {
-            const element = document.createElement('a');
-            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-            element.setAttribute('download', filename);
-            element.style.display = 'none';
-            document.body.appendChild(element);
-            element.click();
-            document.body.removeChild(element);
-            document.getElementById("download").style.display = "none";
-        }
-
         let jsonifiedFilename = getJsonFileName(inputFilename);
-
         let button = document.getElementById("download");
 
         button.style.display = null;
         button
-            .addEventListener("click", () => download(jsonifiedFilename, inputText));
+            .addEventListener("click", () => {
+                if (recentFileName === inputFilename){
+                    download(jsonifiedFilename, inputText)
+                }
+            });
     }
 
 
@@ -249,68 +261,14 @@
         return "";
     }
 
-    function loadFile(event){
-            event.stopPropagation();
-            event.preventDefault();
-            const file = event.dataTransfer.files[0];
-            const reader = new FileReader();
-            reader.fileName = file.name;
-            reader.addEventListener('load', event => {
-                const dataLoaded = event.target.result;
-
-                // test what is incoming
-                let fileType = findFileType(event.target.fileName);
-                let jsonified;
-
-                try {
-                    jsonified = jsonifyData(fileType, dataLoaded);
-                } catch(e) {
-                    errorDiv.innerText = `Json file has some errors. ${e.message}`
-                }
-
-                const validate = ajv.compile(schema);
-                const valid = validate(jsonified);
-                if(!valid) {
-                    console.log('validate errors: ', JSON.stringify(validate.errors));
-                    errorDiv.innerText = `Json file does not match the schema. ${JSON.stringify(validate.errors)}`
-                }else{
-                    // if necessary create download button with json
-                    if(fileType !== "json"){
-                        createDownloadButton(event.target.fileName, JSON.stringify(jsonified, null, 2)); // The ", null, 2" is optional to increase human readability.
-                    }
-
-                    if(!globalData){
-                        globalData = jsonified;
-                        let copyForPlotly = JSON.parse(JSON.stringify(globalData, null, 2)); // Plotly mutates the input !!! The ", null, 2" is optional to increase human readability.
-                        Plotly.newPlot('myDiv', copyForPlotly.data, copyForPlotly.layout);
-                    } else {
-                        if(
-                            globalData.title === jsonified.title
-                            &&
-                            globalData.layout.xaxis.title.text === jsonified.layout.xaxis.title.text
-                            &&
-                            globalData.layout.yaxis.title.text === jsonified.layout.yaxis.title.text
-                        ){
-                            // merge
-                            globalData.data = [...globalData.data, ...jsonified.data];
-                            let copyForPlotly = JSON.parse(JSON.stringify(globalData, null, 2)); // Plotly mutates the input !!! the ", null, 2" is optional to increase human readability.
-                            Plotly.newPlot('myDiv', copyForPlotly.data, copyForPlotly.layout);
-                        }else{
-                            clearData();
-                            errorDiv.innerText = `Chart or axis titles does not match.`;
-                        }
-                    }
-                }
-            })
-            reader.readAsText(file);
-        }
-
+    // This function is called the user drops a file or upload it via the input button
     function loadFile( event, eventType ) {
         const file = eventType === "change" ? event.target.files[0] : event.dataTransfer.files[0];
-        // TODO: CHECK IF THOSE TWO LINES ARE NEEDED
+        // Initialize the reader
         const reader = new FileReader();
         reader.fileName = file.name;
         reader.addEventListener('load', event => {
+            // Get the loaded data from the reader
             const dataLoaded = event.target.result;
             document.getElementById('file-selector').value = "";
 
@@ -319,22 +277,26 @@
             let jsonified;
 
             try {
+                // try to parse the file as json
                 jsonified = jsonifyData(fileType, dataLoaded);
             } catch(e) {
                 errorDiv.innerText = `Json file has some errors. ${e.message}`
             }
 
+            // validate the json
             const validate = ajv.compile(schema);
             const valid = validate(jsonified);
-            if(!valid) {
-                console.log('validate errors: ', JSON.stringify(validate.errors));
-                errorDiv.innerText = `Json file does not match the schema. ${JSON.stringify(validate.errors)}`
-            }else{
-
-                // if necessary create download button with json
-                if(fileType !== "json"){
+                // Checking if the uploaded data is valid against the schema          
+                if(!valid) {
+                    // Console log an error if the data is not valid against the schema
+                    console.log('validate errors: ', JSON.stringify(validate.errors));
+                    // Display an error message if the data is not valid against the schema
+                    errorDiv.innerText = `Json file does not match the schema. ${JSON.stringify(validate.errors)}`
+                } else {
+                    // If the data is valid against the schema, then we can proceed to the next step
+                    // if necessary create download button with json
+                    recentFileName = event.target.fileName;
                     createDownloadButton(event.target.fileName, JSON.stringify(jsonified, null, 2));
-                }
 
                     if(!globalData){
                         globalData = jsonified;
@@ -388,7 +350,7 @@
                         errorDiv.innerText = `Chart or axis titles does not match.`;
                     }
                 }
-            }
+                }
         })
         reader.readAsText(file);
     }
@@ -403,6 +365,7 @@
 
                 // input file button
                 document.getElementById('file-selector').addEventListener('change', event => {
+                    // Load button uploaded file
                     loadFile(event, 'change');
                 })
 
@@ -415,6 +378,7 @@
                 });
                 dropArea.addEventListener('drop', (event) => {
                     event.preventDefault();
+                    // Load drag and drop file after the file is dropped
                     loadFile(event, 'drop');
                 });
             }
