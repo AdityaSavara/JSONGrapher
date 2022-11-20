@@ -51,7 +51,7 @@
     <p>Option to select a single file from computer and reset button to clear data. (including .csv and .tsv files) </p>
     <input type="file" id="file-selector">
     <button id="reset" onclick="clearData()">Reset data</button>
-    <button id="download" style="display: none">Download JSON</button>
+    <button id="download" style="display: none">Download Last Data Set as a JSON File</button>
     <p>Option to drop a file on the browser:</p>
     <div id="file-drop-area" >
         Drop a file here:
@@ -213,7 +213,7 @@
         function download(filename, text) {
             const element = document.createElement('a');
             element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-            element.setAttribute('Download Last Data As JSON File', filename);
+            element.setAttribute('download', filename);
             element.style.display = 'none';
             document.body.appendChild(element);
             element.click();
