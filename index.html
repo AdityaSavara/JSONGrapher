@@ -3,7 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <title>JSONGrapher</title>
+    <script src="https://cdn.plot.ly/plotly-2.14.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ajv/6.12.6/ajv.bundle.min.js" integrity="sha512-Xl0g/DHU98OkfXTsDfAAuTswzkniYQWPwLyGXzcpgDxCeH52eePfaHj/ictLAv2GvlPX2qZ6YV+3oDsw17L9qw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <link rel="stylesheet" href="styles.css">
+    <script src="./assets/convert.js"></script>
+    <script src="./assets/convert_parse.js"></script>
+    <script src="./assets/convert_macro.js"></script>
+    <script src="./assets/data.js"></script>
 </head>
 <body>
 <header>
@@ -79,5 +85,332 @@ The format that is recommended to be used is shown in the files with names that 
 The core code of JSON Grapher was made by Piotr Paszek. He has significant experience with javascript and data visualization, and he may be hired at https://www.upwork.com/freelancers/paszek
 </pre>
 </div>
+<script>
+    let globalData = null;
+    let plotlyTemplate = null;
+    let schema = null;
+
+    const ajv = new Ajv();
+    const errorDiv = document.getElementById('errorDiv');
+
+    let recentFileName = null;
+
+    // Initiating the UUC converter function
+    const convert = new Convert();
+
+    function clearData(){
+        globalData = null;
+        document.getElementById('errorDiv').innerHTML = "";
+        document.getElementById('file-selector').value = "";
+        document.getElementById("download").style.display = "none";
+        Plotly.purge('myDiv');
+    }
+
+    function findFileType(fileName) {
+        let arrayName = fileName.split('.');
+        if(arrayName.includes("csv")){
+            return "csv";
+        }
+        if(arrayName.includes("tsv")){
+            return "tsv";
+        }
+        return 'json';
+    }
+
+    function getJsonFileName(fileName){
+        let arrayName = fileName.split('.');
+        if(arrayName.includes("csv")){
+            return arrayName[0] + ".json";
+        }
+        if(arrayName.includes("tsv")){
+            return arrayName[0] + ".json"
+        }
+        return arrayName.join(".");
+    }
+
+    function jsonifyTSV(fileContent){
+        //separate rows
+        let arr = fileContent.split("\n");
+
+        //if last row is empty remove it
+        if(arr[arr.length - 1].length < 2){
+            arr = arr.slice(0,arr.length-1)
+        }
+
+        //count number of columns
+        let number_of_columns = arr[0].split("\t").length;
+
+        //extract the config information
+        let comments = arr[0].split("\t")[0].split(":")[1].trim();
+        let data_type = arr[1].split("\t")[0].split(":")[1].trim();
+        let chart_label = arr[2].split("\t")[0].split(":")[1].trim();
+        let x_label = arr[3].split("\t")[0].split(":")[1].trim();
+        let y_label = arr[4].split("\t")[0].split(":")[1].trim();
+
+        //extract the series names
+        let series_names_array = arr[5].split(":")[1].split("\"")[0].split("\t").splice(0,number_of_columns-1).map(n => n.trim());
+
+        //extract the data
+        let data = arr.slice(7).map(r => r.split("\t").map(str => Number(str)));
+
+        let resultJSON = JSON.parse(JSON.stringify(plotlyTemplate, null, 2)); // clone of the template. The ", null, 2" is optional to make the json more human readable.
+
+        resultJSON.comments = comments;
+        resultJSON.title = data_type;
+        resultJSON.layout.title = chart_label;
+        resultJSON.layout.xaxis.title = x_label;
+        resultJSON.layout.yaxis.title = y_label;
+
+        let newData = [];
+        series_names_array.forEach((series_name, index) => {
+            let dataClone = JSON.parse(JSON.stringify(plotlyTemplate.data[0], null, 2)); // the ", null, 2" is optional to make the json more human readable.
+            dataClone.name = series_name;
+            dataClone.x = data.map(r => r[0]);
+            dataClone.y = data.map(r => r[index + 1]);
+            dataClone.uid = dataClone.uid + String(index);
+            newData.push(dataClone);
+        })
+
+        resultJSON.data = newData;
+
+        return resultJSON;
+    }
+
+    function jsonifyCSV(fileContent){
+        //separate rows
+        let arr = fileContent.split("\n");
+        //if last row is empty remove it
+        if(arr[arr.length - 1].length < 2){
+            arr = arr.slice(0,arr.length-1)
+        }
+
+        //count number of columns
+        let number_of_columns = arr[0].split(",").length;
+
+        //extract the config information
+        let comments = arr[0].split(",")[0].split(":")[1].trim();
+        let data_type = arr[1].split(",")[0].split(":")[1].trim();
+        let chart_label = arr[2].split(",")[0].split(":")[1].trim();
+        let x_label = arr[3].split(",")[0].split(":")[1].trim();
+        let y_label = arr[4].split(",")[0].split(":")[1].trim();
+
+        //extract the series names
+        let series_names_array = arr[5].split(":")[1].split("\"")[0].split(",").splice(0,number_of_columns-1).map(n => n.trim());
+
+        //extract the data
+        let data = arr.slice(7).map(r => r.split(",").map(str => Number(str)));
+
+        let resultJSON = JSON.parse(JSON.stringify(plotlyTemplate, null, 2)); // clone of the template. The "null, 2" are optional arguments that increase human readability.
+
+        resultJSON.comments = comments;
+        resultJSON.title = data_type;
+        resultJSON.layout.title = chart_label;
+        resultJSON.layout.xaxis.title = x_label;
+        resultJSON.layout.yaxis.title = y_label;
+
+        let newData = [];
+        series_names_array.forEach((series_name, index) => {
+            let dataClone = JSON.parse(JSON.stringify(plotlyTemplate.data[0]), null, 2); // the ", null, 2" are optional arguments to increase human readability.
+            dataClone.name = series_name;
+            dataClone.x = data.map(r => r[0]);
+            dataClone.y = data.map(r => r[index + 1]);
+            dataClone.uid = dataClone.uid + String(index);
+            newData.push(dataClone);
+        })
+
+        resultJSON.data = newData;
+        return resultJSON;
+    }
+
+    function jsonifyData(filetype, dataLoaded){
+        switch (filetype) {
+            case "csv": {
+                return jsonifyCSV(dataLoaded);
+            }
+            case "tsv": {
+                return jsonifyTSV(dataLoaded);
+            }
+            default: {
+                return JSON.parse(dataLoaded);
+            }
+        }
+    }
+
+    // A function that will create a download link for the json file as soon as the user clicks on the "Download JSON" button
+    function download(filename, text) {
+        // Getting the div that contains the json download link
+        const downloadContainer = document.getElementById("downloadLink");
+        const element = document.createElement('a');
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+        element.setAttribute('download', filename);
+
+        // element.style.display = 'none';
+        downloadContainer.appendChild(element);
+        element.click();
+        downloadContainer.removeChild(element);
+    }
+
+    // A function that will display the download link and download the recent file as soon as the user clicks on the "Download JSON" button
+    function createDownloadButton(inputFilename, inputText){
+        let jsonifiedFilename = getJsonFileName(inputFilename);
+        let button = document.getElementById("download");
+
+        button.style.display = null;
+        button
+            .addEventListener("click", () => {
+                if (recentFileName === inputFilename){
+                    download(jsonifiedFilename, inputText)
+                }
+            });
+    }
+
+
+    async function prepareSchemas(){
+        const schema1 = await fetch('./schema/plot-schema.json');
+        const schema1body = await schema1.text();
+        const schema1json = JSON.parse(schema1body);
+        const schema2 = await fetch('./schema/0_PlotlyTemplate.json');
+        const schema2body = await schema2.text();
+        const schema2json = await JSON.parse(schema2body);
+        return [schema1json, schema2json];
+    }
+
+    function getUnitFromLabel(label){
+        let unit = label.match(/\(([^)]+)\)/);
+        if(unit){
+            return unit[1];
+        }
+        return "";
+    }
+
+    // This function is called the user drops a file or upload it via the input button
+    function loadFile( event, eventType ) {
+        const file = eventType === "change" ? event.target.files[0] : event.dataTransfer.files[0];
+        // Initialize the reader
+        const reader = new FileReader();
+        reader.fileName = file.name;
+        reader.addEventListener('load', event => {
+            // Get the loaded data from the reader
+            const dataLoaded = event.target.result;
+            document.getElementById('file-selector').value = "";
+
+            // test what is incoming
+            let fileType = findFileType(event.target.fileName);
+            let jsonified;
+
+            try {
+                // try to parse the file as json
+                jsonified = jsonifyData(fileType, dataLoaded);
+            } catch(e) {
+                errorDiv.innerText = `Json file has some errors. ${e.message}`
+            }
+
+            // validate the json
+            const validate = ajv.compile(schema);
+            const valid = validate(jsonified);
+                // Checking if the uploaded data is valid against the schema          
+                if(!valid) {
+                    // Console log an error if the data is not valid against the schema
+                    console.log('validate errors: ', JSON.stringify(validate.errors));
+                    // Display an error message if the data is not valid against the schema
+                    errorDiv.innerText = `Json file does not match the schema. ${JSON.stringify(validate.errors)}`
+                } else {
+                    // If the data is valid against the schema, then we can proceed to the next step
+                    // if necessary create download button with json
+                    recentFileName = event.target.fileName;
+                    createDownloadButton(event.target.fileName, JSON.stringify(jsonified, null, 2));
+
+                    if(!globalData){
+                        globalData = jsonified;
+
+                        // Get the unit from the label
+                        const xUnit = getUnitFromLabel(globalData.layout.xaxis.title);
+                        const yUnit = getUnitFromLabel(globalData.layout.yaxis.title);
+
+                        // Adding the extracted units to globalData
+                    globalData.unit = {
+                        x: xUnit,
+                        y: yUnit
+                    };
+
+
+                        let copyForPlotly = JSON.parse(JSON.stringify(globalData)); // Plotly mutates the input !!!
+
+                        Plotly.newPlot('myDiv', copyForPlotly.data, copyForPlotly.layout);
+                } else {
+                    if(globalData.title === jsonified.title &&
+                        globalData.layout.xaxis.title.text === jsonified.layout.xaxis.title.text &&
+                        globalData.layout.yaxis.title.text === jsonified.layout.yaxis.title.text){
+                            const newXUnit = getUnitFromLabel(jsonified.layout.xaxis.title);
+                            const newYUnit = getUnitFromLabel(jsonified.layout.yaxis.title);
+
+                            if( newYUnit !== globalData.unit.Y ) {
+                                const yConvertFactor = convert.fullConversion(newYUnit, globalData.unit.y);
+                                jsonified.data.forEach( (data) => {
+                                    data.y = data.y.map( (y) => {
+                                        return parseInt(y) * yConvertFactor.output.num;
+                                    });
+                                });
+                            }
+
+                            if( newXUnit !== globalData.unit.x ) {
+                                const xConvertFactor = convert.fullConversion(newXUnit, globalData.unit.x);
+                                jsonified.data.forEach( (data) => {
+                                    data.x = data.x.map( (x) => {
+                                        return parseInt(x) * xConvertFactor.output.num;
+                                    });
+                                });
+                            }
+
+
+                        // merge
+                        globalData.data = [...globalData.data, ...jsonified.data];
+                        let copyForPlotly = JSON.parse(JSON.stringify(globalData)); // Plotly mutates the input !!!
+                        Plotly.newPlot('myDiv', copyForPlotly.data, copyForPlotly.layout);
+                    }else{
+                        clearData();
+                        errorDiv.innerText = `Chart or axis titles does not match.`;
+                    }
+                }
+                }
+        })
+        reader.readAsText(file);
+    }
+
+    prepareSchemas().then(resp => {
+        schema = resp[0];
+        plotlyTemplate = resp[1];
+
+        // normal code here
+
+            if(window.FileList && window.File){
+
+                // input file button
+                document.getElementById('file-selector').addEventListener('change', event => {
+                    // Load button uploaded file
+                    loadFile(event, 'change');
+                })
+
+                // Drop Area
+                const dropArea = document.getElementById('file-drop-area');
+                dropArea.addEventListener('dragover', event => {
+                    event.stopPropagation();
+                    event.preventDefault();
+                    event.dataTransfer.dropEffect = 'copy';
+                });
+                dropArea.addEventListener('drop', (event) => {
+                    event.preventDefault();
+                    // Load drag and drop file after the file is dropped
+                    loadFile(event, 'drop');
+                });
+            }
+
+    }
+    )
+        .catch(e => {
+            console.log(e);
+            errorDiv.innerText = 'Error fetching json-schema files...'
+        });
+</script>
 </body>
 </html>
