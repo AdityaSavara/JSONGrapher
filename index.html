@@ -42,6 +42,21 @@
 </header>
 <div class="page">
 <h1>JSONGrapher</h1>
+    <p>Option to select a single file from computer and reset button to clear data. (including .csv and .tsv files) </p>
+    <input type="file" id="file-selector">
+    <button id="reset" onclick="clearData()">Reset data</button>
+    <button id="download" style="display: none">Download Last Data Set as a JSON File</button>
+    <p>Option to drop a file on the browser:</p>
+    <div id="file-drop-area" >
+        Drop a file here:
+    </div>
+    <div id='myDiv'><!-- Plotly chart will be drawn inside this DIV --></div>
+    <div id="errorDiv"></div>
+    <div id="downloadLink">
+    
+    </div>
+</div>
+
 <pre>
 Online address for using the JSON Grapher:
 https://adityasavara.github.io/JSONGrapher/
