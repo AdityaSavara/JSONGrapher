@@ -4,6 +4,9 @@ Online address for using the JSON Grapher:
 https://adityasavara.github.io/JSONGrapher/
 
 JSON grapher allows creating scatter-line plots from one or more JSON files containing x-y data.
+You can upload the example files to the above link to try using JSONGrapher.
+
+JSONGrapher also automatically converts between different units, which are provided within parentheses in the data file.
 
 The direct links to the example files are:  
  https://github.com/AdityaSavara/JSONGrapher/raw/main/data/CO2AdsorptionNaX2.json
@@ -19,4 +22,4 @@ Additional Information:
 
 The format that is recommended to be used is shown in the file CO2AdsorptionNaX2.json. When using this format, it is possible to add additional series onto the existing plot from multiple json files.  When doing so, the top-level title must match, as well as the X axis title and Y axis title. The axes titles are meant to be used for units. All other settings, such as chart title, will be taken from the first json file loaded.
 
-JSON Grapher was made by Piotr Paszek. He has significant experience with javascript and data visualization, and he may be hired at https://www.upwork.com/freelancers/paszek
+The core code of JSON Grapher was made by Piotr Paszek. He has significant experience with javascript and data visualization, and he may be hired at https://www.upwork.com/freelancers/paszek
