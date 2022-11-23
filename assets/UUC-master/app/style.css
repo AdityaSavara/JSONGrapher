@@ -1,0 +1,161 @@
+/*
+	This CSS
+	Is a mess
+
+(a stylish haiku by Lemonexe)
+*/
+
+/*GENERIC*/
+body {font-family: Arial;}
+p {max-width: 1200px;}
+h1 {
+	font-size: 30px;
+	margin-top: 10px;
+	margin-bottom: 30px;
+}
+h2 {
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+li {margin-bottom: 5px;}
+input[type="button"] {cursor: pointer;}
+.fakeLink {
+	color: #0000ee;
+	cursor: pointer;
+	text-decoration: underline;
+}
+.code {
+	font-family: 'Courier New', 'Courier', 'Consolas';
+	background-color: #f0f0f0;
+}
+.expandable {display: inline-block; width: 15px; margin-bottom: 10px}
+
+
+
+/*CONVERT*/
+.inputBox {
+	margin-bottom: 15px;
+	width: 350px;
+	padding: 2px;
+}
+.outputBox {
+	display: inline-block;
+	height: 17px;
+	min-width: 350px;
+	padding: 2px;
+	border: 1px solid #777777;
+	margin-bottom: 20px;
+	margin-right: -2px; /*because of Ctrl+C icon*/
+}
+#convertContainer {
+	float: left;
+	position: relative;
+	margin-right: 40px;
+}
+#inputAutocomplete {
+	width: 20px; height: 23px; padding-left: 15px;
+}
+#paramContainer {
+	float: left;
+	padding: 5px;
+	padding-right: 0px;
+}
+.numSelector {
+	border: none;
+	outline: none;
+	width: 35px;
+}
+/*status texts*/
+.ok {color: green;}
+.warn {color: darkorange;}
+.err {font-weight: bold; color: red;}
+.statusAppear {animation-name: appear; animation-timing-function: linear; animation-duration: 0.5s;}
+@keyframes appear {
+	0%   {opacity: 0;}
+	100% {opacity: 1;}
+}
+
+
+
+/*REFERENCES*/
+.reference {white-space: pre-wrap;} /*just a dirty trick to allow angular generated line breaks even without ng-sanitize*/
+.highlight {background-color: #ffff90;}
+.example {
+	position: absolute;
+	left: 230px;
+	font-style: italic;
+}
+
+
+
+/*MISCELLANEOUS ELEMENTS*/
+#tabButtonContainer {
+	padding-left: 20px;
+	padding-bottom: 10px;
+	margin-bottom: 20px;
+	border-bottom: 2px solid #777777;
+}
+.tabButton {
+	padding: 10px;
+	margin-left: 8px;
+	background-color: white;
+	border: 2px solid #777777;
+	border-bottom: none;
+	cursor: pointer;
+}
+#footerDefense {height: 20px;}
+#footer {
+	position: fixed;
+	left: 0px;
+	bottom: 0px;
+	padding-left: 15px;
+	background-color: white;
+	border-top: 1px solid #777777;
+}
+#lang {
+	position: absolute;
+	top: 0px;
+	right: 0px;
+	padding: 3px;
+	cursor: pointer;
+}
+#lang > img {
+	width: 45px; height: 30px;
+	margin: 1px; border: 1px solid #dddddd;
+}
+#lang > img:hover {margin: 0px; border: 2px solid #999999;}
+#githubLogo {
+	position: fixed; bottom: 0px; right: 0px;
+	margin-right: 3px;
+}
+#tutorial {
+	position: absolute;
+	z-index: 10;
+	background-color: white;
+	border: 2px solid #777777;
+}
+#tutorialBar {
+	width: 100%;
+	background-color: #d0d0d0;
+	border-bottom: 1px solid #777777;
+	cursor: move;
+	text-align: center;
+	height: 21px;
+}
+.tutorialSection {padding: 10px; padding-top: 0px;}
+#sharelinkBox {
+	z-index: 20;
+	position: absolute;
+	border: 1px solid #777777;
+	background-color: rgba(250, 250, 250, 0.9);
+	padding: 5px;
+}
+.copyEffStatic {color: green; opacity: 0;}
+.copyEffect {animation-name: flick; animation-timing-function: linear; animation-duration: 1s;}
+@keyframes flick {
+	0%   {opacity: 0;}
+	15%  {opacity: 1;}
+	65%  {opacity: 1;}
+	80%  {opacity: 0.65;}
+	100% {opacity: 0;}
+}
