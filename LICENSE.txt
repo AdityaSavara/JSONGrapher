@@ -1,6 +1,6 @@
-The UUC code is under an MIT License. The AJV code is under an MIT license.
+The UUC code is under an MIT License. https://github.com/AdityaSavara/JSONGrapher/tree/main/UUC/LICENSE.txt
 
-The MIT License can be read here: https://github.com/Lemonexe/UUC/blob/master/LICENSE
+The AJV code is under an MIT license: https://github.com/AdityaSavara/JSONGrapher/tree/main/AJV/LICENSE.txt
 
 All other code in the repository is under the UNLICENSE, included below.
 ***
