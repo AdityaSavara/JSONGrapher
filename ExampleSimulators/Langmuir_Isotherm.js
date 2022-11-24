@@ -1,1 +1,3 @@
-function Simulate(input,output) {}
+function Simulate(input) {
+    console.log(input);
+}
