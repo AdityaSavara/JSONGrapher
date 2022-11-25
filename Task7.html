@@ -41,7 +41,7 @@
 <!--        </a>-->
         <a href="Task6.html">
             <div class="button active">
-                <p>Task 7</p>
+                <p>Task 6</p>
             </div>
         </a>
     </div>
@@ -263,7 +263,7 @@
         return "";
     }
 
-    // Checking if the data has simulate in it
+    // Checking if the data has simulation
     function checkSimulate(globalData){
         let simulate = {
             simulate: false,
@@ -285,6 +285,68 @@
         return simulate;
     }
 
+    // Get raw content of github file from url
+    async function getRawContent(url){
+        return new Promise(async (resolve, reject) => {
+            try{
+                const res = await fetch(url);
+                const data = await res.text();
+                resolve(data)
+            }catch(err){
+                reject(err);
+            }
+        })
+    }
+
+    // Changes the Github link to a CDN link to avoid CORB issues
+    function getRaw(url){
+        return url.replace("github.com", "raw.githack.com").replace("/blob/", "/").replace("/tree/", "/");
+    }
+
+    //  a function that gets the simulate script from an external file by url
+    function getScript(url){
+        return new Promise(async (resolve, reject) => {
+            try{
+                loadScript = document.createElement('script');
+                const data = await getRawContent(getRaw(url));
+                loadScript.append(data);
+                document.getElementsByTagName("head")[0].appendChild(loadScript);
+            }catch(err){
+                reject(err);
+            }
+        })
+    }
+
+    // Running the imported Simulate function from the simulate link
+    function importSimulate( data ){
+        return new Promise((resolve, reject) => {
+            try{
+                data.data.forEach(async obj => {
+                    const script = await getScript(obj.data.model);
+                    getScript(getRaw(obj.data.model));
+                })
+                resolve({status: "success"});
+            }catch(err){
+                reject({status: "error", error: err});
+            }
+        })        
+    }
+
+    // Run Imported Simulate function
+    async function runSimulate(globalData){
+        const simulate = checkSimulate(globalData);
+        if(simulate.simulate){
+            const simulateData = await importSimulate(simulate);
+            if(simulateData.status === "success"){
+                // simulate.data.forEach(obj => {
+                //     const simulate = window.Simulate(globalData.data[obj.index]);
+                //     globalData.data[obj.index] = simulate;
+                // })
+            }
+        }
+        return globalData;
+    }
+
     // This function is called the user drops a file or upload it via the input button
     function loadFile( event, eventType ) {
         const file = eventType === "change" ? event.target.files[0] : event.dataTransfer.files[0];
@@ -296,13 +358,15 @@
             const dataLoaded = event.target.result;
             document.getElementById('file-selector').value = "";
 
-            // test what is incoming
+            // Test what is incoming
             let fileType = findFileType(event.target.fileName);
             let jsonified;
 
             try {
                 // try to parse the file as json
                 jsonified = jsonifyData(fileType, dataLoaded);
+                // Checking if the data has simulation
+                simulation = checkSimulate(jsonified);
             } catch(e) {
                 errorDiv.innerText = `Json file has some errors. ${e.message}`
             }
@@ -325,19 +389,17 @@
                     if(!globalData){
                         globalData = jsonified;
 
-                        simulation = checkSimulate(globalData);
-                        console.log("Simulation: ", simulation);
-
                         // Get the unit from the label
                         const xUnit = getUnitFromLabel(globalData.layout.xaxis.title);
                         const yUnit = getUnitFromLabel(globalData.layout.yaxis.title);
 
                         // Adding the extracted units to globalData
-                    globalData.unit = {
-                        x: xUnit,
-                        y: yUnit
-                    };
+                        globalData.unit = {
+                            x: xUnit,
+                            y: yUnit
+                        };
 
+                        runSimulate(globalData);
 
                         let copyForPlotly = JSON.parse(JSON.stringify(globalData)); // Plotly mutates the input !!!
 
