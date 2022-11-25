@@ -76,7 +76,7 @@
     const convert = new Convert();
 
     // Adding simulation global variable
-    let simulation = {};
+    let globalSimulationObjArr = {};
 
     function clearData(){
         globalData = null;
@@ -224,7 +224,6 @@
         element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
         element.setAttribute('download', filename);
 
-        // element.style.display = 'none';
         downloadContainer.appendChild(element);
         element.click();
         downloadContainer.removeChild(element);
@@ -265,24 +264,23 @@
 
     // Checking if the data has simulation
     function checkSimulate(globalData){
-        let simulate = {
-            simulate: false,
+        let simulateObj = {
+            isSimulate: false,
             data: []
         };
         globalData.data.forEach((obj, index) => {
             if( obj.simulate) {
-                simulate = {
-                    simulate: true,
-                    data: [...simulate.data, {
+                simulateObj = {
+                    isSimulate: true,
+                    data: [...simulateObj.data, {
                         data: obj.simulate,
-                        simulate: true,
                         index
                     }]
                 }     
             }
         });
 
-        return simulate;
+        return simulateObj;
     }
 
     // Get raw content of github file from url
@@ -299,7 +297,9 @@
     }
 
     // Changes the Github link to a CDN link to avoid CORB issues
-    function getRaw(url){
+    // TODO: The script can be from anywhere, not just Github
+    function parseUrl(url){
+        // TODO: check if we can send ACCESS_CONTROL_ALLOW_ORIGIN header
         return url.replace("github.com", "raw.githack.com").replace("/blob/", "/").replace("/tree/", "/");
     }
 
@@ -308,7 +308,7 @@
         return new Promise(async (resolve, reject) => {
             try{
                 loadScript = document.createElement('script');
-                const data = await getRawContent(getRaw(url));
+                const data = await getRawContent(parseUrl(url));
                 loadScript.append(data);
                 document.getElementsByTagName("head")[0].appendChild(loadScript);
             }catch(err){
@@ -323,7 +323,7 @@
             try{
                 data.data.forEach(async obj => {
                     const script = await getScript(obj.data.model);
-                    getScript(getRaw(obj.data.model));
+                    getScript(obj.data.model);
                 })
                 resolve({status: "success"});
             }catch(err){
@@ -334,17 +334,18 @@
 
     // Run Imported Simulate function
     async function runSimulate(globalData){
-        const simulate = checkSimulate(globalData);
-        if(simulate.simulate){
-            const simulateData = await importSimulate(simulate);
-            if(simulateData.status === "success"){
-                // simulate.data.forEach(obj => {
-                //     const simulate = window.Simulate(globalData.data[obj.index]);
-                //     globalData.data[obj.index] = simulate;
-                // })
+        const innerSimulationObj = checkSimulate(globalData);
+        try{
+            if(innerSimulationObj.isSimulate){
+                const simulateData = await importSimulate(innerSimulationObj);
             }
+        }catch(err){
+            console.log("Error running simulate: ", err);
+        }finally{
+            setTimeout(() => {
+                Simulate("HELLO WORLD!!!");
+            }, 500);
         }
-        return globalData;
     }
 
     // This function is called the user drops a file or upload it via the input button
@@ -366,7 +367,7 @@
                 // try to parse the file as json
                 jsonified = jsonifyData(fileType, dataLoaded);
                 // Checking if the data has simulation
-                simulation = checkSimulate(jsonified);
+                globalSimulationObjArr = checkSimulate(jsonified);
             } catch(e) {
                 errorDiv.innerText = `Json file has some errors. ${e.message}`
             }
