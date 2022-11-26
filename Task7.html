@@ -263,24 +263,30 @@
     }
 
     // Checking if the data has simulation
-    function checkSimulate(globalData){
-        let simulateObj = {
-            isSimulate: false,
-            data: []
-        };
-        globalData.data.forEach((obj, index) => {
-            if( obj.simulate) {
-                simulateObj = {
-                    isSimulate: true,
-                    data: [...simulateObj.data, {
-                        data: obj.simulate,
-                        index
-                    }]
-                }     
+    async function checkSimulate(globalData){
+        return new Promise((resolve, reject) => {
+            try{
+                let simulateObj = {
+                isSimulate: false,
+                data: []
+                };
+                globalData.data.forEach((obj, index) => {
+                    if( obj.simulate) {
+                        simulateObj = {
+                            isSimulate: true,
+                            data: [...simulateObj.data, {
+                                data: obj.simulate,
+                                index
+                            }]
+                        }     
+                    }
+                });
+                resolve(simulateObj);
+            }catch(err){
+                reject("Error in checkSimulate: ", err);
             }
-        });
-
-        return simulateObj;
+        })
+        
     }
 
     // Get raw content of github file from url
@@ -299,18 +305,24 @@
     // Changes the Github link to a CDN link to avoid CORB issues
     // TODO: The script can be from anywhere, not just Github
     function parseUrl(url){
-        // TODO: check if we can send ACCESS_CONTROL_ALLOW_ORIGIN header
-        return url.replace("github.com", "raw.githack.com").replace("/blob/", "/").replace("/tree/", "/");
+        const urlArr = url.split("/");
+        if( urlArr[2] === "github.com" ){
+            return url.replace("github.com", "raw.githack.com").replace("/blob/", "/").replace("/tree/", "/");
+        } else {
+            return url;
+        }
     }
 
     //  a function that gets the simulate script from an external file by url
-    function getScript(url){
+    function getAndRunScript(url){
         return new Promise(async (resolve, reject) => {
             try{
                 loadScript = document.createElement('script');
                 const data = await getRawContent(parseUrl(url));
                 loadScript.append(data);
                 document.getElementsByTagName("head")[0].appendChild(loadScript);
+                // Once the script is loaded in the <script> tag, we can run it
+                Simulate("THIS IS THE INPUT", "THIS IS THE OUTPUT");
             }catch(err){
                 reject(err);
             }
@@ -322,8 +334,7 @@
         return new Promise((resolve, reject) => {
             try{
                 data.data.forEach(async obj => {
-                    const script = await getScript(obj.data.model);
-                    getScript(obj.data.model);
+                    await getAndRunScript(obj.data.model);
                 })
                 resolve({status: "success"});
             }catch(err){
@@ -333,19 +344,18 @@
     }
 
     // Run Imported Simulate function
-    async function runSimulate(globalData){
-        const innerSimulationObj = checkSimulate(globalData);
-        try{
-            if(innerSimulationObj.isSimulate){
-                const simulateData = await importSimulate(innerSimulationObj);
+    function runSimulate(globalData){
+        return new Promise(async (resolve, reject) => {
+            try{
+                const innerSimulationObj = await checkSimulate(globalData);
+                if(innerSimulationObj.isSimulate){
+                    const simulateData = await importSimulate(innerSimulationObj);
+                    resolve(simulateData);
+                }
+            }catch(err){
+                reject(err);
             }
-        }catch(err){
-            console.log("Error running simulate: ", err);
-        }finally{
-            setTimeout(() => {
-                Simulate("HELLO WORLD!!!");
-            }, 500);
-        }
+        })
     }
 
     // This function is called the user drops a file or upload it via the input button
@@ -354,7 +364,7 @@
         // Initialize the reader
         const reader = new FileReader();
         reader.fileName = file.name;
-        reader.addEventListener('load', event => {
+        reader.addEventListener('load', async event => {
             // Get the loaded data from the reader
             const dataLoaded = event.target.result;
             document.getElementById('file-selector').value = "";
@@ -367,7 +377,7 @@
                 // try to parse the file as json
                 jsonified = jsonifyData(fileType, dataLoaded);
                 // Checking if the data has simulation
-                globalSimulationObjArr = checkSimulate(jsonified);
+                globalSimulationObjArr =  await checkSimulate(jsonified);
             } catch(e) {
                 errorDiv.innerText = `Json file has some errors. ${e.message}`
             }
@@ -400,7 +410,13 @@
                             y: yUnit
                         };
 
-                        runSimulate(globalData);
+                        (async () => {
+                            try{
+                                await runSimulate(globalData);
+                            }catch(err){
+                                console.log("ERROR: ", err);
+                            }
+                        })()
 
                         let copyForPlotly = JSON.parse(JSON.stringify(globalData)); // Plotly mutates the input !!!
 
