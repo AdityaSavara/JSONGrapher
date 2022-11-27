@@ -304,7 +304,7 @@ function Convert() {
 
 
 	/*
-		UTILITIY FUNCTIONS
+		UTILITIY FUNCTIONS / UTILITY FUNCTIONS
 	*/
 	//checkPrefix accepts pair [prefix object, unit object] and gives warnings if they are not appropriately used
 	this.checkPrefix = function(pref, unit) {
