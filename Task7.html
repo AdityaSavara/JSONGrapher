@@ -263,30 +263,23 @@
     }
 
     // Checking if the data has simulation
-    async function checkSimulate(globalData){
-        return new Promise((resolve, reject) => {
-            try{
-                let simulateObj = {
-                isSimulate: false,
-                data: []
-                };
-                globalData.data.forEach((obj, index) => {
-                    if( obj.simulate) {
-                        simulateObj = {
-                            isSimulate: true,
-                            data: [...simulateObj.data, {
-                                data: obj.simulate,
-                                index
-                            }]
-                        }     
-                    }
-                });
-                resolve(simulateObj);
-            }catch(err){
-                reject("Error in checkSimulate: ", err);
+    function checkSimulate(globalData){
+        let simulateObj = {
+        isSimulate: false,
+        data: []
+        };
+        globalData.data.forEach((obj, index) => {
+            if( obj.simulate) {
+                simulateObj = {
+                    isSimulate: true,
+                    data: [...simulateObj.data, {
+                        data: obj.simulate,
+                        index
+                    }]
+                }     
             }
-        })
-        
+        });
+        return simulateObj;
     }
 
     // Get raw content of github file from url
@@ -303,11 +296,10 @@
     }
 
     // Changes the Github link to a CDN link to avoid CORB issues
-    // TODO: The script can be from anywhere, not just Github
     function parseUrl(url){
         const urlArr = url.split("/");
         if( urlArr[2] === "github.com" ){
-            return url.replace("github.com", "raw.githack.com").replace("/blob/", "/").replace("/tree/", "/");
+            return url.replace("github.com", "raw.githubusercontent.com").replace("/blob/", "/").replace("/tree/", "/").replace("www.", "");
         } else {
             return url;
         }
@@ -344,6 +336,7 @@
     }
 
     // Run Imported Simulate function
+    // TODO: currently we only support javascript from github. In the future, cross-domain / cross-origin simulate functions will be supported by SRI hash. https://www.w3schools.com/Tags/att_script_crossorigin.asp https://www.w3schools.com/Tags/att_script_integrity.asp with the SRI hash provided within the simulate object by a field in the JSON record named "SRI" or 'integrity"
     function runSimulate(globalData){
         return new Promise(async (resolve, reject) => {
             try{
@@ -364,7 +357,8 @@
         // Initialize the reader
         const reader = new FileReader();
         reader.fileName = file.name;
-        reader.addEventListener('load', async event => {
+        // TODO: Remove the async from this line
+        reader.addEventListener('load', event => {
             // Get the loaded data from the reader
             const dataLoaded = event.target.result;
             document.getElementById('file-selector').value = "";
@@ -377,7 +371,7 @@
                 // try to parse the file as json
                 jsonified = jsonifyData(fileType, dataLoaded);
                 // Checking if the data has simulation
-                globalSimulationObjArr =  await checkSimulate(jsonified);
+                globalSimulationObjArr =  checkSimulate(jsonified);
             } catch(e) {
                 errorDiv.innerText = `Json file has some errors. ${e.message}`
             }
@@ -410,13 +404,16 @@
                             y: yUnit
                         };
 
-                        (async () => {
-                            try{
-                                await runSimulate(globalData);
-                            }catch(err){
-                                console.log("ERROR: ", err);
-                            }
-                        })()
+                        if( globalSimulationObjArr.isSimulate ) {
+                            (async () => {
+                                try{
+                                    await runSimulate(globalData);
+                                }catch(err){
+                                    console.log("ERROR: ", err);
+                                }
+                            })();
+                        }
+                        
 
                         let copyForPlotly = JSON.parse(JSON.stringify(globalData)); // Plotly mutates the input !!!
 
@@ -446,6 +443,17 @@
                                 });
                             }
 
+                        if( globalSimulationObjArr.isSimulate ){
+                            (async () => {
+                                try{
+                                    await runSimulate(globalData);
+                                }catch(err){
+                                    console.log("ERROR: ", err);
+                                }
+                            })()
+                        }
+
+                        
 
                         // merge
                         globalData.data = [...globalData.data, ...jsonified.data];

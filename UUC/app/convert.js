@@ -49,6 +49,23 @@ function Convert() {
 	this.Unit = Unit;
 
 
+	/*
+		LOOKING FOR A CUSTOM UNIT IN THE INPUT STRING
+	*/
+	// Checks if the input string contains a custom unit added in <customUnits> tag
+	// Returns the custom unit name if found, otherwise returns null
+	// Called from: convert
+	this.parseInput = function(input) {
+		let customUnit = "";
+		// use regex to find the custom unit in angle brackets
+		const regex = /<(.+?)>/g;
+		const match = regex.exec(input);
+		if (match) {
+			customUnit = match[1];
+		}
+		return customUnit;
+	}
+
 
 	/*
 		MAIN CONVERSION FUNCTIONS
@@ -57,13 +74,22 @@ function Convert() {
 		//called from: fullConversion, Convert_macro
 	this.convert = function(input, target) {
 		if(typeof target !== 'string') {target = '';}
-		input = this.beautify(input); target = this.beautify(target);
+		let customUnit = "";
+		let _input = input;
+		
+		// parse input string
+		customUnit = this.parseInput(input);
+		if(customUnit) {
+			_input = _input.replace(/<(.+?)>/g, "");
+		}
+
+		input = this.beautify(_input); target = this.beautify(target);
 		const isTarget = target.length > 0;
 
 		let iObj, tObj; //input & target object
 
 		//parse input & target strings into detailed nested objects, see convert_parse.js
-		iObj = Convert_parse(this, input);
+		iObj = Convert_parse(this, _input);
 		tObj = Convert_parse(this, target);
 
 		const isTargetCurly = isTarget && Array.isArray(tObj[0]) && tObj[0][0] === '{}'; //whether curly is used in target (appropriately!)
@@ -87,7 +113,7 @@ function Convert() {
 		const corr = !isTarget || this.checkDimension(iObj.v, tObj.v);
 		if(corr !== true) {dim += '*' + this.vector2text(corr, true);}
 
-		return {num: num, dim: dim};
+		return {num: num, dim: customUnit + dim};
 	};
 
 	//execute a conversion from input & target. It simply operates on this.convert() with the added value of exception handling and message system
