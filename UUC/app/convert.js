@@ -113,7 +113,7 @@ function Convert() {
 		const corr = !isTarget || this.checkDimension(iObj.v, tObj.v);
 		if(corr !== true) {dim += '*' + this.vector2text(corr, true);}
 
-		return {num: num, dim: customUnit + dim};
+		return {num: num, dim: customUnit + "*" + dim};
 	};
 
 	//execute a conversion from input & target. It simply operates on this.convert() with the added value of exception handling and message system
