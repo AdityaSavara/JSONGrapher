@@ -185,6 +185,7 @@ const Units = [
 
 	{v: [0,0,-1,0,0,0,0,0], id: 'Ci', name: {cz: 'Curie', en: 'Curie'}, k:3.7e10, SI: false, prefix: 'all'},
 	{v: [0,-1,1,1,0,0,0,0], id: 'R', name: {cz: 'Rentgen', en: 'Roentgen'}, k:2.58e-4, SI: false, prefix: 'all'},
+	{v: [0,0,0,0,0,0,0,0], id: 'monolayer',  alias:['monolayers'], name: {cz: 'monolayer', en: 'monolayer'}, k:1},
 
 
 
