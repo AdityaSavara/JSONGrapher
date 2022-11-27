@@ -1,8 +1,0 @@
-{
-    "format": "array_data",
-    "name": "data00_name",
-    "xlabel": "Pressure (Pa)",
-    "ylabel": "qrate (mol/kg)",
-    "x": [100000.0,110000.0,120000.0,130000.0],
-    "y": [0.01,0.02,0.03,0.04]
-}
