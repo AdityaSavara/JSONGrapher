@@ -429,7 +429,14 @@
                                 const yConvertFactor = convert.fullConversion(newYUnit, globalData.unit.y);
                                 jsonified.data.forEach( (data) => {
                                     data.y = data.y.map( (y) => {
-                                        return parseInt(y) * yConvertFactor.output.num;
+                                        console.log("FACTOR: ", yConvertFactor);
+                                        if(  yConvertFactor.status == 0 ){
+                                            return parseInt(y) * yConvertFactor.output.num;
+                                        } else {
+                                            yConvertFactor.messages.forEach( (message) => {
+                                                errorDiv.innerText = message.message;
+                                            })
+                                        }
                                     });
                                 });
                             }
@@ -438,7 +445,13 @@
                                 const xConvertFactor = convert.fullConversion(newXUnit, globalData.unit.x);
                                 jsonified.data.forEach( (data) => {
                                     data.x = data.x.map( (x) => {
-                                        return parseInt(x) * xConvertFactor.output.num;
+                                        if( xConvertFactor.status == 0 ){
+                                            return parseInt(x) * xConvertFactor.output.num;
+                                        } else {
+                                            xConvertFactor.messages.forEach( (message) => {
+                                                errorDiv.innerText = message.message;
+                                            })
+                                        }
                                     });
                                 });
                             }
