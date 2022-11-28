@@ -18,7 +18,7 @@ function Convert() {
 	['ERR_brackets_missing', 'ERR_operators', 'ERR_brackets_empty', 'ERR_NaN', 'ERR_unitPower', 'ERR_unknownUnit', 'ERR_operator_misplaced', 'ERR_power_dim', 'ERR_dim_mismatch', 'ERR_special_chars',
 		'ERR_cbrackets_missing', 'ERR_brackets_mismatch', 'ERR_cbrackets_illegal', 'ERR_unknown_unitfun', 'ERR_cbrackets_dim_mismatch', 'ERR_NaN_result',
 		'WARN_prefixes', 'WARN_prefixes_word0', 'WARN_prefixes_word+', 'WARN_prefixes_word-', 'WARN_target_dim_mismatch', 'WARN_targetNumber', 'WARN_separators', 'WARN_curly_prefix', 'WARN_format_params',
-		'ERRC_equalSigns', 'ERRC_varName', 'ERRC_argCount', 'ERRC_unreadableLine'
+		'ERRC_equalSigns', 'ERRC_varName', 'ERRC_argCount', 'ERRC_unreadableLine', "ERR_custom_units_mismatch"
 	].forEach(o => msgDB[o] = null);
 	this.msgDB = msgDB;
 
@@ -128,7 +128,16 @@ function Convert() {
 		const corr = !isTarget || this.checkDimension(iObj.v, tObj.v);
 		if(corr !== true) {dim += '*' + this.vector2text(corr, true);}
 
-		return {num: num, dim: dim};
+		let dimOutput;
+
+		if( customInputUnit ) {
+			dimOutput = customInputUnit + "*" + dim;
+		} else {
+			dimOutput = dim;
+		}
+
+		// TODO: add custom unit to output
+		return {num: num, dim: dimOutput};
 	};
 
 	//execute a conversion from input & target. It simply operates on this.convert() with the added value of exception handling and message system

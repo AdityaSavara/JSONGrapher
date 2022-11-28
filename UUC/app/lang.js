@@ -125,7 +125,7 @@ langService.table = {
 		en: 'ERROR 116: Illegal math operation'
 	},
     
-    //We did not translate the english mesage to cz, but it should be fine. Somebody can fix this someday if they wish to.
+    //We did not translate the english message to cz, but it should be fine. Somebody can fix this someday if they wish to.
 	'ERR_custom_units_mismatch': {
 		cz: 'CHYBA 117: Custom units in angle brackets (<>) must be the same for input and target units.',
 		en: 'ERROR 117: Custom units in angle brackets (<>) must be the same for input and target units.'
