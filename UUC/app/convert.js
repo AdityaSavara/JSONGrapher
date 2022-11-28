@@ -55,7 +55,7 @@ function Convert() {
 	// Checks if the input string contains a custom unit added in <customUnits> tag
 	// Returns the custom unit name if found, otherwise returns null
 	// Called from: convert
-	this.parseInput = function(input) {
+	this.parseCustomUnits = function(input) {
 		let customUnit = "";
 		// use regex to find the custom unit in angle brackets
 		const regex = /<(.+?)>/g;
@@ -71,26 +71,41 @@ function Convert() {
 		MAIN CONVERSION FUNCTIONS
 	*/
 	//the most important function - do a full conversion between input string and target string, and return an output object
-		//called from: fullConversion, Convert_macro
+	//called from: fullConversion, Convert_macro
 	this.convert = function(input, target) {
 		if(typeof target !== 'string') {target = '';}
-		let customUnit = "";
-		let _input = input;
-		
+		let customInputUnit = "";
+		let customTargetUnit = "";
+		let _input = input; 
+		let _target = target;
+
 		// parse input string
-		customUnit = this.parseInput(input);
-		if(customUnit) {
+		customInputUnit = this.parseCustomUnits(input);
+		if(customInputUnit) {
 			_input = _input.replace(/<(.+?)>/g, "");
 		}
 
-		input = this.beautify(_input); target = this.beautify(target);
-		const isTarget = target.length > 0;
+		// parse target string
+		customTargetUnit = this.parseCustomUnits(target);
+		if(customTargetUnit) {
+			_target = _target.replace(/<(.+?)>/g, "");
+		}
+
+
+		// Check if the input custom unit is the same as the target custom unit
+		if( customInputUnit !== customTargetUnit ) {
+			customInputUnit = ""; customTargetUnit = "";
+			throw this.msgDB['ERR_custom_units_mismatch'];
+		}
+
+		input = this.beautify(_input); target = this.beautify(_target);
+		const isTarget = _target.length > 0;
 
 		let iObj, tObj; //input & target object
 
 		//parse input & target strings into detailed nested objects, see convert_parse.js
 		iObj = Convert_parse(this, _input);
-		tObj = Convert_parse(this, target);
+		tObj = Convert_parse(this, _target);
 
 		const isTargetCurly = isTarget && Array.isArray(tObj[0]) && tObj[0][0] === '{}'; //whether curly is used in target (appropriately!)
 
@@ -113,7 +128,7 @@ function Convert() {
 		const corr = !isTarget || this.checkDimension(iObj.v, tObj.v);
 		if(corr !== true) {dim += '*' + this.vector2text(corr, true);}
 
-		return {num: num, dim: customUnit + "*" + dim};
+		return {num: num, dim: dim};
 	};
 
 	//execute a conversion from input & target. It simply operates on this.convert() with the added value of exception handling and message system
