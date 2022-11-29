@@ -10,6 +10,9 @@
     <script src="./UUC/app/convert_parse.js"></script>
     <script src="./UUC/app/convert_macro.js"></script>
     <script src="./UUC/app/data.js"></script>
+
+    <!-- Importing langmuir_Isotherm for local dev -->
+    <script src="./ExampleSimulators/langmuir_Isotherm.js"></script>
 </head>
 <body>
 <header>
@@ -314,7 +317,7 @@
                 loadScript.append(data);
                 document.getElementsByTagName("head")[0].appendChild(loadScript);
                 // Once the script is loaded in the <script> tag, we can run it
-                Simulate("THIS IS THE INPUT", "THIS IS THE OUTPUT");
+                Simulate(globalData, "THIS IS THE OUTPUT");
             }catch(err){
                 reject(err);
             }
@@ -407,7 +410,9 @@
                         if( globalSimulationObjArr.isSimulate ) {
                             (async () => {
                                 try{
-                                    await runSimulate(globalData);
+                                    const simulatedObj = Simulate(globalData, "THIS IS THE OUTPUT");
+                                    console.log("SIMULATED OBJECT: ", simulatedObj);
+                                    // await runSimulate(globalData);
                                 }catch(err){
                                     console.log("ERROR: ", err);
                                 }
@@ -429,7 +434,6 @@
                                 const yConvertFactor = convert.fullConversion(newYUnit, globalData.unit.y);
                                 jsonified.data.forEach( (data) => {
                                     data.y = data.y.map( (y) => {
-                                        console.log("FACTOR: ", yConvertFactor);
                                         if(  yConvertFactor.status == 0 ){
                                             return parseInt(y) * yConvertFactor.output.num;
                                         } else {
@@ -455,21 +459,29 @@
                                     });
                                 });
                             }
-
+                       
                         if( globalSimulationObjArr.isSimulate ){
-                            (async () => {
-                                try{
-                                    await runSimulate(globalData);
-                                }catch(err){
-                                    console.log("ERROR: ", err);
-                                }
-                            })()
-                        }
+                        (async () => {
+                            try{
+                                // TODO: loop through the jsonfied.data array
+                                // TODO: Apply xConvertFactor and yConvertFactor to the data
+                                const SimulatedObj = Simulate(jsonified.data[0]);
+                                console.log("SIMULATED OBJECT: ", SimulatedObj);
+                                jsonified.layout.xaxis.title = SimulatedObj.data.x_label;
+                                jsonified.layout.yaxis.title = SimulatedObj.data.y_label;
+                                jsonified.data[0].x = SimulatedObj.data.x;
+                                jsonified.data[0].y = SimulatedObj.data.y;
 
-                        
+                                // await runSimulate(globalData);
+                            }catch(err){
+                                console.log("ERROR: ", err);
+                            }
+                        })()
+                        }
 
                         // merge
                         globalData.data = [...globalData.data, ...jsonified.data];
+
                         let copyForPlotly = JSON.parse(JSON.stringify(globalData)); // Plotly mutates the input !!!
                         Plotly.newPlot('myDiv', copyForPlotly.data, copyForPlotly.layout);
                     }else{
