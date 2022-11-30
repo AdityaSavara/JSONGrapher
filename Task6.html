@@ -39,9 +39,9 @@
 <!--                <p>Task 4</p>-->
 <!--            </div>-->
 <!--        </a>-->
-        <a href="Task7.html">
+        <a href="Task6.html">
             <div class="button active">
-                <p>Task 7</p>
+                <p>Task 6</p>
             </div>
         </a>
     </div>
@@ -56,12 +56,16 @@
     <div id="file-drop-area" >
         Drop a file here:
     </div>
-    <div id='myDiv'><!-- Plotly chart will be drawn inside this DIV --></div>
+
+    <!-- Plotly chart will be drawn inside this DIV -->
+    <div id='myDiv'></div>
+    <!-- Error message will be displayed inside this DIV -->
     <div id="errorDiv"></div>
-    <div id="downloadLink">
-    
-    </div>
+
+    <div id="downloadLink"></div>
 </div>
+
+
 <script>
     let globalData = null;
     let plotlyTemplate = null;
@@ -94,6 +98,7 @@
         return 'json';
     }
 
+    /* not really relevant so commented out
     function getJsonFileName(fileName){
         let arrayName = fileName.split('.');
         if(arrayName.includes("csv")){
@@ -104,6 +109,7 @@
         }
         return arrayName.join(".");
     }
+    */
 
     function jsonifyTSV(fileContent){
         //separate rows
@@ -213,6 +219,7 @@
         }
     }
 
+    /* not really relevant so commented out to clean the interface
     // A function that will create a download link for the json file as soon as the user clicks on the "Download JSON" button
     function download(filename, text) {
         // Getting the div that contains the json download link
@@ -226,7 +233,8 @@
         element.click();
         downloadContainer.removeChild(element);
     }
-
+    */
+    /*
     // A function that will display the download link and download the recent file as soon as the user clicks on the "Download JSON" button
     function createDownloadButton(inputFilename, inputText){
         let jsonifiedFilename = getJsonFileName(inputFilename);
@@ -240,9 +248,17 @@
                 }
             });
     }
+    */
 
 
-    async function prepareSchemas(){
+    async function getSchemaType(){
+        const schema1 = await fetch('./schema/'+jsonified.title+'.schema.json');
+        const schema1body = await schema1.text();
+        const schema1json = JSON.parse(schema1body);
+        return schema1json;
+    }
+
+    async function prepareSchemas(jsonified){
         const schema1 = await fetch('./schema/plot-schema.json');
         const schema1body = await schema1.text();
         const schema1json = JSON.parse(schema1body);
@@ -282,6 +298,13 @@
                 errorDiv.innerText = `Json file has some errors. ${e.message}`
             }
 
+            // need to identify the schema based on the plot type
+            console.log("type of schema needed: ",jsonified.title)
+            
+            // check if the corresponding schema exists
+            const schema_type = getSchemaType(jsonified);
+            console.log(schema_type)
+
             // validate the json
             const validate = ajv.compile(schema);
             const valid = validate(jsonified);
@@ -295,7 +318,8 @@
                     // If the data is valid against the schema, then we can proceed to the next step
                     // if necessary create download button with json
                     recentFileName = event.target.fileName;
-                    createDownloadButton(event.target.fileName, JSON.stringify(jsonified, null, 2));
+                    // download button not needed
+                    //createDownloadButton(event.target.fileName, JSON.stringify(jsonified, null, 2));
 
                     if(!globalData){
                         globalData = jsonified;
