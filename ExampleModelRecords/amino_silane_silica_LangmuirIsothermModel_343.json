@@ -18,7 +18,7 @@
                 "comments": "// The model field allows description of whether it is an elementary step model or some other kind of model. In this case, the model is a Langmuir_Isotherm model. This model requires having *either* K_E or k_ads and k_des.  The fields of k_f and k_r will only be checked if the K_E  has null as its value. The units of pressure must be expressed with a division symbol like 1/bar.",
                 "model": "https://github.com/AdityaSavara/JSONGrapher/tree/main/ExampleSimulators/Langmuir_Isotherm.js"
                 "K_E": "99.6 (1/bar)",
-                "sigma_max": 1.0267670459667
+                "sigma_max": "1.0267670459667 (mol/kg)"
                 "k_ads": null,
                 "k_des": null
             }, 
