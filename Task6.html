@@ -250,15 +250,52 @@
     }
     */
 
+    function isValidUrl (urlString){
+	  	var urlPattern = new RegExp('^(https?:\\/\\/)?'+ // validate protocol
+	    '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // validate domain name
+	    '((\\d{1,3}\\.){3}\\d{1,3}))'+ // validate OR ip (v4) address
+	    '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // validate port and path
+	    '(\\?[;&a-z\\d%_.~+=-]*)?'+ // validate query string
+	    '(\\#[-a-z\\d_]*)?$','i'); // validate fragment locator
+	  return !!urlPattern.test(urlString);
+	}
 
-    async function getSchemaType(){
-        const schema1 = await fetch('./schema/'+jsonified.title+'.schema.json');
-        const schema1body = await schema1.text();
-        const schema1json = JSON.parse(schema1body);
-        return schema1json;
+    // function to extract from the title the location of the schema
+    function getSchemaLocation(jsonified){
+        if(isValidUrl(jsonified.title)){
+            schema_location = jsonified.title;
+        }
+        else if(jsonified.title.endsWith('schema.json'))
+        {
+            schema_location = './schema/'+jsonified.title;
+        }
+        else
+        {
+            schema_location = './schema/'+jsonified.title+'.schema.json';
+        }
+        return schema_location;
     }
 
-    async function prepareSchemas(jsonified){
+    // function to extract from the title the json schema
+    async function getSchemaType(jsonified){
+        schema_location = getSchemaLocation(jsonified);
+        try{
+            const schema1 = await fetch(schema_location);
+            const schema1body = await schema1.text();
+            const schema1json = JSON.parse(schema1body);
+            console.log("/// schema fetched");
+            console.log(schema1json);
+            return schema1json;
+        }
+        catch(err)
+        {
+            // TODO: !! error catching not working as planned
+            console.log("in getSchemaType error:")
+            return {};
+        }
+    }
+
+    async function prepareSchemas(){
         const schema1 = await fetch('./schema/plot-schema.json');
         const schema1body = await schema1.text();
         const schema1json = JSON.parse(schema1body);
@@ -300,13 +337,21 @@
 
             // need to identify the schema based on the plot type
             console.log("type of schema needed: ",jsonified.title)
+            console.log("schema location: ",getSchemaLocation(jsonified))
             
-            // check if the corresponding schema exists
-            const schema_type = getSchemaType(jsonified);
-            console.log(schema_type)
+            // load if the corresponding schema exists
+            var schema_type = getSchemaType(jsonified);
+            console.log(schema_type);
+
+            // check if schema_type is an empty dictionary then
+            // use the default schema
+            if(Object.keys(schema_type).length === 0){
+                console.log("SchemaType was not recovered, using the default schema");
+                schema_type = schema;
+            }
 
             // validate the json
-            const validate = ajv.compile(schema);
+            const validate = ajv.compile(schema_type);
             const valid = validate(jsonified);
                 // Checking if the uploaded data is valid against the schema          
                 if(!valid) {
