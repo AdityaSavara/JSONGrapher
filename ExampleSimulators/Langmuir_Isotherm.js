@@ -74,6 +74,8 @@ function Simulate(input) {
             predictedValues = this.getPredictedValues(K_eqObj.value, K_eqObj.unit);
         }
 
+        console.log("PREDICTED VALUES: ", predictedValues);
+
         const output = {
             ...input,
             x: predictedValues.X,
