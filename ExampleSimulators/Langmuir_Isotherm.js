@@ -66,7 +66,9 @@ function Simulate(input) {
                 K_eqObj = this.calculateK_eq(input.simulate.k_ads, input.simulate.k_des);
             }
         }
-           
+        
+        console.log("INPUT FROM SIMULATE: ", input);
+
         if( input.simulate?.sigma_max !== null || input.simulate?.sigma_max !== undefined){
             const sigma_maxObj = this.parseUnit(input.simulate.sigma_max);
             predictedValues = this.getPredictedValues(K_eqObj.value, K_eqObj.unit, sigma_maxObj.value, sigma_maxObj.unit);
