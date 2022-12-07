@@ -24,7 +24,7 @@ function Simulate(input) {
 
     // Convert a value from one unit to another
     this.getPredictedValues = function(K_eqValue, K_eqUnit, sigma_max = 1, sigma_maxUnit = "<Monolayer>") {
-        const Y = [0.001, 0.002, 0.003, 0.004, 0.005, 0.006, 0.007, 0.008, 0.009];
+        const Y = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9];
         const X = Y.map(y => sigma_max * y / (K_eqValue * (1 - y)));
         const x_label = `Pressure (1/(${K_eqUnit}))`;
         const y_label = `Amount Adsorbed (${sigma_maxUnit})`;
