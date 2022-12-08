@@ -504,18 +504,19 @@
 
                             (async()=>{
                                 console.log("JSONIFIED SIMULATION: ", jsonifiedSimulation);
-                                console.log("TASK 1");
                                 jsonifiedSimulation = await iterateSimulationData(jsonified, globalData);
                                 return jsonifiedSimulation;
                             })();
 
+                            console.log("JSONIFIED SIMULATION: ", jsonifiedSimulation);
                                                                             
                             // merge
                             globalData.data = [...globalData.data, ...jsonifiedSimulation.data];
 
-                            console.log("TASK 2");
-                            let copyForPlotly = JSON.parse(JSON.stringify(globalData)); // Plotly mutates the input !!!
-                            Plotly.newPlot('myDiv', copyForPlotly.data, copyForPlotly.layout);
+                            setTimeout(() => {
+                                let copyForPlotly = JSON.parse(JSON.stringify(globalData)); // Plotly mutates the input !!!
+                                Plotly.newPlot('myDiv', copyForPlotly.data, copyForPlotly.layout);
+                            }, 2000)
                             }else{
                                 clearData();
                                 errorDiv.innerText = `Chart or axis titles does not match.`;
