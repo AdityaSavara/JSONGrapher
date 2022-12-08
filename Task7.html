@@ -282,6 +282,7 @@
                 }     
             }
         });
+
         return simulateObj;
     }
 
@@ -309,7 +310,7 @@
     }
 
     //  a function that gets the simulate script from an external file by url
-    function getAndRunScript(url){
+    function getAndRunScript(url, SimulationInfo){
         return new Promise(async (resolve, reject) => {
             try{
                 loadScript = document.createElement('script');
@@ -317,21 +318,23 @@
                 loadScript.append(data);
                 document.getElementsByTagName("head")[0].appendChild(loadScript);
                 // Once the script is loaded in the <script> tag, we can run it
-                Simulate(globalData, "THIS IS THE OUTPUT");
+                const simulatedData = Simulate(SimulationInfo);
+                resolve(simulatedData);
             }catch(err){
-                reject(err);
+                reject({status: "error", error: "Error from getAndRunScript: " + err});
             }
         })
     }
 
     // Running the imported Simulate function from the simulate link
     function importSimulate( data ){
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
             try{
-                data.data.forEach(async obj => {
-                    await getAndRunScript(obj.data.model);
-                })
-                resolve({status: "success"});
+                let simulatedDataArray = [];
+
+                const simulatedData = await getAndRunScript(data.simulate.model, data);
+                simulatedDataArray.push(simulatedData);
+                resolve(simulatedDataArray);
             }catch(err){
                 reject({status: "error", error: err});
             }
@@ -340,19 +343,88 @@
 
     // Run Imported Simulate function
     // TODO: currently we only support javascript from github. In the future, cross-domain / cross-origin simulate functions will be supported by SRI hash. https://www.w3schools.com/Tags/att_script_crossorigin.asp https://www.w3schools.com/Tags/att_script_integrity.asp with the SRI hash provided within the simulate object by a field in the JSON record named "SRI" or 'integrity"
-    function runSimulate(globalData){
+    function runSimulate(globalData, index){
         return new Promise(async (resolve, reject) => {
             try{
                 const innerSimulationObj = await checkSimulate(globalData);
                 if(innerSimulationObj.isSimulate){
-                    const simulateData = await importSimulate(innerSimulationObj);
+                    const simulateData = await importSimulate(globalData.data[index]);
                     resolve(simulateData);
                 }
             }catch(err){
-                reject(err);
+                reject({status: "error", error: err});
             }
         })
     }
+
+    // Gets the simulation data and adds it to the jsonified object
+    async function mergeSimulationData(jsonified, index){
+        try{
+            let SimulatedJson = jsonified;
+            // TODO: loop through the jsonfied.data array
+            // TODO: Apply xConvertFactor and yConvertFactor to the data
+            // const SimulatedObj = Simulate(jsonified.data[0]);
+            const SimulatedObj = await runSimulate(jsonified, index);
+            SimulatedObj.forEach((object, index) => {
+                SimulatedJson.layout.xaxis.title = object.data.x_label;
+                SimulatedJson.layout.yaxis.title = object.data.y_label;
+                SimulatedJson.data[index].x = object.data.x;
+                SimulatedJson.data[index].y = object.data.y;
+            })
+            
+            return SimulatedJson;
+        }catch(err){
+            console.log("ERROR: ", err);
+        }
+    }
+
+    async function iterateSimulationData(jsonified, globalData){
+        return new Promise((resolve, reject) => {
+            try{
+                let _jsonified = jsonified;
+                const newXUnit = getUnitFromLabel(_jsonified.layout.xaxis.title);
+                const newYUnit = getUnitFromLabel(_jsonified.layout.yaxis.title);
+                _jsonified.data.forEach(async (data, index) => {
+                    if( globalSimulationObjArr.isSimulate ){
+                        _jsonified = await mergeSimulationData(_jsonified, index);
+                    }
+                    if( newYUnit !== globalData.unit.Y ){
+                        const yConverterFactor = convert.fullConversion(newYUnit, globalData.unit.y );
+                        data.y = data.y.map((y) => {
+                            if( yConverterFactor.status == 0 ){
+                                return parseFloat(y) * yConverterFactor.output.num;
+                            } else {
+                                yConvertFActor.messages.forEach((message) => {
+                                    errorDiv.innerText = message.message;
+                                })
+                            }
+                        })
+                    }
+
+                    if( newXUnit !== globalData.unit.x ){
+                        const xConvertFactor = convert.fullConversion(newXUnit, globalData.unit.x);
+                        data.x = data.x.map((x) => {
+                            if( xConverterFactor.status == 0 ){
+                                return parseFloat(x) * xConvertFactor.output.num;
+                            } else {
+                                xConvertFactor.messages.forEach((message) => {
+                                    errorDiv.innerText = message.message;
+                                })
+                            }
+                        })
+                    }
+                });
+
+                resolve(_jsonified);
+
+            }catch(err){
+                reject(err);
+                console.log("ERR: ", err);
+            }
+
+        })
+    }
+
 
     // This function is called the user drops a file or upload it via the input button
     function loadFile( event, eventType ) {
@@ -422,72 +494,37 @@
                         let copyForPlotly = JSON.parse(JSON.stringify(globalData)); // Plotly mutates the input !!!
 
                         Plotly.newPlot('myDiv', copyForPlotly.data, copyForPlotly.layout);
-                } else {
-                    if(globalData.title === jsonified.title &&
-                        globalData.layout.xaxis.title.text === jsonified.layout.xaxis.title.text &&
-                        globalData.layout.yaxis.title.text === jsonified.layout.yaxis.title.text){
-                            const newXUnit = getUnitFromLabel(jsonified.layout.xaxis.title);
-                            const newYUnit = getUnitFromLabel(jsonified.layout.yaxis.title);
+                    } else {
+                        try{
+                            if(globalData.title === jsonified.title &&
+                            globalData.layout.xaxis.title.text === jsonified.layout.xaxis.title.text &&
+                            globalData.layout.yaxis.title.text === jsonified.layout.yaxis.title.text){
 
-                            if( newYUnit !== globalData.unit.Y ) {
-                                const yConvertFactor = convert.fullConversion(newYUnit, globalData.unit.y);
-                                jsonified.data.forEach( (data) => {
-                                    data.y = data.y.map( (y) => {
-                                        if(  yConvertFactor.status == 0 ){
-                                            return parseInt(y) * yConvertFactor.output.num;
-                                        } else {
-                                            yConvertFactor.messages.forEach( (message) => {
-                                                errorDiv.innerText = message.message;
-                                            })
-                                        }
-                                    });
-                                });
+                            let jsonifiedSimulation = jsonified;
+
+                            (async()=>{
+                                console.log("JSONIFIED SIMULATION: ", jsonifiedSimulation);
+                                console.log("TASK 1");
+                                jsonifiedSimulation = await iterateSimulationData(jsonified, globalData);
+                                return jsonifiedSimulation;
+                            })();
+
+                                                                            
+                            // merge
+                            globalData.data = [...globalData.data, ...jsonifiedSimulation.data];
+
+                            console.log("TASK 2");
+                            let copyForPlotly = JSON.parse(JSON.stringify(globalData)); // Plotly mutates the input !!!
+                            Plotly.newPlot('myDiv', copyForPlotly.data, copyForPlotly.layout);
+                            }else{
+                                clearData();
+                                errorDiv.innerText = `Chart or axis titles does not match.`;
                             }
-
-                            if( newXUnit !== globalData.unit.x ) {
-                                const xConvertFactor = convert.fullConversion(newXUnit, globalData.unit.x);
-                                jsonified.data.forEach( (data) => {
-                                    data.x = data.x.map( (x) => {
-                                        if( xConvertFactor.status == 0 ){
-                                            return parseInt(x) * xConvertFactor.output.num;
-                                        } else {
-                                            xConvertFactor.messages.forEach( (message) => {
-                                                errorDiv.innerText = message.message;
-                                            })
-                                        }
-                                    });
-                                });
-                            }
-                       
-                        if( globalSimulationObjArr.isSimulate ){
-                            (async () => {
-                                try{
-                                    // TODO: loop through the jsonfied.data array
-                                    // TODO: Apply xConvertFactor and yConvertFactor to the data
-                                    const SimulatedObj = Simulate(jsonified.data[0]);
-                                    console.log("SIMULATED OBJECT: ", SimulatedObj);
-                                    jsonified.layout.xaxis.title = SimulatedObj.data.x_label;
-                                    jsonified.layout.yaxis.title = SimulatedObj.data.y_label;
-                                    jsonified.data[0].x = SimulatedObj.data.x;
-                                    jsonified.data[0].y = SimulatedObj.data.y;
-
-                                    // await runSimulate(globalData);
-                                }catch(err){
-                                    console.log("ERROR: ", err);
-                                }
-                            })()
+                        }catch(err){
+                            console.log(err);
                         }
-
-                        // merge
-                        globalData.data = [...globalData.data, ...jsonified.data];
-
-                        let copyForPlotly = JSON.parse(JSON.stringify(globalData)); // Plotly mutates the input !!!
-                        Plotly.newPlot('myDiv', copyForPlotly.data, copyForPlotly.layout);
-                    }else{
-                        clearData();
-                        errorDiv.innerText = `Chart or axis titles does not match.`;
+                        
                     }
-                }
                 }
         })
         reader.readAsText(file);
