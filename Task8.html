@@ -42,15 +42,15 @@
 <!--                <p>Task 4</p>-->
 <!--            </div>-->
 <!--        </a>-->
-        <a href="Task8.html">
+        <a href="Task7.html">
             <div class="button active">
-                <p>Task 8</p>
+                <p>Task 7</p>
             </div>
         </a>
     </div>
 </header>
 <div class="page">
-<h1>Task 7</h1>
+<h1>Task 8</h1>
     <p>Option to select a single file from computer and reset button to clear data. (including .csv and .tsv files) </p>
     <input type="file" id="file-selector">
     <button id="reset" onclick="clearData()">Reset data</button>
@@ -266,25 +266,17 @@
         return "";
     }
 
-    // Checking if the data has simulation
-    function checkSimulate(globalData){
-        let simulateObj = {
-        isSimulate: false,
-        data: []
-        };
-        globalData.data.forEach((obj, index) => {
-            if( obj.simulate) {
-                simulateObj = {
-                    isSimulate: true,
-                    data: [...simulateObj.data, {
-                        data: obj.simulate,
-                        index
-                    }]
-                }     
-            }
-        });
+    function removeUnitFromLabel(label){
+        const unit = getUnitFromLabel(label);
+        return label.replace(unit, "").replace("()", "");
+    }
 
-        return simulateObj;
+    // Checking if the data has simulation
+    function checkSimulate(dataSet){
+        if( dataSet.simulate ){
+            return true
+        }
+        return false;
     }
 
     // Get raw content of github file from url
@@ -301,6 +293,7 @@
     }
 
     // Changes the Github link to a CDN link to avoid CORB issues
+    // TODO: currently we only support javascript from github. In the future, cross-domain / cross-origin simulate functions will be supported by SRI hash. https://www.w3schools.com/Tags/att_script_crossorigin.asp https://www.w3schools.com/Tags/att_script_integrity.asp with the SRI hash provided within the simulate object by a field in the JSON record named "SRI" or 'integrity"
     function parseUrl(url){
         const urlArr = url.split("/");
         if( urlArr[2] === "github.com" ){
@@ -311,127 +304,82 @@
     }
 
     //  a function that gets the simulate script from an external file by url
-    function getAndRunScript(url, SimulationInfo){
+    function getAndRunSimulateScript(dataSet, jsonified, index){
         return new Promise(async (resolve, reject) => {
             try{
                 loadScript = document.createElement('script');
-                const data = await getRawContent(parseUrl(url));
+                const data = await getRawContent(parseUrl(dataSet.simulate.model));
                 loadScript.append(data);
                 document.getElementsByTagName("head")[0].appendChild(loadScript);
                 // Once the script is loaded in the <script> tag, we can run it
-                const simulatedData = Simulate(SimulationInfo);
-                resolve(simulatedData);
+                const simulatedData = Simulate(dataSet);
+                const convertSimulatedDataUnits = maybeConvertSimulatedDataUnits(jsonified, simulatedData, index);
+                const jsonifiedWithSimulation = mergeSimulationData(convertSimulatedDataUnits, jsonified, index);
+                resolve(jsonifiedWithSimulation);
             }catch(err){
                 reject({status: "error", error: "Error: " + err});
             }
         })
     }
 
-    // Running the imported Simulate function from the simulate link
-    function importSimulate( data ){
-        return new Promise(async (resolve, reject) => {
-            try{
-                let simulatedDataArray = [];
 
-                const simulatedData = await getAndRunScript(dataSet.simulate.model, dataSet);
-                simulatedDataArray.push(simulatedData);
-                resolve(simulatedDataArray);
-            }catch(err){
-                reject({status: "error", error: err});
-            }
-        })        
-    }
+    // Check the units of the simulated data compared to the json record layout field and convert if needed
+    // TODO: Convert the units from the simulation to the units in the layout object
+    function maybeConvertSimulatedDataUnits(jsonified, simulatedData, index){
+        // Javascript doesn't have deep clones so we use the JSON solution
+        // source: https://stackoverflow.com/questions/597588/how-do-you-clone-an-array-of-objects-in-javascript
+        let _simulatedData = JSON.parse(JSON.stringify(simulatedData));
+        const desiredXUnit = getUnitFromLabel(jsonified.layout.xaxis.title);
+        const desiredYUnit = getUnitFromLabel(jsonified.layout.yaxis.title);
+        const simulatedXUnit = getUnitFromLabel(simulatedData.data.x_label);
+        const simulatedYUnit = getUnitFromLabel(simulatedData.data.y_label);
 
-    // Run Imported Simulate function
-    // TODO: currently we only support javascript from github. In the future, cross-domain / cross-origin simulate functions will be supported by SRI hash. https://www.w3schools.com/Tags/att_script_crossorigin.asp https://www.w3schools.com/Tags/att_script_integrity.asp with the SRI hash provided within the simulate object by a field in the JSON record named "SRI" or 'integrity"
-    function runSimulate(globalData, index){
-        return new Promise(async (resolve, reject) => {
-            try{
-                const innerSimulationObj = await checkSimulate(globalData);
-                if(innerSimulationObj.isSimulate){
-                    const simulateData = await importSimulate(globalData.data[index]);
-                    resolve(simulateData);
+        if( desiredXUnit !== simulatedXUnit ){
+            const xConvertFactor = convert.fullConversion(simulatedXUnit, desiredXUnit);
+            const convertedXArray = _simulatedData.data.x.map((x) => {
+                if( xConvertFactor.status == 0 ){
+                    return parseFloat(x) * xConvertFactor.output.num;
+                } else {
+                    xConvertFactor.messages.forEach((message) => {
+                        errorDiv.innerText = message.message;
+                    })
                 }
-            }catch(err){
-                reject({status: "error", error: err});
-            }
-        })
+            });
+            _simulatedData.data.x = convertedXArray;
+            _simulatedData.data.x_label = removeUnitFromLabel(_simulatedData.data.x_label) + "(" + desiredXUnit + ")";
+        }
+
+        if( desiredYUnit !== simulatedYUnit ){
+            const yConvertFactor = convert.fullConversion(simulatedYUnit, designYUnit);
+            const convertedYArray = _simulatedData.data.y.map((y) => {
+                if( yConvertFactor.status == 0 ){
+                    return parseFloat(y) * yConvertFactor.output.num;
+                } else {
+                    yConvertFactor.messages.forEach((message) => {
+                        errorDiv.innerText = message.message;
+                    })
+                }
+            })
+            _simulatedData.data.y = convertedYArray;
+            _simulatedData.data.y_label = removeUnitFromLabel(_simulatedData.data.y_label) + "(" + desiredYUnit + ")";
+        }
+
+        return _simulatedData;
     }
 
     // Gets the simulation data and adds it to the jsonified object
-    async function mergeSimulationData(jsonified, index){
-        try{
-            let SimulatedJson = jsonified;
-            // TODO: loop through the jsonfied.data array
-            // TODO: Apply xConvertFactor and yConvertFactor to the data
-            const SimulatedObj = await runSimulate(jsonified, index);
-            SimulatedObj.forEach((object, index) => {
-                SimulatedJson.layout.xaxis.title = object.data.x_label;
-                SimulatedJson.layout.yaxis.title = object.data.y_label;
-                SimulatedJson.data[index].x = object.data.x;
-                SimulatedJson.data[index].y = object.data.y;
-            })
-            
-            return SimulatedJson;
-        }catch(err){
-            console.log("ERROR: ", err);
-        }
-    }
-
-    async function iterateSimulationData(jsonified, globalData){
-        return new Promise((resolve, reject) => {
-            try{
-                let _jsonified = jsonified;
-                _jsonified.data.forEach(async (data, index) => {
-                    if( globalSimulationObjArr.isSimulate ){
-                        _jsonified = await mergeSimulationData(_jsonified, index);
-                    }
-
-                    const newXUnit = getUnitFromLabel(_jsonified.layout.xaxis.title);
-                    const newYUnit = getUnitFromLabel(_jsonified.layout.yaxis.title);
-
-                    if( newYUnit !== globalData.unit.Y ){
-                        const yConverterFactor = convert.fullConversion(newYUnit, globalData.unit.y );
-                        data.y = data.y.map((y) => {
-                            if( yConverterFactor.status == 0 ){
-                                return parseFloat(y) * yConverterFactor.output.num;
-                            } else {
-                                yConvertFActor.messages.forEach((message) => {
-                                    errorDiv.innerText = message.message;
-                                })
-                            }
-                        })
-                    }
-
-                    if( newXUnit !== globalData.unit.x ){
-                        const xConvertFactor = convert.fullConversion(newXUnit, globalData.unit.x);
-                        data.x = data.x.map((x) => {
-                            if( xConverterFactor.status == 0 ){
-                                return parseFloat(x) * xConvertFactor.output.num;
-                            } else {
-                                xConvertFactor.messages.forEach((message) => {
-                                    errorDiv.innerText = message.message;
-                                })
-                            }
-                        })
-                    }
-                });
-
-                resolve(_jsonified);
-
-            }catch(err){
-                reject(err);
-                console.log("ERR: ", err);
-            }
-
-        })
+    function mergeSimulationData(simulationResult, jsonified, index){
+        jsonified.layout.xaxis.title = simulationResult.data.x_label;
+        jsonified.layout.yaxis.title = simulationResult.data.y_label;
+        jsonified.data[index].x = simulationResult.data.x;
+        jsonified.data[index].y = simulationResult.data.y;
+        return jsonified;
     }
 
     function visualizeData(globalData){
         let copyForPlotly = JSON.parse(JSON.stringify(globalData)); // Plotly mutates the input !!!
         Plotly.newPlot('myDiv', copyForPlotly.data, copyForPlotly.layout);
     }
-
 
     // This function is called the user drops a file or upload it via the input button
     function loadFile( event, eventType ) {
@@ -505,16 +453,25 @@
                         globalData.layout.xaxis.title.text === jsonified.layout.xaxis.title.text &&
                         globalData.layout.yaxis.title.text === jsonified.layout.yaxis.title.text){
 
-                        let jsonifiedSimulation = jsonified;
+                        let _jsonified = jsonified;
 
-                        (async()=>{
-                            jsonifiedSimulation = await iterateSimulationData(jsonified, globalData);
-                        })();
-                                                                        
+                        _jsonified.data.forEach((dataSet, index) => {
+                            const hasSimulate = checkSimulate(dataSet);
+                            if( hasSimulate ){
+                                getAndRunSimulateScript(dataSet, jsonified, index).then((simulatedJsonified) => {
+
+                                // merge
+                                globalData.data = [...globalData.data, ...simulatedJsonified.data];
+                                visualizeData(globalData); 
+                                })
+                            }
+                        })
+                        
                         // merge
-                        globalData.data = [...globalData.data, ...jsonifiedSimulation.data];
-
+                        globalData.data = [...globalData.data, ...jsonified.data];
+                        console.log("GLOBAL DATA: ", globalData);
                         visualizeData(globalData); 
+                        
                         }else{
                             clearData();
                             errorDiv.innerText = `Chart or axis titles does not match.`;
