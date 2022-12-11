@@ -172,18 +172,20 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
 </pre>
 </div>
 <script>
+    // Global Variables
     let globalData = null;
     let plotlyTemplate = null;
     let schema = null;
-
-    const ajv = new Ajv();
-    const errorDiv = document.getElementById('errorDiv');
-
     let recentFileName = null;
 
-    // Initiating the UUC converter function
+
+    // Initializing the AJV validator
+    const ajv = new Ajv();
+    const errorDiv = document.getElementById('errorDiv');
+    // Initiating the UUC converter
     const convert = new Convert();
 
+    // A function that clears the data from global variables and removes the error text and plotly chart
     function clearData(){
         globalData = null;
         document.getElementById('errorDiv').innerHTML = "";
@@ -192,6 +194,7 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
         Plotly.purge('myDiv');
     }
 
+    // A function that checks if the uploaded file extension
     function findFileType(fileName) {
         let arrayName = fileName.split('.');
         if(arrayName.includes("csv")){
@@ -203,6 +206,7 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
         return 'json';
     }
 
+    // A function that converts the file name to a json file name
     function getJsonFileName(fileName){
         let arrayName = fileName.split('.');
         if(arrayName.includes("csv")){
@@ -214,6 +218,7 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
         return arrayName.join(".");
     }
 
+    // A function the jsonifies a tsv file
     function jsonifyTSV(fileContent){
         //separate rows
         let arr = fileContent.split("\n");
@@ -262,6 +267,7 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
         return resultJSON;
     }
 
+    // A function the jsonifies a csv file
     function jsonifyCSV(fileContent){
         //separate rows
         let arr = fileContent.split("\n");
@@ -308,6 +314,7 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
         return resultJSON;
     }
 
+    // A function checks the extension of the file and calls the appropriate function to jsonfiy the file
     function jsonifyData(filetype, dataLoaded){
         switch (filetype) {
             case "csv": {
@@ -330,7 +337,6 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
         element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
         element.setAttribute('download', filename);
 
-        // element.style.display = 'none';
         downloadContainer.appendChild(element);
         element.click();
         downloadContainer.removeChild(element);
@@ -351,6 +357,7 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
     }
 
 
+    // A function that prepares the plotly schema and the template for the jsonification
     async function prepareSchemas(){
         const schema1 = await fetch('./schema/plot-schema.json');
         const schema1body = await schema1.text();
@@ -361,26 +368,146 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
         return [schema1json, schema2json];
     }
 
+    // A function that gets the unit from the label with regex
     function getUnitFromLabel(label){
-        let unit = label.match(/\(([^)]+)\)/);
+        let unit = label.match(/\((.*)\)/);
         if(unit){
             return unit[1];
         }
         return "";
     }
 
-    // This function is called the user drops a file or upload it via the input button
+    // A function that removes the unit from the label
+    function removeUnitFromLabel(label){
+        const unit = getUnitFromLabel(label);
+        return label.replace(unit, "").replace("()", "");
+    }
+
+    // Checking if the dataSet has simulation
+    function checkSimulate(dataSet){
+        if( dataSet.simulate ){
+            return true
+        }
+        return false;
+    }
+
+    // Get raw content of github file from url
+    async function getRawContent(url){
+        return new Promise(async (resolve, reject) => {
+            try{
+                const res = await fetch(url);
+                const data = await res.text();
+                resolve(data)
+            }catch(err){
+                reject(err);
+            }
+        })
+    }
+
+    // Changes the Github link to a CDN link to avoid CORB issues
+    // TODO: currently we only support javascript from github. In the future, cross-domain / cross-origin simulate functions will be supported by SRI hash. https://www.w3schools.com/Tags/att_script_crossorigin.asp https://www.w3schools.com/Tags/att_script_integrity.asp with the SRI hash provided within the simulate object by a field in the JSON record named "SRI" or 'integrity"
+    function parseUrl(url){
+        const urlArr = url.split("/");
+        if( urlArr[2] === "github.com" ){
+            return url.replace("github.com", "raw.githubusercontent.com").replace("/blob/", "/").replace("/tree/", "/").replace("www.", "");
+        } else {
+            return url;
+        }
+    }
+
+    //  a function that gets the simulate script from an external file by url
+    function getAndRunSimulateScript(dataSet, jsonified, index){
+        return new Promise(async (resolve, reject) => {
+            try{
+                loadScript = document.createElement('script');
+                const data = await getRawContent(parseUrl(dataSet.simulate.model));
+                loadScript.append(data);
+                document.getElementsByTagName("head")[0].appendChild(loadScript);
+                // Once the script is loaded in the <script> tag, we can run it
+                const simulatedData = Simulate(dataSet);
+                const convertSimulatedDataUnits = maybeConvertSimulatedDataUnits(jsonified, simulatedData, index);
+                const jsonifiedWithSimulation = mergeSimulationData(convertSimulatedDataUnits, jsonified, index);
+                resolve(jsonifiedWithSimulation);
+            }catch(err){
+                reject({status: "error", error: "Error: " + err});
+            }
+        })
+    }
+
+
+    // Check the units of the simulated data compared to the json record layout field and convert if needed
+    function maybeConvertSimulatedDataUnits(jsonified, simulatedData, index){
+        // Javascript doesn't have deep clones so we use the JSON solution
+        // source: https://stackoverflow.com/questions/597588/how-do-you-clone-an-array-of-objects-in-javascript
+        let _simulatedData = JSON.parse(JSON.stringify(simulatedData));
+        const desiredXUnit = getUnitFromLabel(jsonified.layout.xaxis.title);
+        const desiredYUnit = getUnitFromLabel(jsonified.layout.yaxis.title);
+        const simulatedXUnit = getUnitFromLabel(simulatedData.data.x_label);
+        const simulatedYUnit = getUnitFromLabel(simulatedData.data.y_label);
+
+        if( desiredXUnit !== simulatedXUnit ){
+            const xConvertFactor = convert.fullConversion(simulatedXUnit, desiredXUnit);
+            const convertedXArray = _simulatedData.data.x.map((x) => {
+                if( xConvertFactor.status == 0 ){
+                    return parseFloat(x) * xConvertFactor.output.num;
+                } else {
+                    xConvertFactor.messages.forEach((message) => {
+                        errorDiv.innerText = message.message;
+                    })
+                }
+            });
+            _simulatedData.data.x = convertedXArray;
+            _simulatedData.data.x_label = removeUnitFromLabel(_simulatedData.data.x_label) + "(" + desiredXUnit + ")";
+        }
+
+        if( desiredYUnit !== simulatedYUnit ){
+            const yConvertFactor = convert.fullConversion(simulatedYUnit, designYUnit);
+            const convertedYArray = _simulatedData.data.y.map((y) => {
+                if( yConvertFactor.status == 0 ){
+                    return parseFloat(y) * yConvertFactor.output.num;
+                } else {
+                    yConvertFactor.messages.forEach((message) => {
+                        errorDiv.innerText = message.message;
+                    })
+                }
+            })
+            _simulatedData.data.y = convertedYArray;
+            _simulatedData.data.y_label = removeUnitFromLabel(_simulatedData.data.y_label) + "(" + desiredYUnit + ")";
+        }
+
+        return _simulatedData;
+    }
+
+    // Gets the simulation data and adds it to the jsonified object
+    function mergeSimulationData(simulationResult, jsonified, index){
+        jsonified.layout.xaxis.title = simulationResult.data.x_label;
+        jsonified.layout.yaxis.title = simulationResult.data.y_label;
+        jsonified.data[index].x = simulationResult.data.x;
+        jsonified.data[index].y = simulationResult.data.y;
+        return jsonified;
+    }
+
+    // A function that visualizes the data with plotly
+    function visualizeData(globalData){
+        let copyForPlotly = JSON.parse(JSON.stringify(globalData)); // Plotly mutates the input !!!
+        Plotly.newPlot('myDiv', copyForPlotly.data, copyForPlotly.layout);
+    }
+
+    // This function is called the user drops a file or upload it via the input button or drag and drop
     function loadFile( event, eventType ) {
+        // Checks if the file is dropped and if it is uploaded via the input button and gets the file
         const file = eventType === "change" ? event.target.files[0] : event.dataTransfer.files[0];
         // Initialize the reader
         const reader = new FileReader();
         reader.fileName = file.name;
+        // Waits for the file to be loaded
         reader.addEventListener('load', event => {
             // Get the loaded data from the reader
             const dataLoaded = event.target.result;
             document.getElementById('file-selector').value = "";
 
-            // test what is incoming
+            // STEP 2: If the file is a .csv or .tsv file it is converted to a .json file
+            // Test what is incoming
             let fileType = findFileType(event.target.fileName);
             let jsonified;
 
@@ -391,6 +518,7 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
                 errorDiv.innerText = `Json file has some errors. ${e.message}`
             }
 
+            // STEP 3: Check if the jsonified object is a valid JSON file against the schema
             // validate the json
             const validate = ajv.compile(schema);
             const valid = validate(jsonified);
@@ -406,6 +534,7 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
                     recentFileName = event.target.fileName;
                     createDownloadButton(event.target.fileName, JSON.stringify(jsonified, null, 2));
 
+                    // Checks if the Jsonified is the first file uploaded
                     if(!globalData){
                         globalData = jsonified;
 
@@ -414,70 +543,116 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
                         const yUnit = getUnitFromLabel(globalData.layout.yaxis.title);
 
                         // Adding the extracted units to globalData
-                    globalData.unit = {
-                        x: xUnit,
-                        y: yUnit
-                    };
+                        globalData.unit = {
+                            x: xUnit,
+                            y: yUnit
+                        };
 
+                        // STEP 5: Check if the object has a dataSet that has a simulate key in it, and runs the simulate function based on the value provided in the key model
+                        // Iterate through the dataset and check if there is a simulation to run for each dataset
+                        globalData.data.forEach((dataSet, index) => {
+                            const hasSimulate = checkSimulate(dataSet);
+                            if( hasSimulate ){
+                                getAndRunSimulateScript(dataSet, globalData, index).then((simulatedJsonified) => {
 
-                        let copyForPlotly = JSON.parse(JSON.stringify(globalData)); // Plotly mutates the input !!!
-
-                        Plotly.newPlot('myDiv', copyForPlotly.data, copyForPlotly.layout);
-                } else {
-                    if(globalData.title === jsonified.title &&
+                                // STEP 7: The plotly template is rendered on the browser
+                                visualizeData(simulatedJsonified);
+                                })
+                            } else {
+                                // STEP 7: The plotly template is rendered on the browser
+                                visualizeData(globalData);
+                            }
+                        })
+                        // If the object does not have a dataSet that has a simulate key in it, then we can proceed to visualize the data
+                        // STEP 7: The plotly template is rendered on the browser
+                        visualizeData(globalData);
+                    } else {
+                        // If the Jsonified is not the first file uploaded, then we can proceed to the next step
+                        if(globalData.title === jsonified.title &&
                         globalData.layout.xaxis.title.text === jsonified.layout.xaxis.title.text &&
                         globalData.layout.yaxis.title.text === jsonified.layout.yaxis.title.text){
+
+                        // create a deep copy of jsonified to avoid mutating the original jsonified
+                        let _jsonified = JSON.parse(JSON.stringify(jsonified));
+
+                        // Iterate through the dataset and check if there is a simulation to run for each dataset
+                        _jsonified.data.forEach((dataSet, index) => {
+                            const hasSimulate = checkSimulate(dataSet);
+                            if( hasSimulate ){
+                                getAndRunSimulateScript(dataSet, jsonified, index).then((simulatedJsonified) => {
+
+                                // merge
+                                globalData.data = [...globalData.data, ...simulatedJsonified.data];
+                                // STEP 7: The plotly template is rendered on the browser
+                                visualizeData(globalData); 
+                                })
+                            }
+                        })
+
+                        // STEP 6: Check if the units in the dataset are the same as the units in the previous object and convert them
+                        _jsonified.data.forEach((dataSet) => {
                             const newXUnit = getUnitFromLabel(jsonified.layout.xaxis.title);
                             const newYUnit = getUnitFromLabel(jsonified.layout.yaxis.title);
-
-                            if( newYUnit !== globalData.unit.Y ) {
-                                const yConvertFactor = convert.fullConversion(newYUnit, globalData.unit.y);
-                                jsonified.data.forEach( (data) => {
-                                    data.y = data.y.map( (y) => {
-                                        return parseInt(y) * yConvertFactor.output.num;
-                                    });
-                                });
-                            }
-
-                            if( newXUnit !== globalData.unit.x ) {
+                            if(globalData.unit.x !== newXUnit){
                                 const xConvertFactor = convert.fullConversion(newXUnit, globalData.unit.x);
-                                jsonified.data.forEach( (data) => {
-                                    data.x = data.x.map( (x) => {
-                                        return parseInt(x) * xConvertFactor.output.num;
-                                    });
-                                });
+                                dataSet.x = dataSet.x.map(x => {
+                                    if( xConvertFactor.status == 0 ){
+                                        return parseFloat(x) * xConvertFactor.output.num;
+                                    } else {
+                                        xConvertFactor.messages.forEach((message) => {
+                                            errorDiv.innerText = message.message;
+                                        })
+                                    }
+                                })
                             }
+                            
+
+                            if( globalData.unit.y !== newYUnit ){
+                                const yConvertFactor = convert.fullConversion(newYUnit, globalData.unit.y);
+                                dataSet.y = dataSet.y.map(y => {
+                                    if( yConvertFactor.status == 0 ){
+                                        return parseFloat(y) * yConvertFactor.output.num;
+                                    } else {
+                                        yConvertFactor.messages.forEach((message) => {
+                                            errorDiv.innerText = message.message;
+                                        })
+                                    }
+                                })
+                            }
+                        })
 
 
                         // merge
-                        globalData.data = [...globalData.data, ...jsonified.data];
-                        let copyForPlotly = JSON.parse(JSON.stringify(globalData)); // Plotly mutates the input !!!
-                        Plotly.newPlot('myDiv', copyForPlotly.data, copyForPlotly.layout);
-                    }else{
-                        clearData();
-                        errorDiv.innerText = `Chart or axis titles does not match.`;
+                        globalData.data = [...globalData.data, ..._jsonified.data];
+                        // STEP 7: The plotly template is rendered on the browser
+                        visualizeData(globalData); 
+                        
+                        }else{
+                            clearData();
+                            errorDiv.innerText = `Chart or axis titles does not match.`;
+                        }
                     }
-                }
                 }
         })
         reader.readAsText(file);
     }
 
+    // STEP 1: User selects a file from computer or drops a file on the browser
     prepareSchemas().then(resp => {
+        // Prepare the schemas
         schema = resp[0];
         plotlyTemplate = resp[1];
 
-        // normal code here
-
+        // Checks if the browser supports the File API
             if(window.FileList && window.File){
 
-                // input file button
+                // Event that fires when the user selects a file from the computer from the choose file button
                 document.getElementById('file-selector').addEventListener('change', event => {
-                    // Load button uploaded file
+                    // Launches the loadFile function after the file is selected
                     loadFile(event, 'change');
                 })
 
-                // Drop Area
+                // Event listener for drag and drop
                 const dropArea = document.getElementById('file-drop-area');
                 dropArea.addEventListener('dragover', event => {
                     event.stopPropagation();
@@ -486,17 +661,16 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
                 });
                 dropArea.addEventListener('drop', (event) => {
                     event.preventDefault();
-                    // Load drag and drop file after the file is dropped
+                    // Launches the loadFile function after the file is dropped
                     loadFile(event, 'drop');
                 });
-            }
+        }
 
     }
-    )
-        .catch(e => {
-            console.log(e);
-            errorDiv.innerText = 'Error fetching json-schema files...'
-        });
+    ).catch(e => {
+        console.log(e);
+        errorDiv.innerText = 'Error fetching json-schema files...'
+    });
 </script>
 </body>
 </html>
