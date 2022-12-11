@@ -62,16 +62,17 @@
     </div>
 </div>
 <script>
-    // Get content from https://github.com/AdityaSavara/JSONGrapher/blob/main/README.md
+    // Get content from https://raw.githubusercontent.com/AdityaSavara/JSONGrapher/main/LICENSE.txt
     document.addEventListener("DOMContentLoaded", function(event) {
-        fetch('https://raw.githubusercontent.com/AdityaSavara/JSONGrapher/main/README.md')
+        fetch('https://raw.githubusercontent.com/AdityaSavara/JSONGrapher/main/LICENSE.txt')
             .then(response => response.text())
-            .then(text => {
+            .then(data => {
                 let converter = new showdown.Converter();
-                let html = converter.makeHtml(text);
-                document.querySelector('.page').innerHTML = html;
+                data = converter.makeHtml(data);
+                document.querySelector(".page").innerHTML = data;
             });
     });
+
 </script>
 </body>
 </html>
