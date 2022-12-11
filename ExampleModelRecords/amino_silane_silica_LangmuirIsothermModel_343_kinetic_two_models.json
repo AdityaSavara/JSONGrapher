@@ -40,7 +40,7 @@
         "k_des": "100 (1/s)"
       }
      }
-  ]
+  ],
   "layout": {
     "comments": "// The title field of the layout is the title of the graph (not of a series).",
     "title": "CO2 Adsorption",
