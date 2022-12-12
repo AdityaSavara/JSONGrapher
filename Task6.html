@@ -290,7 +290,8 @@
         catch(err)
         {
             // TODO: !! error catching not working as planned
-            console.log("in getSchemaType error:")
+            console.log("in getSchemaType error:");
+            errorDiv.innerText += "undocumented error in getSchemaType\n";
             return {};
         }
     }
@@ -315,6 +316,7 @@
 
     // This function is called the user drops a file or upload it via the input button
     function loadFile( event, eventType ) {
+        errorDiv.innerText = "Error Log:\n";
         const file = eventType === "change" ? event.target.files[0] : event.dataTransfer.files[0];
         // Initialize the reader
         const reader = new FileReader();
@@ -332,7 +334,7 @@
                 // try to parse the file as json
                 jsonified = jsonifyData(fileType, dataLoaded);
             } catch(e) {
-                errorDiv.innerText = `Json file has some errors. ${e.message}`
+                errorDiv.innerText += "Json file has some errors. ${e.message}";
             }
 
             // need to identify the schema based on the plot type
@@ -347,6 +349,7 @@
             // use the default schema
             if(Object.keys(schema_type).length === 0){
                 console.log("SchemaType was not recovered, using the default schema");
+                errorDiv.innerText += "SchemaType was not recovered, using the default schema\n";
                 schema_type = schema;
             }
 
@@ -358,7 +361,7 @@
                     // Console log an error if the data is not valid against the schema
                     console.log('validate errors: ', JSON.stringify(validate.errors));
                     // Display an error message if the data is not valid against the schema
-                    errorDiv.innerText = `Json file does not match the schema. ${JSON.stringify(validate.errors)}`
+                    errorDiv.innerText += "Json file does not match the schema. ${JSON.stringify(validate.errors)}\n";
                 } else {
                     // If the data is valid against the schema, then we can proceed to the next step
                     // if necessary create download button with json
@@ -415,7 +418,7 @@
                         Plotly.newPlot('myDiv', copyForPlotly.data, copyForPlotly.layout);
                     }else{
                         clearData();
-                        errorDiv.innerText = `Chart or axis titles does not match.`;
+                        errorDiv.innerText += 'Chart or axis titles does not match.\n';
                     }
                 }
                 }
