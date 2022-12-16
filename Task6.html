@@ -342,20 +342,20 @@
             console.log("schema location: ",getSchemaLocation(jsonified))
             
             // load if the corresponding schema exists
-            var schema_type = getSchemaType(jsonified);
-            console.log(schema_type);
+            getSchemaType(jsonified).then(schema_type=>{
+                console.log(schema_type);
+                var schema_type = {};
+                // check if schema_type is an empty dictionary then
+                // use the default schema
+                if(Object.keys(schema_type).length === 0){
+                    console.log("SchemaType was not recovered, using the default schema");
+                    errorDiv.innerText += "SchemaType was not recovered, using the default schema\n";
+                    schema_type = schema;
+                }
 
-            // check if schema_type is an empty dictionary then
-            // use the default schema
-            if(Object.keys(schema_type).length === 0){
-                console.log("SchemaType was not recovered, using the default schema");
-                errorDiv.innerText += "SchemaType was not recovered, using the default schema\n";
-                schema_type = schema;
-            }
-
-            // validate the json
-            const validate = ajv.compile(schema_type);
-            const valid = validate(jsonified);
+                // validate the json
+                const validate = ajv.compile(schema_type);
+                const valid = validate(jsonified);
                 // Checking if the uploaded data is valid against the schema          
                 if(!valid) {
                     // Console log an error if the data is not valid against the schema
@@ -422,6 +422,8 @@
                     }
                 }
                 }
+            });
+
         })
         reader.readAsText(file);
     }
