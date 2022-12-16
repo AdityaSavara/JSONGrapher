@@ -93,6 +93,17 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
 </pre>
 </div>
 <script>
+    //JSONGrapher has the following steps, which will be commented in the script below:
+    // STEP 0: Prepare the 'universal' schemas
+    // STEP 1: User selects a file from computer or drops a file on the browser
+    // STEP 2: If the file is a .csv or .tsv file it is converted to a .json file
+    // STEP 3: Check if the jsonified object is a valid JSON file against the schema
+    // STEP 4: Check if the object has a dataSet that has a simulate key in it, and runs the simulate function
+    // STEP 5: Check if the units in the dataset are the same as the units in the previous object and convert them
+    // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
+    // STEP 7: The plotly template is rendered on the browser
+
+    
     // Global Variables
     let globalData = null;
     let plotlyTemplate = null;
@@ -557,18 +568,18 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
                             y: yUnit
                         };
 
-                        // STEP 5: Check if the object has a dataSet that has a simulate key in it, and runs the simulate function based on the value provided in the key model
+                        // STEP 4: Check if the object has a dataSet that has a simulate key in it, and runs the simulate function based on the value provided in the key model
                         // Iterate through the dataset and check if there is a simulation to run for each dataset
                         globalData.data.forEach((dataSet, index) => {
                             const hasSimulate = checkSimulate(dataSet);
                             if( hasSimulate ){
                                 getAndRunSimulateScript(dataSet, globalData, index).then((simulatedJsonified) => {
 
-                                // STEP 7: The plotly template is rendered on the browser
+                                // STEP 6: The plotly template is rendered on the browser
                                 visualizeData(simulatedJsonified);
                                 })
                             } else {
-                                // STEP 7: The plotly template is rendered on the browser
+                                // STEP 6: The plotly template is rendered on the browser
                                 visualizeData(globalData);
                             }
                         })
@@ -577,7 +588,7 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
                         appendDownloadCSVButton(globalData);
 
                         // If the object does not have a dataSet that has a simulate key in it, then we can proceed to visualize the data
-                        // STEP 7: The plotly template is rendered on the browser
+                        // STEP 6: The plotly template is rendered on the browser
                         visualizeData(globalData);
                     } else {
                         // If the Jsonified is not the first file uploaded, then we can proceed to the next step
@@ -604,7 +615,7 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
                             }
                         })
 
-                        // STEP 6: Check if the units in the dataset are the same as the units in the previous object and convert them
+                        // STEP 5: Check if the units in the dataset are the same as the units in the previous object and convert them
                         _jsonified.data.forEach((dataSet) => {
                             const newXUnit = getUnitFromLabel(jsonified.layout.xaxis.title);
                             const newYUnit = getUnitFromLabel(jsonified.layout.yaxis.title);
@@ -654,12 +665,12 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
         reader.readAsText(file);
     }
 
-    // STEP 1: User selects a file from computer or drops a file on the browser
+    // STEP 0: Prepare the 'universal' schemas    
     prepareSchemas().then(resp => {
         // Prepare the schemas
         schema = resp[0];
         plotlyTemplate = resp[1];
-
+        // STEP 1: User selects a file from computer or drops a file on the browser
         // Checks if the browser supports the File API
             if(window.FileList && window.File){
 
