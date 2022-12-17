@@ -665,17 +665,15 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
                             const hasSimulate = checkSimulate(dataSet);
                             if( hasSimulate ){
                                 getAndRunSimulateScript(dataSet, globalData, index).then((simulatedJsonified) => {
-                                                                        
-                                // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
-                                // Adding a download button to the page
-                                appendDownloadButtons(simulatedJsonified, recentFileName);
-                                // STEP 6: The plotly template is rendered on the browser
+
+                                // STEP 6: Adding a download button to the page
+                                appendDownloadCSVButton(simulatedJsonified);
+                                // STEP 7: The plotly template is rendered on the browser
                                 visualizeData(simulatedJsonified);
                                 })
                             } else {
-                                // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
-                                // Adding a download button to the page
-                                appendDownloadButtons(globalData, recentFileName);
+                                // STEP 6:  Adding a download button to the page
+                                appendDownloadCSVButton(globalData);
                                 // STEP 7: The plotly template is rendered on the browser
                                 visualizeData(globalData);
                             }
