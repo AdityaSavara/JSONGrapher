@@ -12,6 +12,16 @@
     <script src="./UUC/app/convert_parse.js"></script>
     <script src="./UUC/app/convert_macro.js"></script>
     <script src="./UUC/app/data.js"></script>
+    <style>
+        .file-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .file-actions #downloadButtonsContainer {
+            display: flex;
+            gap: 4px;
+        }
+    </style>
 </head>
 <body>
 <header>
@@ -51,11 +61,11 @@
 <div class="page">
 <h1>JSONGrapher</h1>
     <p>Use the browse button or the drag-and-drop box to upload a single file from computer. Use the reset button to clear data.</p>
-    <input type="file" id="file-selector">
-    <button id="reset" onclick="clearData()">Reset data</button>
-    <button id="download" style="display: none">Download Last Data Set as a JSON File</button>
-    <div id="downloadCSVContainer">
-
+    <div class="file-actions">
+        <input type="file" id="file-selector">
+        <button id="reset" onclick="clearData()">Reset data</button>
+        <button id="download" style="display: none">Download Last Data Set as a JSON File</button>
+        <div id="downloadButtonsContainer">    </div>
     </div>
     <p></p>
     <div id="file-drop-area" >
@@ -136,18 +146,6 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
             return "tsv";
         }
         return 'json';
-    }
-
-    // A function that converts the file name to a json file name
-    function getJsonFileName(fileName){
-        let arrayName = fileName.split('.');
-        if(arrayName.includes("csv")){
-            return arrayName[0] + ".json";
-        }
-        if(arrayName.includes("tsv")){
-            return arrayName[0] + ".json"
-        }
-        return arrayName.join(".");
     }
 
     // A function the jsonifies a tsv file
@@ -261,34 +259,6 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
         }
     }
 
-    // A function that will create a download link for the json file as soon as the user clicks on the "Download JSON" button
-    function download(filename, text) {
-        // Getting the div that contains the json download link
-        const downloadContainer = document.getElementById("downloadLink");
-        const element = document.createElement('a');
-        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-        element.setAttribute('download', filename);
-
-        downloadContainer.appendChild(element);
-        element.click();
-        downloadContainer.removeChild(element);
-    }
-
-    // A function that will display the download link and download the recent file as soon as the user clicks on the "Download JSON" button
-    function createDownloadButton(inputFilename, inputText){
-        let jsonifiedFilename = getJsonFileName(inputFilename);
-        let button = document.getElementById("download");
-
-        button.style.display = null;
-        button
-            .addEventListener("click", () => {
-                if (recentFileName === inputFilename){
-                    download(jsonifiedFilename, inputText)
-                }
-            });
-    }
-
-
     // A function that prepares the plotly schema and the template for the jsonification
     async function prepareSchemas(){
         const schema1 = await fetch('./schema/plot-schema.json');
@@ -357,6 +327,7 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
                 document.getElementsByTagName("head")[0].appendChild(loadScript);
                 // Once the script is loaded in the <script> tag, we can run it
                 const simulatedData = Simulate(dataSet);
+                // STEP 5: Check if the units in the dataset are the same as the units in the previous object and convert them
                 const convertSimulatedDataUnits = maybeConvertSimulatedDataUnits(jsonified, simulatedData, index);
                 const jsonifiedWithSimulation = mergeSimulationData(convertSimulatedDataUnits, jsonified, index);
                 resolve(jsonifiedWithSimulation);
@@ -367,7 +338,7 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
     }
 
 
-    // Check the units of the simulated data compared to the json record layout field and convert if needed
+    // Check the units of the simulated data compared to the json record layout field and convert them if needed
     function maybeConvertSimulatedDataUnits(jsonified, simulatedData, index){
         // Javascript doesn't have deep clones so we use the JSON solution
         // source: https://stackoverflow.com/questions/597588/how-do-you-clone-an-array-of-objects-in-javascript
@@ -393,7 +364,7 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
         }
 
         if( desiredYUnit !== simulatedYUnit ){
-            const yConvertFactor = convert.fullConversion(simulatedYUnit, designYUnit);
+            const yConvertFactor = convert.fullConversion(simulatedYUnit, desiredYUnit);
             const convertedYArray = _simulatedData.data.y.map((y) => {
                 if( yConvertFactor.status == 0 ){
                     return parseFloat(y) * yConvertFactor.output.num;
@@ -484,6 +455,29 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
         return downloadLink;
     }
 
+    // A function that will create a download link for the json file
+    function createDownloadJSONLink(json, filename){
+        let jsonFile;
+        let downloadLink;
+
+        // JSON file
+        jsonFile = new Blob([JSON.stringify(json)], {type: "application/json"});
+
+        // Download link
+        downloadLink = document.createElement("a");
+
+        // File name
+        downloadLink.download = filename;
+
+        // Create a link to the file
+        downloadLink.href = window.URL.createObjectURL(jsonFile);
+
+        // Hide download link
+        downloadLink.style.display = "none";
+
+        return downloadLink;
+    }
+
     // A function that will create a download button for the csv file
     function createDownloadCSVButton(csv, filename){
         // Creating a download link for the csv file
@@ -500,18 +494,110 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
         return downloadButton;
     }
 
+    function createDownlodJSONButton(json, filename){
+        // Creating a download link for the csv file
+        const downloadLink = createDownloadJSONLink(json, filename);
+        // Creating the button
+        const downloadButton = document.createElement("button");
+        // Adding text to the button
+        downloadButton.innerText = "Download Last Data Set as a JSON File";
+        // Adding an event listener to the button
+        downloadButton.addEventListener("click", () => {
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+        })
+        return downloadButton;
+    }
+
     // A function that will append a download button to the page
     // The button will be appended after the element with the id beforeElId
     function appendDownloadCSVButton(jsonified){
+        // Parse csv from jsonified
         const csvContent = createCSV(jsonified);
+        // Create download csv button
         const downloadCSVButton = createDownloadCSVButton(csvContent);
-        const buttonsContainer = document.getElementById("downloadCSVContainer");
-        downloadCSVButton.id = "download-csv-button";
+        // Create Download JSON button
+        const downloadJSONBUTTON = createDownlodJSONButton(jsonified, jsonified.title);
+        // Get the buttons container
+        const buttonsContainer = document.getElementById("downloadButtonsContainer");
         // insert a download button with downloadLink after downloadJSON
         // Clear the container
         buttonsContainer.innerHTML = "";
-        downloadCSVContainer.appendChild(downloadCSVButton);
+        // Add download JSON button
+        buttonsContainer.appendChild(downloadJSONBUTTON);
+        // Add download CSV button
+        buttonsContainer.appendChild(downloadCSVButton);
     }
+
+    // Convert the received dataset units to the first dataset units
+    function convertUnits(_simulationJsonified, jsonified, globalData){
+        jsonified.data.forEach((dataSet) => {
+            const newXUnit = getUnitFromLabel(jsonified.layout.xaxis.title);
+            const newYUnit = getUnitFromLabel(jsonified.layout.yaxis.title);
+            if(globalData.unit.x !== newXUnit){
+                const xConvertFactor = convert.fullConversion(newXUnit, globalData.unit.x);
+                dataSet.x = dataSet.x.map(x => {
+                    if( xConvertFactor.status == 0 ){
+                        return parseFloat(x) * xConvertFactor.output.num;
+                    } else {
+                        xConvertFactor.messages.forEach((message) => {
+                            errorDiv.innerText = message.message;
+                        })
+                    }
+                })
+            }
+            
+            if( globalData.unit.y !== newYUnit ){
+                const yConvertFactor = convert.fullConversion(newYUnit, globalData.unit.y);
+                dataSet.y = dataSet.y.map(y => {
+                    if( yConvertFactor.status == 0 ){
+                        return parseFloat(y) * yConvertFactor.output.num;
+                    } else {
+                        yConvertFactor.messages.forEach((message) => {
+                            errorDiv.innerText = message.message;
+                        })
+                    }
+                })
+            }
+        })
+
+        return _simulationJsonified;
+    }
+
+    // STEP 0: Prepare the 'universal' schemas    
+    prepareSchemas().then(resp => {
+        // Prepare the schemas
+        schema = resp[0];
+        plotlyTemplate = resp[1];
+        // STEP 1: User selects a file from computer or drops a file on the browser
+        // Checks if the browser supports the File API
+            if(window.FileList && window.File){
+
+                // Event that fires when the user selects a file from the computer from the choose file button
+                document.getElementById('file-selector').addEventListener('change', event => {
+                    // Launches the loadFile function after the file is selected
+                    loadFile(event, 'change');
+                })
+
+                // Event listener for drag and drop
+                const dropArea = document.getElementById('file-drop-area');
+                dropArea.addEventListener('dragover', event => {
+                    event.stopPropagation();
+                    event.preventDefault();
+                    event.dataTransfer.dropEffect = 'copy';
+                });
+                dropArea.addEventListener('drop', (event) => {
+                    event.preventDefault();
+                    // Launches the loadFile function after the file is dropped
+                    loadFile(event, 'drop');
+                });
+        }
+
+    }
+    ).catch(e => {
+        console.log(e);
+        errorDiv.innerText = 'Error fetching json-schema files...'
+    });
 
     // This function is called the user drops a file or upload it via the input button or drag and drop
     function loadFile( event, eventType ) {
@@ -552,7 +638,6 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
                     // If the data is valid against the schema, then we can proceed to the next step
                     // if necessary create download button with json
                     recentFileName = event.target.fileName;
-                    createDownloadButton(event.target.fileName, JSON.stringify(jsonified, null, 2));
 
                     // Checks if the Jsonified is the first file uploaded
                     if(!globalData){
@@ -575,21 +660,18 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
                             if( hasSimulate ){
                                 getAndRunSimulateScript(dataSet, globalData, index).then((simulatedJsonified) => {
 
+                                // Adding a download button to the page
+                                appendDownloadCSVButton(simulatedJsonified);
                                 // STEP 6: The plotly template is rendered on the browser
                                 visualizeData(simulatedJsonified);
                                 })
                             } else {
-                                // STEP 6: The plotly template is rendered on the browser
+                                // Adding a download button to the page
+                                appendDownloadCSVButton(globalData);
+                                // STEP 7: The plotly template is rendered on the browser
                                 visualizeData(globalData);
                             }
                         })
-
-                        // Adding a download button to the page
-                        appendDownloadCSVButton(globalData);
-
-                        // If the object does not have a dataSet that has a simulate key in it, then we can proceed to visualize the data
-                        // STEP 6: The plotly template is rendered on the browser
-                        visualizeData(globalData);
                     } else {
                         // If the Jsonified is not the first file uploaded, then we can proceed to the next step
                         if(globalData.title === jsonified.title &&
@@ -604,57 +686,25 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
                             const hasSimulate = checkSimulate(dataSet);
                             if( hasSimulate ){
                                 getAndRunSimulateScript(dataSet, jsonified, index).then((simulatedJsonified) => {
-
-                                // merge
-                                globalData.data = [...globalData.data, ...simulatedJsonified.data];
+                                    // merge
+                                    globalData.data = [...globalData.data, ...simulatedJsonified.data];
+                                    // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
+                                    // Adding a download button to the page
+                                    appendDownloadCSVButton(simulatedJsonified);
+                                    visualizeData(globalData); 
+                                });
+                            } else {
+                                // STEP 5: Check if the units in the dataset are the same as the units in the previous object and convert them
+                                const convertedJsonified = convertUnits(_jsonified, jsonified, globalData);
+                                // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
                                 // Adding a download button to the page
-                                appendDownloadCSVButton(simulatedJsonified);
+                                appendDownloadCSVButton(convertedJsonified);
+                                // merge
+                                globalData.data = [...globalData.data, ..._jsonified.data];
                                 // STEP 7: The plotly template is rendered on the browser
                                 visualizeData(globalData); 
-                                })
                             }
-                        })
-
-                        // STEP 5: Check if the units in the dataset are the same as the units in the previous object and convert them
-                        _jsonified.data.forEach((dataSet) => {
-                            const newXUnit = getUnitFromLabel(jsonified.layout.xaxis.title);
-                            const newYUnit = getUnitFromLabel(jsonified.layout.yaxis.title);
-                            if(globalData.unit.x !== newXUnit){
-                                const xConvertFactor = convert.fullConversion(newXUnit, globalData.unit.x);
-                                dataSet.x = dataSet.x.map(x => {
-                                    if( xConvertFactor.status == 0 ){
-                                        return parseFloat(x) * xConvertFactor.output.num;
-                                    } else {
-                                        xConvertFactor.messages.forEach((message) => {
-                                            errorDiv.innerText = message.message;
-                                        })
-                                    }
-                                })
-                            }
-                            
-
-                            if( globalData.unit.y !== newYUnit ){
-                                const yConvertFactor = convert.fullConversion(newYUnit, globalData.unit.y);
-                                dataSet.y = dataSet.y.map(y => {
-                                    if( yConvertFactor.status == 0 ){
-                                        return parseFloat(y) * yConvertFactor.output.num;
-                                    } else {
-                                        yConvertFactor.messages.forEach((message) => {
-                                            errorDiv.innerText = message.message;
-                                        })
-                                    }
-                                })
-                            }
-                        })
-
-
-                        // merge
-                        globalData.data = [...globalData.data, ..._jsonified.data];
-                        // Adding a download button to the page
-                        appendDownloadCSVButton(_jsonified);
-                        // STEP 7: The plotly template is rendered on the browser
-                        visualizeData(globalData); 
-                        
+                        });
                         }else{
                             clearData();
                             errorDiv.innerText = `Chart or axis titles does not match.`;
@@ -664,41 +714,6 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
         })
         reader.readAsText(file);
     }
-
-    // STEP 0: Prepare the 'universal' schemas    
-    prepareSchemas().then(resp => {
-        // Prepare the schemas
-        schema = resp[0];
-        plotlyTemplate = resp[1];
-        // STEP 1: User selects a file from computer or drops a file on the browser
-        // Checks if the browser supports the File API
-            if(window.FileList && window.File){
-
-                // Event that fires when the user selects a file from the computer from the choose file button
-                document.getElementById('file-selector').addEventListener('change', event => {
-                    // Launches the loadFile function after the file is selected
-                    loadFile(event, 'change');
-                })
-
-                // Event listener for drag and drop
-                const dropArea = document.getElementById('file-drop-area');
-                dropArea.addEventListener('dragover', event => {
-                    event.stopPropagation();
-                    event.preventDefault();
-                    event.dataTransfer.dropEffect = 'copy';
-                });
-                dropArea.addEventListener('drop', (event) => {
-                    event.preventDefault();
-                    // Launches the loadFile function after the file is dropped
-                    loadFile(event, 'drop');
-                });
-        }
-
-    }
-    ).catch(e => {
-        console.log(e);
-        errorDiv.innerText = 'Error fetching json-schema files...'
-    });
 </script>
 </body>
 </html>
