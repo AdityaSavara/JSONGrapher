@@ -660,13 +660,13 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
                             if( hasSimulate ){
                                 getAndRunSimulateScript(dataSet, globalData, index).then((simulatedJsonified) => {
 
-                                // Adding a download button to the page
+                                // STEP 6: Adding a download button to the page
                                 appendDownloadCSVButton(simulatedJsonified);
-                                // STEP 6: The plotly template is rendered on the browser
+                                // STEP 7: The plotly template is rendered on the browser
                                 visualizeData(simulatedJsonified);
                                 })
                             } else {
-                                // Adding a download button to the page
+                                // STEP 6:  Adding a download button to the page
                                 appendDownloadCSVButton(globalData);
                                 // STEP 7: The plotly template is rendered on the browser
                                 visualizeData(globalData);
