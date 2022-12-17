@@ -244,6 +244,12 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
         return resultJSON;
     }
 
+    // Gets the name of the uploaded file
+    function getFileName(fileName){
+        let arrayName = fileName.split('.');
+        return arrayName[0];
+    }
+
     // A function checks the extension of the file and calls the appropriate function to jsonfiy the file
     function jsonifyData(filetype, dataLoaded){
         switch (filetype) {
@@ -481,7 +487,7 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
     // A function that will create a download button for the csv file
     function createDownloadCSVButton(csv, filename){
         // Creating a download link for the csv file
-        const downloadLink = createDownloadCSVLink(csv.csv, csv.filename);
+        const downloadLink = createDownloadCSVLink(csv.csv, filename);
         // Creating the button
         const downloadButton = document.createElement("button");
         // Adding text to the button
@@ -511,13 +517,13 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
 
     // A function that will append a download button to the page
     // The button will be appended after the element with the id beforeElId
-    function appendDownloadCSVButton(jsonified){
+    function appendDownloadButtons(jsonified, filename){
         // Parse csv from jsonified
         const csvContent = createCSV(jsonified);
         // Create download csv button
-        const downloadCSVButton = createDownloadCSVButton(csvContent);
+        const downloadCSVButton = createDownloadCSVButton(csvContent, filename);
         // Create Download JSON button
-        const downloadJSONBUTTON = createDownlodJSONButton(jsonified, jsonified.title);
+        const downloadJSONBUTTON = createDownlodJSONButton(jsonified, filename);
         // Get the buttons container
         const buttonsContainer = document.getElementById("downloadButtonsContainer");
         // insert a download button with downloadLink after downloadJSON
@@ -637,7 +643,7 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
                 } else {
                     // If the data is valid against the schema, then we can proceed to the next step
                     // if necessary create download button with json
-                    recentFileName = event.target.fileName;
+                    recentFileName = getFileName(event.target.fileName);
 
                     // Checks if the Jsonified is the first file uploaded
                     if(!globalData){
@@ -659,15 +665,17 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
                             const hasSimulate = checkSimulate(dataSet);
                             if( hasSimulate ){
                                 getAndRunSimulateScript(dataSet, globalData, index).then((simulatedJsonified) => {
-
+                                                                        
+                                // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
                                 // Adding a download button to the page
-                                appendDownloadCSVButton(simulatedJsonified);
+                                appendDownloadButtons(simulatedJsonified, recentFileName);
                                 // STEP 6: The plotly template is rendered on the browser
                                 visualizeData(simulatedJsonified);
                                 })
                             } else {
+                                // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
                                 // Adding a download button to the page
-                                appendDownloadCSVButton(globalData);
+                                appendDownloadButtons(globalData, recentFileName);
                                 // STEP 7: The plotly template is rendered on the browser
                                 visualizeData(globalData);
                             }
@@ -690,7 +698,7 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
                                     globalData.data = [...globalData.data, ...simulatedJsonified.data];
                                     // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
                                     // Adding a download button to the page
-                                    appendDownloadCSVButton(simulatedJsonified);
+                                    appendDownloadButtons(simulatedJsonified, recentFileName);
                                     visualizeData(globalData); 
                                 });
                             } else {
@@ -698,7 +706,7 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
                                 const convertedJsonified = convertUnits(_jsonified, jsonified, globalData);
                                 // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
                                 // Adding a download button to the page
-                                appendDownloadCSVButton(convertedJsonified);
+                                appendDownloadButtons(convertedJsonified, recentFileName);
                                 // merge
                                 globalData.data = [...globalData.data, ..._jsonified.data];
                                 // STEP 7: The plotly template is rendered on the browser
