@@ -103,7 +103,7 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
 </pre>
 </div>
 <script>
-    //JSONGrapher has the following steps, which will be commented in the MAIN BLOCK OF CODE of JSONGrapher:
+    //JSONGrapher has the following steps, which will be commented in the script below:
     // STEP 0: Prepare the 'universal' schemas
     // STEP 1: User selects a file from computer or drops a file on the browser
     // STEP 2: If the file is a .csv or .tsv file it is converted to a .json file
@@ -571,6 +571,7 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
         return jsonified
     }
 
+    // STEP 0: Prepare the 'universal' schemas 
 
     async function initializeJSONGrapher() {
         try{
@@ -583,12 +584,9 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
             console.log("Error from initializeJSONGrapher: ", err);
         }
     }
-    
-    ///############################ BELOW IS THE MAIN BLOCK OF CODE FOR JSON GRAPHER ##################################
-    
-    // STEP 0: Prepare the 'universal' schemas occurs inside initializeJSONGrapher
+
     initializeJSONGrapher().then(resp => {
-        // Assign variables to the two universal schemas.
+        // Prepare the schemas
         schema = resp[0];
         plotlyTemplate = resp[1];
         // STEP 1: User selects a file from computer or drops a file on the browser
@@ -620,11 +618,9 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
         errorDiv.innerText = 'Error fetching json-schema files...'
     });
 
-
     // This function is called the user drops a file or upload it via the input button or drag and drop
     function loadAndPlotData( event, eventType ) {
         // Checks if the file is dropped and if it is uploaded via the input button and gets the file
-        // STEP 1: User selects a file from computer or drops a file on the browser
         const file = eventType === "change" ? event.target.files[0] : event.dataTransfer.files[0];
         // Initialize the reader
         const reader = new FileReader();
@@ -697,10 +693,9 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
                     const hasSimulate = checkSimulate(dataSet);
                     if( hasSimulate ){
                         getAndRunSimulateScript(dataSet, globalData, index).then((simulatedJsonified) => {
+
                         jsonified = simulatedJsonified;
-                        // STEP 5: Check if the units in the dataset are the same as the units in the previous object and convert them
-                        // There is  no STEP 5 at this line, because the first dataset provided by the user is used to define the units of GlobalData.
-                        //Finally, return the objects that have been prepared for plotting an downloading.
+                       
                         resolve({
                             data: globalData,
                             downloadData: jsonified,
@@ -708,9 +703,7 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
                         });
                         })
                     } else {
-                        // STEP 5: Check if the units in the dataset are the same as the units in the previous object and convert them
-                        // There is  no STEP 5 at this line, because the first dataset provided by the user is used to define the units of GlobalData.
-                        //Finally, return the objects that have been prepared for plotting an downloading.
+
                         resolve({
                             data: globalData,
                             downloadData: jsonified,
@@ -726,8 +719,7 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
 
                 // create a deep copy of jsonified to avoid mutating the original jsonified
                 let _jsonified = JSON.parse(JSON.stringify(jsonified));
-                
-                // STEP 4: Check if the object has a dataSet that has a simulate key in it, and runs the simulate function based on the value provided in the key model
+
                 // Iterate through the dataset and check if there is a simulation to run for each dataset
                 _jsonified.data.forEach((dataSet, index) => {
                     const hasSimulate = checkSimulate(dataSet);
@@ -737,7 +729,6 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
                             const convertedJsonified = convertUnits(simulatedJsonified, globalData);
                             // merge
                             globalData.data = [...globalData.data, ...convertedJsonified.data];
-                            //Finally, return the objects that have been prepared for plotting an downloading.
                             resolve({
                                 data: globalData,
                                 downloadData: convertedJsonified,
@@ -749,7 +740,6 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
                         const convertedJsonified = convertUnits(_jsonified, globalData);
                         // merge
                         globalData.data = [...globalData.data, ...convertedJsonified.data];
-                        //Finally, return the objects that have been prepared for plotting an downloading.
                         resolve({
                             data: globalData,
                             downloadData: convertedJsonified,
