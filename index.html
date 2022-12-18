@@ -131,6 +131,7 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
     function clearData(){
         globalData = null;
         document.getElementById('errorDiv').innerHTML = "";
+        document.getElementById("downloadButtonsContainer").innerHTML = "";
         document.getElementById('file-selector').value = "";
         document.getElementById("download").style.display = "none";
         Plotly.purge('myDiv');
@@ -266,7 +267,7 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
     }
 
     // A function that prepares the plotly schema and the template for the jsonification
-    async function prepareSchemas(){
+    async function prepareUniversalSchemas(){
         const schema1 = await fetch('./schema/plot-schema.json');
         const schema1body = await schema1.text();
         const schema1json = JSON.parse(schema1body);
@@ -570,8 +571,21 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
         return _simulationJsonified;
     }
 
-    // STEP 0: Prepare the 'universal' schemas    
-    prepareSchemas().then(resp => {
+    // STEP 0: Prepare the 'universal' schemas 
+
+    async function initializeJSONGrapher() {
+        try{
+            const universalSchemas = await prepareUniversalSchemas();
+            schema1json = universalSchemas[0];
+            schema2json = universalSchemas[1];
+
+            return [schema1json, schema2json];
+        }catch(err){
+            console.log("Error from initializeJSONGrapher: ", err);
+        }
+    }
+
+    initializeJSONGrapher().then(resp => {
         // Prepare the schemas
         schema = resp[0];
         plotlyTemplate = resp[1];
@@ -598,7 +612,6 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
                     loadFile(event, 'drop');
                 });
         }
-
     }
     ).catch(e => {
         console.log(e);
