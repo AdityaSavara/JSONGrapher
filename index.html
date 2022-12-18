@@ -596,7 +596,7 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
                 // Event that fires when the user selects a file from the computer from the choose file button
                 document.getElementById('file-selector').addEventListener('change', event => {
                     // Launches the loadFile function after the file is selected
-                    loadFile(event, 'change');
+                    loadAndPlotData(event, 'change');
                 })
 
                 // Event listener for drag and drop
@@ -609,7 +609,7 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
                 dropArea.addEventListener('drop', (event) => {
                     event.preventDefault();
                     // Launches the loadFile function after the file is dropped
-                    loadFile(event, 'drop');
+                    loadAndPlotData(event, 'drop');
                 });
         }
     }
@@ -619,7 +619,7 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
     });
 
     // This function is called the user drops a file or upload it via the input button or drag and drop
-    function loadFile( event, eventType ) {
+    function loadAndPlotData( event, eventType ) {
         // Checks if the file is dropped and if it is uploaded via the input button and gets the file
         const file = eventType === "change" ? event.target.files[0] : event.dataTransfer.files[0];
         // Initialize the reader
@@ -657,6 +657,7 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
                 } else {
                     // If the data is valid against the schema, then we can proceed to the next step
                     // if necessary create download button with json
+                    // STEP 4 and STEP 5 is done in the prepareForPlotting function
                     prepareForPlotting(jsonified, recentFileName).then((res) => {
                         // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
                         appendDownloadButtons(res.downloadData, res.fileName);
@@ -692,10 +693,12 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
                     const hasSimulate = checkSimulate(dataSet);
                     if( hasSimulate ){
                         getAndRunSimulateScript(dataSet, globalData, index).then((simulatedJsonified) => {
+
+                        jsonified = simulatedJsonified;
                        
                         resolve({
                             data: globalData,
-                            downloadData: simulatedJsonified,
+                            downloadData: jsonified,
                             fileName: recentFileName,
                         });
                         })
@@ -703,7 +706,7 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
 
                         resolve({
                             data: globalData,
-                            downloadData: globalData,
+                            downloadData: jsonified,
                             fileName: recentFileName,
                         });
                     }
@@ -728,7 +731,7 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
                             globalData.data = [...globalData.data, ...convertedJsonified.data];
                             resolve({
                                 data: globalData,
-                                downloadData: simulatedJsonified,
+                                downloadData: convertedJsonified,
                                 fileName: recentFileName,
                             });
                         });
