@@ -547,7 +547,7 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
 
     // Convert the received dataset units to the first dataset units
     function convertUnits(jsonified, globalData){
-        new promise((resolve, reject) => {
+        return new Promise((resolve, reject) => {
             try{
                 jsonified.data.forEach((dataSet) => {
                     const newXUnit = getUnitFromLabel(jsonified.layout.xaxis.title);
