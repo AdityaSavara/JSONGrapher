@@ -334,10 +334,7 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
                 document.getElementsByTagName("head")[0].appendChild(loadScript);
                 // Once the script is loaded in the <script> tag, we can run it
                 const simulatedData = Simulate(dataSet);
-                // STEP 5: Check if the units in the dataset are the same as the units in the previous object and convert them
-                const convertSimulatedDataUnits = maybeConvertSimulatedDataUnits(jsonified, simulatedData, index);
-                const jsonifiedWithSimulation = mergeSimulationData(convertSimulatedDataUnits, jsonified, index);
-                resolve(jsonifiedWithSimulation);
+                resolve(simulatedData);
             }catch(err){
                 reject({status: "error", error: "Error: " + err});
             }
@@ -696,16 +693,20 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
                 globalData.data.forEach((dataSet, index) => {
                     const hasSimulate = checkSimulate(dataSet);
                     if( hasSimulate ){
-                        getAndRunSimulateScript(dataSet, globalData, index).then((simulatedJsonified) => {
-                        jsonified = simulatedJsonified;
-                        // STEP 5: Check if the units in the dataset are the same as the units in the previous object and convert them
-                        // There is  no STEP 5 at this line, because the first dataset provided by the user is used to define the units of GlobalData.
-                        //Finally, return the objects that have been prepared for plotting an downloading.
-                        resolve({
-                            data: globalData,
-                            downloadData: jsonified,
-                            fileName: recentFileName,
-                        });
+                        getAndRunSimulateScript(dataSet, globalData, index).then((simulatedData) => {
+                            // STEP 5: Check if the units in the dataset are the same as the units in the previous object and convert them
+                            const convertSimulatedDataUnits = maybeConvertSimulatedDataUnits(jsonified, simulatedData, index);
+                            const simulatedJsonified = mergeSimulationData(convertSimulatedDataUnits, jsonified, index);
+
+                            jsonified = simulatedJsonified;
+                            // STEP 5: Check if the units in the dataset are the same as the units in the previous object and convert them
+                            // There is  no STEP 5 at this line, because the first dataset provided by the user is used to define the units of GlobalData.
+                            //Finally, return the objects that have been prepared for plotting an downloading.
+                            resolve({
+                                data: globalData,
+                                downloadData: jsonified,
+                                fileName: recentFileName,
+                            });
                         })
                     } else {
                         // STEP 5: Check if the units in the dataset are the same as the units in the previous object and convert them
@@ -732,8 +733,10 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
                 _jsonified.data.forEach((dataSet, index) => {
                     const hasSimulate = checkSimulate(dataSet);
                     if( hasSimulate ){
-                        getAndRunSimulateScript(dataSet, jsonified, index).then((simulatedJsonified) => {
+                        getAndRunSimulateScript(dataSet, jsonified, index).then((simulatedData) => {
                             // STEP 5: Check if the units in the dataset are the same as the units in the previous object and convert them
+                            const convertSimulatedDataUnits = maybeConvertSimulatedDataUnits(jsonified, simulatedData, index);
+                            const simulatedJsonified = mergeSimulationData(convertSimulatedDataUnits, jsonified, index);
                             const convertedJsonified = convertUnits(simulatedJsonified, globalData);
                             // merge
                             globalData.data = [...globalData.data, ...convertedJsonified.data];
