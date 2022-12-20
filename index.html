@@ -344,54 +344,66 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
 
     // Check the units of the simulated data compared to the json record layout field and convert them if needed
     function maybeConvertSimulatedDataUnits(jsonified, simulatedData, index){
-        // Javascript doesn't have deep clones so we use the JSON solution
-        // source: https://stackoverflow.com/questions/597588/how-do-you-clone-an-array-of-objects-in-javascript
-        let _simulatedData = JSON.parse(JSON.stringify(simulatedData));
-        const desiredXUnit = getUnitFromLabel(jsonified.layout.xaxis.title);
-        const desiredYUnit = getUnitFromLabel(jsonified.layout.yaxis.title);
-        const simulatedXUnit = getUnitFromLabel(simulatedData.data.x_label);
-        const simulatedYUnit = getUnitFromLabel(simulatedData.data.y_label);
+        return new Promise((resolve, reject) => {
+            try{
+                // Javascript doesn't have deep clones so we use the JSON solution
+                // source: https://stackoverflow.com/questions/597588/how-do-you-clone-an-array-of-objects-in-javascript
+                let _simulatedData = JSON.parse(JSON.stringify(simulatedData));
+                const desiredXUnit = getUnitFromLabel(jsonified.layout.xaxis.title);
+                const desiredYUnit = getUnitFromLabel(jsonified.layout.yaxis.title);
+                const simulatedXUnit = getUnitFromLabel(simulatedData.data.x_label);
+                const simulatedYUnit = getUnitFromLabel(simulatedData.data.y_label);
 
-        if( desiredXUnit !== simulatedXUnit ){
-            const xConvertFactor = convert.fullConversion(simulatedXUnit, desiredXUnit);
-            const convertedXArray = _simulatedData.data.x.map((x) => {
-                if( xConvertFactor.status == 0 ){
-                    return parseFloat(x) * xConvertFactor.output.num;
-                } else {
-                    xConvertFactor.messages.forEach((message) => {
-                        errorDiv.innerText = message.message;
-                    })
+                if( desiredXUnit !== simulatedXUnit ){
+                    const xConvertFactor = convert.fullConversion(simulatedXUnit, desiredXUnit);
+                    const convertedXArray = _simulatedData.data.x.map((x) => {
+                        if( xConvertFactor.status == 0 ){
+                            return parseFloat(x) * xConvertFactor.output.num;
+                        } else {
+                            xConvertFactor.messages.forEach((message) => {
+                                errorDiv.innerText = message.message;
+                            })
+                        }
+                    });
+                    _simulatedData.data.x = convertedXArray;
+                    _simulatedData.data.x_label = removeUnitFromLabel(_simulatedData.data.x_label) + "(" + desiredXUnit + ")";
                 }
-            });
-            _simulatedData.data.x = convertedXArray;
-            _simulatedData.data.x_label = removeUnitFromLabel(_simulatedData.data.x_label) + "(" + desiredXUnit + ")";
-        }
 
-        if( desiredYUnit !== simulatedYUnit ){
-            const yConvertFactor = convert.fullConversion(simulatedYUnit, desiredYUnit);
-            const convertedYArray = _simulatedData.data.y.map((y) => {
-                if( yConvertFactor.status == 0 ){
-                    return parseFloat(y) * yConvertFactor.output.num;
-                } else {
-                    yConvertFactor.messages.forEach((message) => {
-                        errorDiv.innerText = message.message;
+                if( desiredYUnit !== simulatedYUnit ){
+                    const yConvertFactor = convert.fullConversion(simulatedYUnit, desiredYUnit);
+                    const convertedYArray = _simulatedData.data.y.map((y) => {
+                        if( yConvertFactor.status == 0 ){
+                            return parseFloat(y) * yConvertFactor.output.num;
+                        } else {
+                            yConvertFactor.messages.forEach((message) => {
+                                errorDiv.innerText = message.message;
+                            })
+                        }
                     })
+                    _simulatedData.data.y = convertedYArray;
+                    _simulatedData.data.y_label = removeUnitFromLabel(_simulatedData.data.y_label) + "(" + desiredYUnit + ")";
                 }
-            })
-            _simulatedData.data.y = convertedYArray;
-            _simulatedData.data.y_label = removeUnitFromLabel(_simulatedData.data.y_label) + "(" + desiredYUnit + ")";
-        }
 
-        return _simulatedData;
+                resolve(_simulatedData);
+            }catch(err){
+                reject({status: "error", error: "Error: " + err});
+            }
+        })
     }
 
     // Gets the simulation data and adds it to the jsonified object
     function mergeSimulationData(simulationResult, jsonified, index){
-        jsonified.layout.xaxis.title = simulationResult.data.x_label;
-        jsonified.layout.yaxis.title = simulationResult.data.y_label;
-        jsonified.data[index].x = simulationResult.data.x;
-        jsonified.data[index].y = simulationResult.data.y;
-        return jsonified;
+        return new Promise((resolve, reject) => {
+            try{
+                jsonified.layout.xaxis.title = simulationResult.data.x_label;
+                jsonified.layout.yaxis.title = simulationResult.data.y_label;
+                jsonified.data[index].x = simulationResult.data.x;
+                jsonified.data[index].y = simulationResult.data.y;
+                resolve(jsonified);
+            }catch(err){
+                reject({status: "error", error: "Error: " + err});
+            }
+        })
     }
 
     // A function that visualizes the data with plotly
@@ -535,37 +547,42 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
 
     // Convert the received dataset units to the first dataset units
     function convertUnits(jsonified, globalData){
-        jsonified.data.forEach((dataSet) => {
-            const newXUnit = getUnitFromLabel(jsonified.layout.xaxis.title);
-            const newYUnit = getUnitFromLabel(jsonified.layout.yaxis.title);
-            if(globalData.unit.x !== newXUnit){
-                const xConvertFactor = convert.fullConversion(newXUnit, globalData.unit.x);
-                dataSet.x = dataSet.x.map(x => {
-                    if( xConvertFactor.status == 0 ){
-                        return parseFloat(x) * xConvertFactor.output.num;
-                    } else {
-                        xConvertFactor.messages.forEach((message) => {
-                            errorDiv.innerText = message.message;
+        new promise((resolve, reject) => {
+            try{
+                jsonified.data.forEach((dataSet) => {
+                    const newXUnit = getUnitFromLabel(jsonified.layout.xaxis.title);
+                    const newYUnit = getUnitFromLabel(jsonified.layout.yaxis.title);
+                    if(globalData.unit.x !== newXUnit){
+                        const xConvertFactor = convert.fullConversion(newXUnit, globalData.unit.x);
+                        dataSet.x = dataSet.x.map(x => {
+                            if( xConvertFactor.status == 0 ){
+                                return parseFloat(x) * xConvertFactor.output.num;
+                            } else {
+                                xConvertFactor.messages.forEach((message) => {
+                                    errorDiv.innerText = message.message;
+                                })
+                            }
+                        })
+                    }
+                    
+                    if( globalData.unit.y !== newYUnit ){
+                        const yConvertFactor = convert.fullConversion(newYUnit, globalData.unit.y);
+                        dataSet.y = dataSet.y.map(y => {
+                            if( yConvertFactor.status == 0 ){
+                                return parseFloat(y) * yConvertFactor.output.num;
+                            } else {
+                                yConvertFactor.messages.forEach((message) => {
+                                    errorDiv.innerText = message.message;
+                                })
+                            }
                         })
                     }
                 })
-            }
-            
-            if( globalData.unit.y !== newYUnit ){
-                const yConvertFactor = convert.fullConversion(newYUnit, globalData.unit.y);
-                dataSet.y = dataSet.y.map(y => {
-                    if( yConvertFactor.status == 0 ){
-                        return parseFloat(y) * yConvertFactor.output.num;
-                    } else {
-                        yConvertFactor.messages.forEach((message) => {
-                            errorDiv.innerText = message.message;
-                        })
-                    }
-                })
+            resolve(jsonified);
+            }catch(err){
+                reject(err);
             }
         })
-
-        return jsonified
     }
 
 
@@ -696,8 +713,8 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
                     if( hasSimulate ){
                         const simulatedData = await getAndRunSimulateScript(dataSet, globalData, index);
                         // STEP 5: Check if the units in the dataset are the same as the units in the previous object and convert them
-                        const convertSimulatedDataUnits = maybeConvertSimulatedDataUnits(jsonified, simulatedData, index);
-                        const simulatedJsonified = mergeSimulationData(convertSimulatedDataUnits, jsonified, index);
+                        const convertSimulatedDataUnits = await maybeConvertSimulatedDataUnits(jsonified, simulatedData, index);
+                        const simulatedJsonified = await mergeSimulationData(convertSimulatedDataUnits, jsonified, index);
 
                         jsonified = simulatedJsonified;
                         // STEP 5: Check if the units in the dataset are the same as the units in the previous object and convert them
@@ -728,15 +745,15 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
                     if( hasSimulate ){
                         const simulatedData = await getAndRunSimulateScript(dataSet, jsonified, index);
                         // STEP 5: Check if the units in the dataset are the same as the units in the previous object and convert them
-                        const convertSimulatedDataUnits = maybeConvertSimulatedDataUnits(jsonified, simulatedData, index);
-                        const simulatedJsonified = mergeSimulationData(convertSimulatedDataUnits, jsonified, index);
-                        convertedJsonified = convertUnits(simulatedJsonified, globalData);
+                        const convertSimulatedDataUnits = await maybeConvertSimulatedDataUnits(jsonified, simulatedData, index);
+                        const simulatedJsonified = await mergeSimulationData(convertSimulatedDataUnits, jsonified, index);
+                        convertedJsonified = await convertUnits(simulatedJsonified, globalData);
                         // merge
                         globalData.data = [...globalData.data, ...convertedJsonified.data];
                     }
                 };
                 // STEP 5: Check if the units in the dataset are the same as the units in the previous object and convert them
-                convertedJsonified = convertUnits(_jsonified, globalData);
+                convertedJsonified = await convertUnits(_jsonified, globalData);
                 // merge
                 globalData.data = [...globalData.data, ...convertedJsonified.data];
                 //Finally, return the objects that have been prepared for plotting an downloading.
