@@ -413,9 +413,12 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
     }
 
     // A function that will create a csv string from the jsonified data
+    // Returns Error: "The CSV could not be created: currently the CSV export only supports creating CSV files for XYYY data and not for cases that require XYXY."
     function createCSV(jsonified){
         // Defining the variables
         let csv = "";
+        let bulkValues = "";
+        let errors = false;
         const csvHeadersArray = [];
         const csvValuesArray = [];
         const xLabel = jsonified.layout.xaxis.title;
@@ -435,13 +438,33 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
         csv += "x_label: " + xLabel + "\r\n";
         csv += "y_label: " + yLabel + "\r\n";
         csv += "seriesnames: " + seriesName + "\r\n";
-        csv += "x_values, y_values\r\n";
 
-        // Iterating through the x and y data and adding it to the csv string
-        dataSet.x.forEach((x, index) => {
-            csv += x + "," + dataSet.y[index] + "\r\n";
+        csv += "x_values";
+
+        // Iterating through the data sets and adding the x and y headers to the csv string and checking if all x arrays are equal
+        dataSets.forEach((dataSet, index) => {
+            const idx = `_${index +1}`;
+            const suffix = index === dataSets.length - 1 ? "\r\n" : "";
+            csv += ",y" + idx + suffix;
         })
 
+        dataSets[0].x.forEach((x, _index) => {
+            let extraYValues = "";
+            for( let i = 0; i < dataSets.length; i++ ){
+                extraYValues += "," + dataSets[i].y[_index];
+            }
+            csv += x + extraYValues + "\r\n";
+        })
+
+        for( const dataSet of dataSets ){
+            const first_X_array = dataSets[0].x;
+            // Checking if all the x arrays are equal
+            if( dataSet.x.toString() !== first_X_array.toString() ){
+                errors = true;
+                csv = "Error: The CSV could not be created: currently the CSV export only supports creating CSV files for XYYY data and not for cases that require XYXY.";
+            }
+        }
+        
         return {
             csv: csv,
             filename: chartLabel + ".csv"
