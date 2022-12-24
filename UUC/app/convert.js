@@ -91,7 +91,6 @@ function Convert() {
 			_target = _target.replace(/<(.+?)>/g, "");
 		}
 
-
 		// Check if the input custom unit is the same as the target custom unit
 		if( customInputUnit !== customTargetUnit ) {
 			customInputUnit = ""; customTargetUnit = "";
@@ -106,7 +105,7 @@ function Convert() {
 		//parse input & target strings into detailed nested objects, see convert_parse.js
 		iObj = Convert_parse(this, _input);
 		tObj = Convert_parse(this, _target);
-
+	
 		const isTargetCurly = isTarget && Array.isArray(tObj[0]) && tObj[0][0] === '{}'; //whether curly is used in target (appropriately!)
 
 		iObj = this.rationalizeField(iObj, true); //transform detailed nested object to nested Q object
@@ -121,8 +120,10 @@ function Convert() {
 
 		//then the conversion itself is pretty simple!
 		const num = iObj.n / tObj.n;
+
 		if(isNaN(num)){throw this.msgDB['ERR_NaN_result'];}
-		let dim = isTarget ? target : this.vector2text(iObj.v, true); //if no target, then SI representation
+		let dim = isTarget ? _target : this.vector2text(iObj.v, true); //if no target, then SI representation
+
 
 		//correct dimension mismatch
 		const corr = !isTarget || this.checkDimension(iObj.v, tObj.v);
@@ -223,7 +224,9 @@ function Convert() {
 				if(arr.hasOwnProperty(i+1)) {
 					if     (arr[i+1] === '+' && arr[i+2] instanceof Q) {res = that.add     (res, arr[i+2]);}
 					else if(arr[i+1] === '-' && arr[i+2] instanceof Q) {res = that.subtract(res, arr[i+2]);}
-					else {throw that.msgDB['ERR_operator_misplaced'](arr[i+1]);}
+					else {
+						throw that.msgDB['ERR_operator_misplaced'](arr[i+1]);
+					}
 				}
 			}
 			return res;
