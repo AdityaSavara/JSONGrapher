@@ -39,9 +39,9 @@
 <!--                <p>Task 4</p>-->
 <!--            </div>-->
 <!--        </a>-->
-        <a href="Task7.html">
+        <a href="Task6.html">
             <div class="button active">
-                <p>Task 7</p>
+                <p>Task 6</p>
             </div>
         </a>
     </div>
@@ -56,12 +56,16 @@
     <div id="file-drop-area" >
         Drop a file here:
     </div>
-    <div id='myDiv'><!-- Plotly chart will be drawn inside this DIV --></div>
+
+    <!-- Plotly chart will be drawn inside this DIV -->
+    <div id='myDiv'></div>
+    <!-- Error message will be displayed inside this DIV -->
     <div id="errorDiv"></div>
-    <div id="downloadLink">
-    
-    </div>
+
+    <div id="downloadLink"></div>
 </div>
+
+
 <script>
     let globalData = null;
     let plotlyTemplate = null;
@@ -94,6 +98,7 @@
         return 'json';
     }
 
+    /* not really relevant so commented out
     function getJsonFileName(fileName){
         let arrayName = fileName.split('.');
         if(arrayName.includes("csv")){
@@ -104,6 +109,7 @@
         }
         return arrayName.join(".");
     }
+    */
 
     function jsonifyTSV(fileContent){
         //separate rows
@@ -213,6 +219,7 @@
         }
     }
 
+    /* not really relevant so commented out to clean the interface
     // A function that will create a download link for the json file as soon as the user clicks on the "Download JSON" button
     function download(filename, text) {
         // Getting the div that contains the json download link
@@ -226,7 +233,8 @@
         element.click();
         downloadContainer.removeChild(element);
     }
-
+    */
+    /*
     // A function that will display the download link and download the recent file as soon as the user clicks on the "Download JSON" button
     function createDownloadButton(inputFilename, inputText){
         let jsonifiedFilename = getJsonFileName(inputFilename);
@@ -240,7 +248,53 @@
                 }
             });
     }
+    */
 
+    function isValidUrl (urlString){
+	  	var urlPattern = new RegExp('^(https?:\\/\\/)?'+ // validate protocol
+	    '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // validate domain name
+	    '((\\d{1,3}\\.){3}\\d{1,3}))'+ // validate OR ip (v4) address
+	    '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // validate port and path
+	    '(\\?[;&a-z\\d%_.~+=-]*)?'+ // validate query string
+	    '(\\#[-a-z\\d_]*)?$','i'); // validate fragment locator
+	  return !!urlPattern.test(urlString);
+	}
+
+    // function to extract from the title the location of the schema
+    function getSchemaLocation(jsonified){
+        if(isValidUrl(jsonified.title)){
+            schema_location = jsonified.title;
+        }
+        else if(jsonified.title.endsWith('schema.json'))
+        {
+            schema_location = './schema/'+jsonified.title;
+        }
+        else
+        {
+            schema_location = './schema/'+jsonified.title+'.schema.json';
+        }
+        return schema_location;
+    }
+
+    // function to extract from the title the json schema
+    async function getSchemaType(jsonified){
+        schema_location = getSchemaLocation(jsonified);
+        try{
+            const schema1 = await fetch(schema_location);
+            const schema1body = await schema1.text();
+            const schema1json = JSON.parse(schema1body);
+            console.log("/// schema fetched");
+            console.log(schema1json);
+            return schema1json;
+        }
+        catch(err)
+        {
+            // TODO: !! error catching not working as planned
+            console.log("in getSchemaType error:");
+            errorDiv.innerText += "undocumented error in getSchemaType\n";
+            return {};
+        }
+    }
 
     async function prepareSchemas(){
         const schema1 = await fetch('./schema/plot-schema.json');
@@ -262,6 +316,7 @@
 
     // This function is called the user drops a file or upload it via the input button
     function loadFile( event, eventType ) {
+        errorDiv.innerText = "Error Log:\n";
         const file = eventType === "change" ? event.target.files[0] : event.dataTransfer.files[0];
         // Initialize the reader
         const reader = new FileReader();
@@ -279,23 +334,40 @@
                 // try to parse the file as json
                 jsonified = jsonifyData(fileType, dataLoaded);
             } catch(e) {
-                errorDiv.innerText = `Json file has some errors. ${e.message}`
+                errorDiv.innerText += "Json file has some errors. ${e.message}";
             }
 
-            // validate the json
-            const validate = ajv.compile(schema);
-            const valid = validate(jsonified);
+            // need to identify the schema based on the plot type
+            console.log("type of schema needed: ",jsonified.title)
+            console.log("schema location: ",getSchemaLocation(jsonified))
+            
+            // load if the corresponding schema exists
+            getSchemaType(jsonified).then(schema_type=>{
+                console.log(schema_type);
+                var schema_type = {};
+                // check if schema_type is an empty dictionary then
+                // use the default schema
+                if(Object.keys(schema_type).length === 0){
+                    console.log("SchemaType was not recovered, using the default schema");
+                    errorDiv.innerText += "SchemaType was not recovered, using the default schema\n";
+                    schema_type = schema;
+                }
+
+                // validate the json
+                const validate = ajv.compile(schema_type);
+                const valid = validate(jsonified);
                 // Checking if the uploaded data is valid against the schema          
                 if(!valid) {
                     // Console log an error if the data is not valid against the schema
                     console.log('validate errors: ', JSON.stringify(validate.errors));
                     // Display an error message if the data is not valid against the schema
-                    errorDiv.innerText = `Json file does not match the schema. ${JSON.stringify(validate.errors)}`
+                    errorDiv.innerText += "Json file does not match the schema. ${JSON.stringify(validate.errors)}\n";
                 } else {
                     // If the data is valid against the schema, then we can proceed to the next step
                     // if necessary create download button with json
                     recentFileName = event.target.fileName;
-                    createDownloadButton(event.target.fileName, JSON.stringify(jsonified, null, 2));
+                    // download button not needed
+                    //createDownloadButton(event.target.fileName, JSON.stringify(jsonified, null, 2));
 
                     if(!globalData){
                         globalData = jsonified;
@@ -346,10 +418,12 @@
                         Plotly.newPlot('myDiv', copyForPlotly.data, copyForPlotly.layout);
                     }else{
                         clearData();
-                        errorDiv.innerText = `Chart or axis titles does not match.`;
+                        errorDiv.innerText += 'Chart or axis titles does not match.\n';
                     }
                 }
                 }
+            });
+
         })
         reader.readAsText(file);
     }
