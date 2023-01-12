@@ -208,7 +208,8 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
         }
 
         //count number of columns
-        let number_of_columns = arr[0].split(",").length;
+        let number_of_columns = arr[5].split(",").length;
+
 
         //extract the config information
         let comments = arr[0].split(",")[0].split(":")[1].trim();
@@ -218,7 +219,7 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
         let y_label = arr[4].split(",")[0].split(":")[1].trim();
 
         //extract the series names
-        let series_names_array = arr[5].split(":")[1].split("\"")[0].split(",").splice(0,number_of_columns-1).map(n => n.trim());
+        let series_names_array = arr[5].split(":")[1].split("\"")[0].split(",").map(n => n.trim());
 
         //extract the data
         let data = arr.slice(7).map(r => r.split(",").map(str => Number(str)));
