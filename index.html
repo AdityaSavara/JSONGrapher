@@ -429,7 +429,14 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
         const dataSets = jsonified.data;
         const dataSetIndex = jsonified.data.length - 1;
         const dataSet = jsonified.data[dataSetIndex];
-        const seriesName = dataSet.name;
+        let seriesName = "";
+
+        // Adding the name of each dataset separated by comma
+        dataSets.forEach((dataSet) => {
+            const last  = dataSets.indexOf(dataSet) === dataSets.length - 1 ? true : false; 
+            const suffix = !last ? "," : "";
+            seriesName += dataSet.name + suffix;
+        })
 
         // Concatenating the values into the string
         csv += "comments: " + comments + "\r\n";
