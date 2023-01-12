@@ -769,9 +769,10 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
                     const hasSimulate = checkSimulate(dataSet);
                     if( hasSimulate ){
                         const simulatedData = await getAndRunSimulateScript(dataSet, jsonified, index);
-                        // STEP 5: Check if the units in the dataset are the same as the units in the previous object and convert them
+                        //This changes the simulated data to have units matching the json object it came from (that is, the layout field)
                         convertSimulatedDataUnits = await maybeConvertSimulatedDataUnits(jsonified, simulatedData, index);
                         simulatedJsonified = await mergeSimulationData(convertSimulatedDataUnits, jsonified, index);
+                        // STEP 5: Check if the units in the dataset are the same as the units in the previous object and convert them
                         convertedJsonified = await convertUnits(simulatedJsonified, globalData);
                     } else {
                         // STEP 5: Check if the units in the dataset are the same as the units in the previous object and convert them
@@ -779,7 +780,7 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
                     }
                 };
                 
-                // merge
+                // merge the new data with the globalData so everything can be plotted together.
                 globalData.data = [...globalData.data, ...convertedJsonified.data];
                 //Finally, return the objects that have been prepared for plotting an downloading.
                 resolve({
