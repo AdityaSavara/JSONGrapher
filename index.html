@@ -427,7 +427,7 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
                   return parseFloat(x) * xConvertFactor.output.num;
                 } else {
                   xConvertFactor.messages.forEach((message) => {
-                    errorDiv.innerText = message.message;
+                    errorDiv.innerText += message.message + "\n";
                   });
                 }
               });
@@ -449,7 +449,7 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
                   return parseFloat(y) * yConvertFactor.output.num;
                 } else {
                   yConvertFactor.messages.forEach((message) => {
-                    errorDiv.innerText = message.message;
+                    errorDiv.innerText += message.message + "\n";
                   });
                 }
               });
@@ -675,7 +675,7 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
                     return parseFloat(x) * xConvertFactor.output.num;
                   } else {
                     xConvertFactor.messages.forEach((message) => {
-                      errorDiv.innerText = message.message;
+                      errorDiv.innerText += message.message + "\n";
                     });
                   }
                 });
@@ -691,7 +691,7 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
                     return parseFloat(y) * yConvertFactor.output.num;
                   } else {
                     yConvertFactor.messages.forEach((message) => {
-                      errorDiv.innerText = message.message;
+                      errorDiv.innerText = message.message + "\n";
                     });
                   }
                 });
@@ -751,7 +751,7 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
         })
         .catch((e) => {
           console.log(e);
-          errorDiv.innerText = "Error fetching json-schema files...";
+          errorDiv.innerText = "Error fetching json-schema files...\n";
         });
 
       // This function is called the user drops a file or upload it via the input button or drag and drop
@@ -780,7 +780,7 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
             // try to parse the file as json
             jsonified = jsonifyData(fileType, dataLoaded);
           } catch (e) {
-            errorDiv.innerText = `Json file has some errors. ${e.message}`;
+            errorDiv.innerText = `Json file has some errors. ${e.message} \n`;
           }
 
           recentFileName = getFileName(event.target.fileName);
@@ -789,9 +789,6 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
           // STEP 3: Check if the jsonified object is a valid JSON file against the schema
           getSchemaType(jsonified).then((schema_type) => {
             if (Object.keys(schema_type).length === 0) {
-              console.log(
-                "SchemaType was not recovered, using the default schema"
-              );
               errorDiv.innerText +=
                 "SchemaType was not recovered, using the default schema\n";
               schema_type = schema;
@@ -805,9 +802,9 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
               // Console log an error if the data is not valid against the schema
               console.log("validate errors: ", JSON.stringify(validate.errors));
               // Display an error message if the data is not valid against the schema
-              errorDiv.innerText = `Json file does not match the schema. ${JSON.stringify(
+              errorDiv.innerText += `Json file does not match the schema. ${JSON.stringify(
                 validate.errors
-              )}`;
+              )}\n`;
               errorDiv.innerText += `Json file does not match the schema. ${JSON.stringify(
                 validate.errors
               )}\n`;
@@ -945,7 +942,7 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
                 });
               } else {
                 clearData();
-                errorDiv.innerText = `Chart or axis titles does not match.`;
+                errorDiv.innerText += `Chart or axis titles does not match. \n`;
               }
             }
           } catch (err) {
