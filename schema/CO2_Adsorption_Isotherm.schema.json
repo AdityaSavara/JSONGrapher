@@ -1,6 +1,6 @@
 {
+  "$id": "http://json-schema.org/draft-06/schema#",
   "$schema": "http://json-schema.org/draft-06/schema#",
-  "$ref": "#/definitions/requiredProperties",
   "definitions": {
     "requiredProperties": {
       "type": "object",
@@ -8,8 +8,8 @@
       "properties": {
         "title": {
           "type": "string",
-          "comments": "// The pattern should match the beginning of the Schema filename and should have no spaces. The filename should end with .schema.json",
-          "pattern": "CO2_Adsorption_Isotherm"
+          "comments": "// The pattern should match the beginning of the Schema filename and should have no spaces. The filename should end in .schema.json",
+          "pattern": "Adsorption_Isotherm"
         },
         "data": {
           "type": "array",
@@ -42,16 +42,11 @@
         },
         "x": {
           "type": "array",
-          "items": {
-            "type": "string",
-            "format": "integer"
-          }
+          "items": {}
         },
         "y": {
           "type": "array",
-          "items": {
-            "type": "string"
-          }
+          "items": {}
         }
       },
       "required": ["name", "type", "x", "y"],
@@ -111,7 +106,7 @@
         "title": {
           "type": "string",
           "comments": "//The pattern field below is where X units go.",
-          "pattern": "(?=.*CO2|CO_2)(?=.*Bar)"
+          "pattern": "Bar"
         },
         "showgrid": {
           "type": "boolean"
