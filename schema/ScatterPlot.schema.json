@@ -45,14 +45,11 @@
                 "x": {
                     "type": "array",
                     "items": {
-                        "type": "string",
-                        "format": "integer"
                     }
                 },
                 "y": {
                     "type": "array",
                     "items": {
-                        "type": "string"
                     }
                 }
             },
