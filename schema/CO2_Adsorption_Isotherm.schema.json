@@ -9,7 +9,7 @@
         "title": {
           "type": "string",
           "comments": "// The pattern should match the beginning of the Schema filename and should have no spaces. The filename should end in .schema.json",
-          "pattern": "Adsorption_Isotherm"
+          "pattern": "CO2_Adsorption_Isotherm"
         },
         "data": {
           "type": "array",
@@ -106,7 +106,7 @@
         "title": {
           "type": "string",
           "comments": "//The pattern field below is where X units go.",
-          "pattern": "Bar"
+          "pattern": "(?=.*CO2|CO_2)(?=.*Bar)"
         },
         "showgrid": {
           "type": "boolean"
