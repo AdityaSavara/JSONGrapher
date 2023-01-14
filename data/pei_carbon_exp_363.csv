@@ -1,9 +1,9 @@
-comments: Polyethyleneimine on multiwalled carbon nanotubes (363 K) published in https://doi.org/10.3389/fclim.2021.733499 , 
-DataType: CO2_Adsorption_Isotherm,
-Chart_label: CO2 Adsorption,
-x_label: CO2 Pressure (kPa),
-y_label: CO2 Adsorbed (mol/kg),
-seriesnames: CO2 Adsorption on polyethyleneimine on multiwalled carbon nanotubes (363 K mod),
+comments: Polyethyleneimine on multiwalled carbon nanotubes (363 K) published in https://doi.org/10.3389/fclim.2021.733499  
+DataType: CO2_Adsorption_Isotherm
+Chart_label: CO2 Adsorption
+x_label: CO2 Pressure (kPa)
+y_label: CO2 Adsorbed (mol/kg)
+seriesnames: CO2 Adsorption on polyethyleneimine on multiwalled carbon nanotubes (363 K mod)
 x_values,y_values
 0.036322,0.011591209
 0.47554,0.05327836
