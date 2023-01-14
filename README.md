@@ -23,3 +23,5 @@ Additional Information:
 The format that is recommended to be used is shown in the file CO2AdsorptionNaX2.json. When using this format, it is possible to add additional series onto the existing plot from multiple json files.  When doing so, the top-level title must match, as well as the X axis title and Y axis title. The axes titles are meant to be used for units. All other settings, such as chart title, will be taken from the first json file loaded.
 
 Piotr Paszek made the core code of JSON Grapher, which relies on plotly.  He has significant experience with javascript and data visualization, and he may be hired at https://www.upwork.com/freelancers/paszek
+
+Med. Amar Filali added most of the additional features: including unit conversions (using UUC), the ability for external simulations, and CSV download of the last dataset. He has significant experience in making dynamic websites and specialized Javascript codes. He may be hired at https://www.upwork.com/freelancers/~01844d5a23ecf022cf
