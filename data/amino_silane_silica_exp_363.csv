@@ -1,9 +1,9 @@
-comments: Amino silane silica CO2 adsorption experimental (363  K) data published in https://doi.org/10.1016/j.cej.2020.127121,
-DataType: CO2_Adsorption_Isotherm,
-Chart_label: CO2 Adsorption,
-x_label: CO2 Pressure (kPa),
-y_label: CO2 Adsorbed (mol/kg),
-seriesnames: CO2 Adsorption on amino_silane_Silica  (363 K exp),,
+comments: Amino silane silica CO2 adsorption experimental (363  K) data published in https://doi.org/10.1016/j.cej.2020.127121
+DataType: CO2_Adsorption_Isotherm
+Chart_label: CO2 Adsorption
+x_label: CO2 Pressure (kPa)
+y_label: CO2 Adsorbed (mol/kg)
+seriesnames: CO2 Adsorption on amino_silane_Silica  (363 K exp)
 x_values,y_values
 0.051246,0.095527295
 0.097324,0.164433924
@@ -39,4 +39,4 @@ x_values,y_values
 87.902,1.173698123
 92.914,1.179310231
 97.924,1.184486882
-12.95,1.189293603
+102.95,1.189293603
