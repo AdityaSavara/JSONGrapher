@@ -947,7 +947,7 @@ The core code of JSON Grapher was made by Piotr Paszek. He has significant exper
                   fileName: recentFileName,
                 });
               } else {
-                clearData();
+                //clearData(); //Should not clear data when chart or axis titles do not match, just should not plot the new data.
                 errorDiv.innerText += `Chart or axis titles does not match. \n`;
               }
             }
