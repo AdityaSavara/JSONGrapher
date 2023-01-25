@@ -139,18 +139,21 @@
         let chart_label = arr[2].split("\t")[0].split(":")[1].trim();
         let x_label = arr[3].split("\t")[0].split(":")[1].trim();
         let y_label = arr[4].split("\t")[0].split(":")[1].trim();
+        custom = arr[5] //This field is for custom json objects and is currently ignored.
 
         //extract the series names
-        let series_names_array = arr[5]
+        let series_names_array = arr[6]
           .split(":")[1]
           .split('"')[0]
           .split("\t")
           .splice(0, number_of_columns - 1)
           .map((n) => n.trim());
+        
+        //ignore arr[7] which is custom_variables:
 
         //extract the data
         let data = arr
-          .slice(7)
+          .slice(8)
           .map((r) => r.split("\t").map((str) => Number(str)));
 
         let resultJSON = JSON.parse(JSON.stringify(plotlyTemplate, null, 2)); // clone of the template. The ", null, 2" is optional to make the json more human readable.
@@ -500,7 +503,7 @@
         csv += "Chart_label: " + chartLabel + "\r\n";
         csv += "x_label: " + xLabel + "\r\n";
         csv += "y_label: " + yLabel + "\r\n";
-        csv += "seriesnames: " + seriesName + "\r\n";
+        csv += "series_names: " + seriesName + "\r\n";
 
         csv += "x_values";
 
@@ -919,7 +922,7 @@
                 });
               } else {
                 //clearData(); //Should not clear data when chart or axis titles do not match, just should not plot the new data.
-                errorDiv.innerText += `Added data not plotted. Chart or axis titles does not match. \n`;
+                errorDiv.innerText += `Added data not plotted. The units were not compatible or were not converted successfully. \n`;
               }
             }
           } catch (err) {
