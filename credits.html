@@ -32,7 +32,7 @@
        </a> -->
        <a href="credits.html">
            <div class="button">
-               <p>Credits</p>
+               <p>Info</p>
            </div>
        </a>
        <a href="manual.html">
@@ -62,9 +62,9 @@
     </div>
 </div>
 <script>
-    // Get content from https://github.com/AdityaSavara/JSONGrapher/blob/main/README.md
+    // Get content from https://github.com/AdityaSavara/JSONGrapher/blob/main/credits.md
     document.addEventListener("DOMContentLoaded", function(event) {
-        fetch('https://raw.githubusercontent.com/AdityaSavara/JSONGrapher/main/README.md')
+        fetch('https://raw.githubusercontent.com/AdityaSavara/JSONGrapher/main/credits.md')
             .then(response => response.text())
             .then(text => {
                 let converter = new showdown.Converter();
