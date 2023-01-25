@@ -302,9 +302,9 @@
           const schema1json = JSON.parse(schema1body);
           return schema1json;
         } catch (err) {
-          // TODO: !! error catching not working as planned
-          console.log("in getSchemaType error:");
-          errorDiv.innerText += "undocumented error in getSchemaType\n";
+          // TODO: !! error catching to be made informative.
+          //console.log("in getSchemaType error:");
+          //errorDiv.innerText += "undocumented error in getSchemaType\n";
           return {};
         }
       }
