@@ -9,7 +9,7 @@
         "title": {
           "type": "string",
           "comments": "// The pattern should match the beginning of the Schema filename and should have no spaces. The filename should end in .schema.json",
-          "pattern": "CO2_Adsorption_Isotherm"
+          "pattern": "CO2__Adsorption_Isotherm"
         },
         "data": {
           "type": "array",

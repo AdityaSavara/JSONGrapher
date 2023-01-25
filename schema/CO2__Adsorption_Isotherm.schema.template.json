@@ -1,6 +1,6 @@
 {   
     "comments": "// A JSON record can have any name, and any extension (such as .txt or .json). For example, CO2AdsorptionNaX.json. The top level title field defines which schema to use. The user can create custom fields to store additional information. Remember to add a comma at the end of any fields added.",
-	"title": "CO2_Adsorption_Isotherm", 
+	"title": "CO2__Adsorption_Isotherm", 
     "data": [
         {
             "comments": "// The curly bracket starts a data series. A file can have more than one data series. The uid is an optional unique ID and can even be a doi, for example.  The name field is the name of the series and will appear in the legend.",
