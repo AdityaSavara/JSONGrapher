@@ -9,10 +9,10 @@ You can upload the example files to the above link to try using JSONGrapher.
 JSONGrapher also automatically converts between different units, which are provided within parentheses in the data file.
 
 The direct links to the example files are::  
- https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/CO2AdsorptionNaX2.json
- https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/CO2Adsorption_NaX_and_CaX_two_series.json
- https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/CO2AdsorptionNaX2.csv
- https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/CO2AdsorptionNaX2.tsv.txt
+ https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/1-CO2__Adsorption_Isotherms/CO2AdsorptionNaX2.json
+ https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/1-CO2__Adsorption_Isotherms/CO2Adsorption_NaX_and_CaX_two_series.json
+ https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/1-CO2__Adsorption_Isotherms/CO2AdsorptionNaX2.csv
+ https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/1-CO2__Adsorption_Isotherms/CO2AdsorptionNaX2.tsv.txt
 
 Some additional files, including invalid files, are inside https://github.com/AdityaSavara/JSONGrapherExamples
 
