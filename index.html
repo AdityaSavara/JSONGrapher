@@ -760,7 +760,7 @@
             // try to parse the file as json
             jsonified = jsonifyData(fileType, dataLoaded);
           } catch (e) {
-            errorDiv.innerText = `Json file is in a zipfile or has some errors. If it is in a zipfile, unzip before uploading. ${e.message} \n`;
+            errorDiv.innerText = `Error: Data record could not be converted to JSON. If it is in a zipfile, unzip before uploading. Error Details: ${e.message} \n`;
           }
 
           recentFileName = getFileName(event.target.fileName);
