@@ -770,7 +770,7 @@
           getSchemaType(jsonified).then((schema_type) => {
             if (Object.keys(schema_type).length === 0) {
               errorDiv.innerText +=
-                "Schema specific to this DataType not found or not compatible, using the default scatter plot schema.\n";
+                "Schema check: There was no Schema specific to this DataType, or the schema was not compatible. The the default scatter plot schema was used.\n";
               schema_type = schema;
             }
 
