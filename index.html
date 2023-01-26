@@ -80,7 +80,7 @@
       
       </pre>
       </div>
-      <div id="myDiv"><!-- Plotly chart will be drawn inside this DIV --></div>
+      <div id="plotlyDiv"><!-- Plotly chart will be drawn inside this DIV --></div>
       <div id="errorDiv"></div>
       <div id="downloadLink"></div>
     </div>
@@ -114,7 +114,7 @@
         document.getElementById("downloadButtonsContainer").innerHTML = "";
         document.getElementById("file-selector").value = "";
         document.getElementById("download").style.display = "none";
-        Plotly.purge("myDiv");
+        Plotly.purge("plotlyDiv");
       }
 
       // A function that checks if the uploaded file extension
@@ -476,7 +476,7 @@
       // A function that visualizes the data with plotly
       function visualizeData(globalData) {
         let copyForPlotly = JSON.parse(JSON.stringify(globalData)); // Plotly mutates the input !!!
-        Plotly.newPlot("myDiv", copyForPlotly.data, copyForPlotly.layout);
+        Plotly.newPlot("plotlyDiv", copyForPlotly.data, copyForPlotly.layout);
       }
 
       // A function that will create a csv string from the jsonified data
