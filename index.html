@@ -64,7 +64,6 @@
       <div class="file-actions">
         <input type="file" id="file-selector" />
         <button id="reset" onclick="clearData()">Reset data</button>
-        Download Last Data Set As:
         <button id="download" style="display: none">
           Download Last Data Set as a JSON File
         </button>
@@ -633,7 +632,7 @@
         );
         // insert a download button with downloadLink after downloadJSON
         // Clear the container
-        buttonsContainer.innerHTML = "";
+        buttonsContainer.innerHTML = "Download Last Data Set As:";
         // Add download JSON button
         buttonsContainer.appendChild(downloadJSONBUTTON);
         // Add download CSV button
