@@ -66,15 +66,9 @@
         "title": {
           "type": "string"
         },
-        "xaxis": {
-          "$ref": "#/definitions/Xaxis"
-        },
-        "yaxis": {
-          "$ref": "#/definitions/Yaxis"
-        },
-        "legend": {
-          "$ref": "#/definitions/Legend"
-        },
+        "xaxis": {},
+        "yaxis": {},
+        "legend": {},
         "autosize": {
           "type": "boolean"
         },
