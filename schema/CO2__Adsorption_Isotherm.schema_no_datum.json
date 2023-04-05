@@ -1,0 +1,138 @@
+{
+  "$id": "http://json-schema.org/draft-06/schema#",
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "definitions": {
+    "requiredProperties": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "title": {
+          "type": "string",
+          "comments": "// The pattern should match the beginning of the Schema filename and should have no spaces. The filename should end in .schema.json",
+          "pattern": "CO2__Adsorption_Isotherm"
+        },
+        "data": {
+          "type": "array",
+          "items": {}
+        },
+        "layout": {}
+      },
+      "required": ["data", "layout", "title"],
+      "title": "requiredProperties"
+    },
+    "Datum": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "uid": {
+          "type": "string"
+        },
+        "line": {},
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "x": {
+          "type": "array",
+          "items": {}
+        },
+        "y": {
+          "type": "array",
+          "items": {}
+        }
+      },
+      "required": ["name", "type", "x", "y"],
+      "title": "Datum"
+    },
+    "Line": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "shape": {
+          "type": "string"
+        },
+        "width": {
+          "type": "integer"
+        }
+      },
+      "title": "Line"
+    },
+    "Layout": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "xaxis": {
+          "$ref": "#/definitions/Xaxis"
+        },
+        "yaxis": {
+          "$ref": "#/definitions/Yaxis"
+        },
+        "legend": {
+          "$ref": "#/definitions/Legend"
+        },
+        "autosize": {
+          "type": "boolean"
+        },
+        "plot_bgcolor": {
+          "type": "string"
+        },
+        "paper_bgcolor": {
+          "type": "string"
+        }
+      },
+      "required": ["title", "xaxis", "yaxis"],
+      "title": "Layout"
+    },
+    "Legend": {
+      "type": "object",
+      "additionalProperties": true,
+      "title": "Legend"
+    },
+    "Xaxis": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "title": {
+          "type": "string",
+          "comments": "//The pattern field below is where X units go.",
+          "pattern": "(?=.*CO2|CO_2)(?=.*Bar)"
+        },
+        "showgrid": {
+          "type": "boolean"
+        },
+        "autorange": {
+          "type": "boolean"
+        }
+      },
+      "required": ["title"],
+      "title": "Xaxis"
+    },
+    "Yaxis": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "title": {
+          "type": "string",
+          "comments": "//The pattern field below is where Y units go.",
+          "pattern": "mol/kg|mol kg^-1 "
+        },
+        "autorange": {
+          "type": "boolean"
+        },
+        "gridcolor": {
+          "type": "string"
+        },
+        "ticksuffix": {
+          "type": "string"
+        }
+      },
+      "required": ["title"],
+      "title": "Yaxis"
+    }
+  }
+}
