@@ -14,11 +14,11 @@
         "data": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/Datum"
+            "comments": "$ref: #/definitions/Datum"
           }
         },
         "layout": {
-          "$ref": "#/definitions/Layout"
+          "comments": "$ref: #/definitions/Layout"
         }
       },
       "required": ["data", "layout", "title"],
@@ -32,7 +32,7 @@
           "type": "string"
         },
         "line": {
-          "$ref": "#/definitions/Line"
+          "comments": "$ref: #/definitions/Line"
         },
         "name": {
           "type": "string"
@@ -73,13 +73,13 @@
           "type": "string"
         },
         "xaxis": {
-          "$ref": "#/definitions/Xaxis"
+          "comments": "$ref: #/definitions/Xaxis"
         },
         "yaxis": {
-          "$ref": "#/definitions/Yaxis"
+          "comments": "$ref: #/definitions/Yaxis"
         },
         "legend": {
-          "$ref": "#/definitions/Legend"
+          "comments": "$ref: #/definitions/Legend"
         },
         "autosize": {
           "type": "boolean"
