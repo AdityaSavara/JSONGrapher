@@ -46,20 +46,38 @@
             <p>License</p>
           </div>
         </a>
-       <a href="credits.html">
-           <div class="button">
-               <p>Credits</p>
-           </div>
-       </a>
+        <a href="credits.html">
+          <div class="button">
+            <p>Credits</p>
+          </div>
+        </a>
       </div>
     </header>
     <div class="page">
       <h1>JSONGrapher</h1>
       <p>
-        Upload data below for plotting -- use the browse button or the drag-and-drop box. <br> Then, upload even more data! It will be plotted on the same graph!
+        Upload data below for plotting -- use the browse button or the
+        drag-and-drop box. <br />
+        Then, upload even more data! It will be plotted on the same graph!
       </p>
       <p>
-        <a href="https://www.dropbox.com/s/1s8ib1rsv3xmj1c/3_edited.mp4?dl=0" target="_blank">Demonstration Video</a> | <a href=" https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/DemonstrationFiles.zip" target="_blank">Demonstration Files</a> (First unzip, then plot with JSON Grapher) | <a href="https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords.zip" target="_blank">Additional Examples</a>
+        <a
+          href="https://www.dropbox.com/s/1s8ib1rsv3xmj1c/3_edited.mp4?dl=0"
+          target="_blank"
+          >Demonstration Video</a
+        >
+        |
+        <a
+          href=" https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/DemonstrationFiles.zip"
+          target="_blank"
+          >Demonstration Files</a
+        >
+        (First unzip, then plot with JSON Grapher) |
+        <a
+          href="https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords.zip"
+          target="_blank"
+          >Additional Examples</a
+        >
       </p>
       <div class="file-actions">
         <input type="file" id="file-selector" />
@@ -70,21 +88,20 @@
         <div id="downloadButtonsContainer"></div>
       </div>
       <p></p>
-      <div id="file-drop-area">Drop a file here:
-      <pre>
-      
-           
-      
-      </pre>
+      <div id="file-drop-area">
+        Drop a file here:
+        <pre></pre>
       </div>
-      <div id="plotlyDiv"><!-- Plotly chart will be drawn inside this DIV --></div>
+      <div id="plotlyDiv">
+        <!-- Plotly chart will be drawn inside this DIV -->
+      </div>
       <div id="errorDiv"></div>
       <div id="downloadLink"></div>
-      <div id="conceptDiv"><!-- The concept image will be shown in this div. -->
-      <pre>
-      
-      
-      </pre><center><img src="ConceptImage.png" width="600"></center></div>
+      <div id="conceptDiv">
+        <!-- The concept image will be shown in this div. -->
+        <pre></pre>
+        <center><img src="ConceptImage.png" width="600" /></center>
+      </div>
     </div>
     <script>
       //JSONGrapher has the following steps, which will be commented in the MAIN BLOCK OF CODE of JSONGrapher:
@@ -102,6 +119,9 @@
       let plotlyTemplate = null;
       let schema = null;
       let recentFileName = null;
+
+      let schemaURL = "";
+      let schemaTemplateURL = "";
 
       // Initializing the AJV validator
       const ajv = new Ajv();
@@ -150,7 +170,7 @@
         let chart_label = arr[2].split("\t")[0].split(":")[1].trim();
         let x_label = arr[3].split("\t")[0].split(":")[1].trim();
         let y_label = arr[4].split("\t")[0].split(":")[1].trim();
-        custom = arr[5] //This field is for custom json objects and is currently ignored.
+        custom = arr[5]; //This field is for custom json objects and is currently ignored.
 
         //extract the series names
         let series_names_array = arr[6]
@@ -159,7 +179,7 @@
           .split("\t")
           .splice(0, number_of_columns - 1)
           .map((n) => n.trim());
-        
+
         //ignore arr[7] which is custom_variables:
 
         //extract the data
@@ -232,11 +252,11 @@
         resultJSON.layout.yaxis.title = y_label;
 
         //Remove any series where the series name is blank.
-        function isNotBlank(value) { 
-          return value != ""; 
-          } 
-        series_names_array = series_names_array.filter(isNotBlank)
-        
+        function isNotBlank(value) {
+          return value != "";
+        }
+        series_names_array = series_names_array.filter(isNotBlank);
+
         //We make a data set for each series_name, this way the blank series_name that have been removed will not be included.
         let newData = [];
         series_names_array.forEach((series_name, index) => {
@@ -300,6 +320,10 @@
           schema_location = "./schema/" + jsonified.title + ".schema.json";
         }
         return schema_location;
+      }
+
+      function getSchemaTemplateLocation(schema_type) {
+        return "./schema/" + schema_type + ".schema.template.json";
       }
 
       // function to extract from the title the json schema
@@ -643,7 +667,8 @@
         );
         // insert a download button with downloadLink after downloadJSON
         // Clear the container
-        buttonsContainer.innerHTML = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Download Last Data Set As:"; //&nbsp; is HTML code to add a space.
+        buttonsContainer.innerHTML =
+          "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Download Last Data Set As:"; //&nbsp; is HTML code to add a space.
         // Add download JSON button
         buttonsContainer.appendChild(downloadJSONBUTTON);
         // Add download CSV button
@@ -944,5 +969,14 @@
       }
     </script>
   </body>
-<footer><center><a href="license.html">License</a> <a href="Manual.docx" target="_blank">Manual</a> <a href="https://github.com/AdityaSavara/JSONGrapher" target="_blank">Source</a> <a href="credits.html">Credits</a></center></footer>
+  <footer>
+    <center>
+      <a href="license.html">License</a>
+      <a href="Manual.docx" target="_blank">Manual</a>
+      <a href="https://github.com/AdityaSavara/JSONGrapher" target="_blank"
+        >Source</a
+      >
+      <a href="credits.html">Credits</a>
+    </center>
+  </footer>
 </html>
