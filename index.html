@@ -311,34 +311,60 @@
       }
 
       // function to extract from the title the location of the schema
-      function getSchemaLocation(jsonified) {
+      function getSchemaLocation(jsonified, template = false) {
         if (isValidUrl(jsonified.title)) {
-          schema_location = jsonified.title;
+          return jsonified.title;
         } else if (jsonified.title.endsWith("schema.json")) {
-          schema_location = "./schema/" + jsonified.title;
+          if (template) {
+            const template_suffix = jsonified.title.replace(
+              ".schema.json",
+              ".schema.template.json"
+            );
+            return "./schema/" + template_suffix;
+          }
+          return "./schema/" + jsonified.title;
         } else {
-          schema_location = "./schema/" + jsonified.title + ".schema.json";
+          if (template) {
+            return "./schema/" + jsonified.title + ".schema.template.json";
+          }
+          return "./schema/" + jsonified.title + ".schema.json";
         }
-        return schema_location;
       }
 
-      function getSchemaTemplateLocation(schema_type) {
+      function getSchemaTemplateLocation(jsonified) {
         return "./schema/" + schema_type + ".schema.template.json";
       }
 
       // function to extract from the title the json schema
       async function getSchemaType(jsonified) {
+        let schema2body;
         schema_location = getSchemaLocation(jsonified);
+        const schema_template_location = getSchemaLocation(jsonified, true);
         try {
           const schema1 = await fetch(schema_location);
+          const schema2 = await fetch(schema_template_location);
           const schema1body = await schema1.text();
+          if (schema2.status == 404) {
+            schema2body = "{}";
+          } else {
+            schema2body = await schema2.text();
+          }
           const schema1json = JSON.parse(schema1body);
-          return schema1json;
+          const schema2json = JSON.parse(schema2body);
+          return [schema1json, schema2json];
         } catch (err) {
           // TODO: !! error catching to be made informative.
           //console.log("in getSchemaType error:");
           //errorDiv.innerText += "undocumented error in getSchemaType\n";
-          return {};
+          try {
+            const schema1 = await fetch("./schema/0_PlotlyTemplate.json");
+            const schema1body = await schema1.text();
+            const schema1json = JSON.parse(schema1body);
+            return [schema1json, {}];
+          } catch (err2) {
+            return [{}, {}];
+          }
+          return [{}, {}];
         }
       }
 
@@ -732,6 +758,18 @@
         }
       }
 
+      // a function that merges jsonified with the template
+      function mergeObjects(jsonified, schema_template) {
+        const merged = JSON.parse(JSON.stringify(jsonified));
+
+        merged.data.forEach((dataSet) => {
+          dataSet.mode = schema_template.data[0].mode;
+          dataSet.line = schema_template.data[0].mode;
+        });
+
+        return merged;
+      }
+
       ///############################ BELOW IS THE MAIN BLOCK OF CODE FOR JSON GRAPHER ##################################
 
       // STEP 0: Prepare the 'universal' schemas occurs inside initializeJSONGrapher
@@ -803,7 +841,7 @@
 
           // Checking if the uploaded data is valid against the schema
           // STEP 3: Check if the jsonified object is a valid JSON file against the schema
-          getSchemaType(jsonified).then((schema_type) => {
+          getSchemaType(jsonified).then(([schema_type, schema_template]) => {
             if (Object.keys(schema_type).length === 0) {
               errorDiv.innerText +=
                 "Schema check: There was no Schema specific to this DataType, or the schema was not compatible. The default scatter plot schema was used.\n";
@@ -825,10 +863,14 @@
                 validate.errors
               )}\n`;
             } else {
+              let _jsonified = jsonified;
+              if (Object.keys(schema_template).length !== 0) {
+                _jsonified = mergeObjects(jsonified, schema_template);
+              }
               // If the data is valid against the schema, then we can proceed to the next step
               // if necessary create download button with json
               // STEP 4 and STEP 5 is done in the prepareForPlotting function
-              prepareForPlotting(jsonified, recentFileName).then((res) => {
+              prepareForPlotting(_jsonified, recentFileName).then((res) => {
                 // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
                 appendDownloadButtons(res.downloadData, res.fileName);
                 // STEP 7: The plotly template is rendered on the browser
@@ -846,7 +888,8 @@
           try {
             // Checks if the Jsonified is the first file uploaded
             if (!globalData) {
-              globalData = jsonified;
+              let _jsonified = JSON.parse(JSON.stringify(jsonified));
+              globalData = _jsonified;
 
               // Get the unit from the label
               const xUnit = getUnitFromLabel(globalData.layout.xaxis.title);
@@ -876,6 +919,7 @@
                       simulatedData,
                       index
                     );
+
                   const simulatedJsonified = await mergeSimulationData(
                     convertSimulatedDataUnits,
                     jsonified,
@@ -887,6 +931,7 @@
                   // There is  no STEP 5 at this line, because the first dataset provided by the user is used to define the units of GlobalData.
                 }
               }
+
               //Finally, return the objects that have been prepared for plotting an downloading.
               resolve({
                 data: globalData,
