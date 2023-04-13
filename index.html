@@ -313,7 +313,12 @@
       // function to extract from the title the location of the schema
       function getSchemaLocation(jsonified, template = false) {
         if (isValidUrl(jsonified.title)) {
-          return jsonified.title;
+          const template_suffix = jsonified.title.replace(
+            ".schema.json",
+            ".schema.template.json"
+          );
+
+          return !template ? jsonified.title : template_suffix;
         } else if (jsonified.title.endsWith("schema.json")) {
           if (template) {
             const template_suffix = jsonified.title.replace(
