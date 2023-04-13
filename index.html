@@ -317,7 +317,6 @@
             ".schema.json",
             ".schema.template.json"
           );
-
           return !template ? jsonified.title : template_suffix;
         } else if (jsonified.title.endsWith("schema.json")) {
           if (template) {
@@ -326,13 +325,15 @@
               ".schema.template.json"
             );
             return "./schema/" + template_suffix;
+          } else {
+            return "./schema/" + jsonified.title;
           }
-          return "./schema/" + jsonified.title;
         } else {
           if (template) {
             return "./schema/" + jsonified.title + ".schema.template.json";
+          } else {
+            return "./schema/" + jsonified.title + ".schema.json";
           }
-          return "./schema/" + jsonified.title + ".schema.json";
         }
       }
 
@@ -356,6 +357,7 @@
           }
           const schema1json = JSON.parse(schema1body);
           const schema2json = JSON.parse(schema2body);
+          console.log("SCHEMA 1: ", schema1json);
           return [schema1json, schema2json];
         } catch (err) {
           // TODO: !! error catching to be made informative.
