@@ -1,29 +1,23 @@
 {
-  "$id": "http://json-schema.org/draft-06/schema#",
-  "$schema": "http://json-schema.org/draft-06/schema#",
+  "$id": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
   "properties": {
-    "requiredProperties": {
-      "type": "object",
-      "additionalProperties": true,
-      "properties": {
-        "title": {
-          "type": "string",
-          "comments": "// The pattern should match the beginning of the Schema filename and should have no spaces. The filename should end in .schema.json",
-          "pattern": "CO2__Adsorption_Isotherm"
-        },
-        "data": {
-          "type": "array",
-          "items": {
-            "comments": "$ref: #/definitions/Datum"
-          }
-        },
-        "layout": {
-          "comments": "$ref: #/definitions/Layout"
-        }
-      },
-      "required": ["data", "layout", "title"],
-      "title": "requiredProperties"
+    "title": {
+      "type": "string",
+      "comments": "// The pattern should match the beginning of the Schema filename and should have no spaces. The filename should end in .schema.json",
+      "pattern": "CO2__Adsorption_Isotherm"
     },
+    "data": {
+      "type": "array",
+      "items": {
+        "comments": "$ref: #/definitions/Datum"
+      }
+    },
+    "layout": {
+      "comments": "$ref: #/definitions/Layout"
+    }
+  },
+  "definitions": {
     "Datum": {
       "type": "object",
       "additionalProperties": true,
@@ -140,5 +134,7 @@
       "required": ["title"],
       "title": "Yaxis"
     }
-  }
+  },
+  "additionalProperties": true,
+  "required": ["data", "layout", "title"]
 }

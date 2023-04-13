@@ -337,10 +337,6 @@
         }
       }
 
-      function getSchemaTemplateLocation(jsonified) {
-        return "./schema/" + schema_type + ".schema.template.json";
-      }
-
       // function to extract from the title the json schema
       async function getSchemaType(jsonified) {
         let schema2body;
@@ -362,13 +358,12 @@
           // TODO: !! error catching to be made informative.
           //console.log("in getSchemaType error:");
           //errorDiv.innerText += "undocumented error in getSchemaType\n";
-          errorDiv.innerText +=
-            "Schema check: There was no Schema specific to this DataType, or the schema was not compatible. The default scatter plot schema was used.\n";
-          return [schema1json, {}];
+
           try {
             const schema1 = await fetch("./schema/0_PlotlyTemplate.json");
             const schema1body = await schema1.text();
             const schema1json = JSON.parse(schema1body);
+            return [schema1json, {}];
           } catch (err2) {
             return [{}, {}];
           }
@@ -851,6 +846,8 @@
           // STEP 3: Check if the jsonified object is a valid JSON file against the schema
           getSchemaType(jsonified).then(([schema_type, schema_template]) => {
             if (Object.keys(schema_type).length === 0) {
+              errorDiv.innerText +=
+                "Schema check: There was no Schema specific to this DataType, or the schema was not compatible. The default scatter plot schema was used.\n";
               schema_type = schema;
             }
 
