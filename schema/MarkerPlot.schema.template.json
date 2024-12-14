@@ -1,4 +1,5 @@
 {
+  "$schema": "http://json-schema.org/draft-06/schema#",
   "comments": "// A JSON record can have any name, and any extension (such as .txt or .json). For example, CO2AdsorptionNaX.json. The top level title field defines which schema to use. The user can create custom fields to store additional information. Remember to add a comma at the end of any fields added.",
   "title": "scatter_plot",
   "data": [
