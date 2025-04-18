@@ -95,13 +95,6 @@
         async function callServer() {
             const rawInput = document.getElementById('httpsCallInput').value.trim();
             const responseContainer = document.getElementById('responseContainer');
-            const jsonFileInput = document.getElementById('jsonFileInput');
-            
-            // Check if JSON file is loaded
-            if (!jsonFileInput.files.length) {
-                appendMessage('responseContainer', "Error: You must load a JSON file before making an HTTP call.");
-                return;
-            }
 
             if (!rawInput) {
                 appendMessage('responseContainer', "Error: Please enter a valid HTTPS call link.");
