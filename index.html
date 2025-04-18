@@ -64,27 +64,48 @@
     <div class="page">
       <h1>JSONGrapher</h1>
       <p>
-        Upload data below for plotting -- use the browse button or the
-        drag-and-drop box. <br />
-        Then, upload even more data! It will be plotted on the same graph!
+        JSONGrapher plots data from one or more files that are correctly structured, including showing the units! Plot data using the drag-and-drop box or the browse-to-upload option. Then, add more files to compare more data on the same graph!  <br />
+
+
+
       </p>
       <p>
+	Try plotting one of the 
         <a
+          href="https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/DemonstrationFiles.zip"
+          target="_blank"
+          >example files</a
+        > (first unzip, then plot with JSONGrapher). <br />
+
+JSONGrapher currently supports compatibly structured CSV and JSON files. <br />
+      </p>
+
+To make your own files, copy the structure of an example file or see Section 1 of the 
+
+	<a
+          href="https://adityasavara.github.io/JSONGrapher/Manual.pdf"
+          target="_blank"
+          >manual</a
+        >.  <br />
+	 <a
           href="https://www.dropbox.com/s/1s8ib1rsv3xmj1c/3_edited.mp4?dl=0"
           target="_blank"
-          >Demonstration Video</a
+          >How to Plot and Plotting Features Video</a
+
         >
         |
         <a
           href=" https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/DemonstrationFiles.zip"
           target="_blank"
-          >Demonstration Files</a
+          >Example Files</a
+
         >
-        (First unzip, then plot with JSON Grapher) |
+        |
+
         <a
           href="https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords.zip"
           target="_blank"
-          >Additional Examples</a
+          >More Examples</a
         >
       </p>
       <div class="file-actions">
@@ -442,22 +463,67 @@
       }
 
       //  a function that gets the simulate script from an external file by url
-      function getAndRunSimulateScript(dataSet, jsonified, index) {
-        return new Promise(async (resolve, reject) => {
-          try {
-            loadScript = document.createElement("script");
-            const data = await getRawContent(parseUrl(dataSet.simulate.model));
-            loadScript.append(data);
+      /**
+       * A function that gets the simulate script from an external file by URL,
+       * runs the simulate function, and resolves the output.
+       */
+      async function getAndRunSimulateScript(dataSet, jsonified, index) {
+          return new Promise(async (resolve, reject) => {
+        try {
+            console.log("Starting getAndRunSimulateScript function...");
+            console.log("Dataset received:", dataSet);
+
+            // Create a script element
+
+            const loadScript = document.createElement("script");
+
+            // Debug the URL being parsed and fetched
+            const scriptUrl = parseUrl(dataSet.simulate.model);
+            console.log("Parsed script URL:", scriptUrl);
+
+            // Get the raw content from the specified URL
+            const data = await getRawContent(scriptUrl);
+            console.log("Raw script content fetched successfully.");
+
+            // Attach the content to the script element
+            loadScript.textContent = data;
+            console.log("Script element created and content appended.");
+
+            // Add the script to the document head
             document.getElementsByTagName("head")[0].appendChild(loadScript);
-            // Once the script is loaded in the <script> tag, we can run it
-            const simulatedData = simulate(dataSet);
+            console.log("Script added to the document head.");
+
+            // Debug if simulate function is available globally
+            if (typeof simulate !== "function") {
+                console.error("Error: simulate function is not defined!");
+                throw new Error("simulate function is not defined");
+            }
+
+            // Execute the simulate function with the dataset
+
+            const simulatedData = await simulate(dataSet);
+            console.log("Simulate function output received successfully.");
+
+            // Check if simulatedData is an array
+            if (Array.isArray(simulatedData)) {
+                // Log an error message for arrays
+                console.log("Simulate function failed, simulate function log:", JSON.stringify(simulatedData));
+            } else {
+                // Log the simulated data for non-array JSON types
+                console.log("Simulated Data:", JSON.stringify(simulatedData));
+            }            
+
+            // Resolve the Promise with the simulated data
             resolve(simulatedData);
-          } catch (err) {
+        } catch (err) {
+            // Log the error details
+            console.error("Error occurred in getAndRunSimulateScript:", err);
             reject({ status: "error", error: "Error: " + err });
-          }
+        }
+
         });
       }
-
+     
       // Check the units of the simulated data compared to the json record layout field and convert them if needed
       function maybeConvertSimulatedDataUnits(jsonified, simulatedData, index) {
         return new Promise((resolve, reject) => {
