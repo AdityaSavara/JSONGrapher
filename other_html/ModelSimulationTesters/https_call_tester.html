@@ -136,7 +136,7 @@
                         'X-Pinggy-No-Screen': 'True'
                     })
                 });
-
+                // Extract response string and display it
                 const response_string_from_get = await response.text();
                 appendMessage('responseContainer', `Response from server:\n${response_string_from_get}`);
             } catch (error) {
@@ -185,7 +185,7 @@
                     }),
                     body: JSON.stringify(testJson) // Use the loaded JSON data
                 });
-
+                // Extract response string and display it
                 const response_string_from_post = await response.text();
                 appendMessage('postResponseContainer', `Response from POST:\n${response_string_from_post}`);
             } catch (error) {
