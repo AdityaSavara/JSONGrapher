@@ -9,23 +9,32 @@
     <h1>Create JSONGrapher Record</h1>
 
     <form id="jsonForm">
-        <label for="title">Enter Data-Type (such as experiment type):</label>
+        <label for="title">Enter Data-Type, such as experiment type:</label>
         <input type="text" id="title" name="title" required><br><br>
+
+        <label for="comments">Description and Comments (optional):</label><br>
+        <textarea id="comments" name="comments" rows="3" cols="50"></textarea><br><br>
 
         <label for="plotTitle">Graph Title:</label>
         <input type="text" id="plotTitle" name="plotTitle" required><br><br>
 
-        <label for="seriesName">Series Name:</label>
+        <label for="seriesName">Data Series Name:</label>
         <input type="text" id="seriesName" name="seriesName" required><br><br>
 
-        <label for="uid">Dataset Series UID (optional):</label>
+        <label for="uid">Data Series Unique Identifier (optional):</label>
         <input type="text" id="uid" name="uid"><br><br>
        
-        <label for="xLabel">X-Axis Label:</label>
+        <label for="xLabel">X-Axis Label (excluding units):</label>
         <input type="text" id="xLabel" name="xLabel" required><br><br>
 
-        <label for="yLabel">Y-Axis Label:</label>
+        <label for="xUnit">X-Axis Units (you may include multiplication "*", division "/" and as many parentheses "( )" as you want):</label>
+        <input type="text" id="xUnit" name="xUnit" required><br><br>
+
+        <label for="yLabel">Y-Axis Label (excluding units):</label>
         <input type="text" id="yLabel" name="yLabel" required><br><br>
+
+        <label for="yUnit">Y-Axis Units (you may include multiplication "*", division "/" and as many parentheses "( )" as you want):</label>
+        <input type="text" id="yUnit" name="yUnit" required><br><br>
 
         <label for="xValues">X Values (copy and paste column):</label><br>
         <textarea id="xValues" name="xValues" rows="5" cols="50" required></textarea><br><br>
@@ -38,27 +47,30 @@
 
     <script>
         function parseValues(input) {
-            // Split input into lines, then process each line, splitting by commas or trimming spaces
             return input
                 .split(/\r?\n/) // Split by line breaks
                 .map(val => val.split(',').map(v => parseFloat(v.trim()))) // Handle commas within lines
                 .flat() // Flatten the resulting array
-                .filter(val => !isNaN(val)); // Remove any invalid values
+                .filter(val => !isNaN(val)); // Remove invalid values
         }
 
         function createJSON() {
             const title = document.getElementById('title').value;
+            const comments = document.getElementById('comments').value; // Collect comments field value
             const uid = document.getElementById('uid').value;
             const seriesName = document.getElementById('seriesName').value;
             const plotTitle = document.getElementById('plotTitle').value;
+
             const xLabel = document.getElementById('xLabel').value;
+            const xUnit = document.getElementById('xUnit').value;
             const yLabel = document.getElementById('yLabel').value;
+            const yUnit = document.getElementById('yUnit').value;
 
             const xValues = parseValues(document.getElementById('xValues').value);
             const yValues = parseValues(document.getElementById('yValues').value);
 
             const jsonData = {
-                comments: "// A JSON record can have any name, and any extension (such as .txt or .json). For example, CO2AdsorptionNaX.json. The top level title field defines which schema to use.",
+                comments: comments || "// Default comments for the JSON record.",
                 title: title,
                 data: [
                     {
@@ -80,13 +92,13 @@
                     title: plotTitle,
                     xaxis: {
                         comments: "// The x axis title must include the units that are expected.",
-                        title: `${xLabel} (x_unit)`,
+                        title: `${xLabel} (${xUnit})`,
                         showgrid: false,
                         autorange: true
                     },
                     yaxis: {
                         comments: "// The y axis title must include the units that are expected.",
-                        title: `${yLabel} (y_unit)`,
+                        title: `${yLabel} (${yUnit})`,
                         autorange: true,
                         gridcolor: "rgb(208, 208, 208)",
                         ticksuffix: "  "
