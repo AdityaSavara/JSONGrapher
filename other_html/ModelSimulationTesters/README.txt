@@ -2,7 +2,7 @@ These files are for testing model simulation calls directly, without JSONGrapher
 The sections below describe the various files.
 
 ####### JAVASCRIPT SIMULATOR TESTER  ############
-####### javascript_function_local_tester.html ##########
+####### javascript_function_tester.html ##########
 This file tests model simulators that have a javascript front end. 
 Currently, all JSONGrapher model simulators must have a javascript front end and must be hosted on github.
 
@@ -20,7 +20,7 @@ Please note that the simulation step will ignore any model url in the JSONGraphe
 Since all JSONGrapher model simulators must have a javascript front end, the above file can actually test any JSONGrapher model simulator (even the https call ones). But, typically this will be used for direct javascript simulators.
 
 ####### HTTPS CALL SIMULATOR TESTER ############
-####### httpsCall_local_tester.html ##########
+####### httpsCall_tester.html ##########
 This file is for when model simulators require an httpsCall, such as for a python flask model.
 See the manual for more details.
 
