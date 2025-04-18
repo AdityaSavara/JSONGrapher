@@ -31,7 +31,8 @@ To perform the testing:
 ssh -p 443 -o StrictHostKeyChecking=no -R0:127.0.0.1:5000 a.pinggy.io x:xff x:fullurl a:origin:adityasavara.github.io x:passpreflight
 4. Copy and paste your https link into the browser webpage and click "Make HTTPS Ping Call".
 5. Upload a valid JSONGrapher JSON file with model call (such as https_343_kinetic.json )
-6. Click to make the simulate call.
+   -- Make sure you click the load button.
+6. Click the last button to make the simulate call.
 
 Example files and Commands:
     Example https link creation: ssh -p 443 -o StrictHostKeyChecking=no -R0:127.0.0.1:5000 a.pinggy.io x:xff x:fullurl a:origin:adityasavara.github.io x:passpreflight
