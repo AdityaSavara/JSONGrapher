@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Call Flask Server</title>
+</head>
+<body>
+
+    <!-- Heading: User enters a URL for API requests -->
+    <h1>Enter Https Call Link</h1>
+    <input type="text" id="httpsCallInput" placeholder="Enter Https Call URL or Subdomain" style="width: 80%;">
+    <br>
+
+    <!-- Clear input box button -->
+    <button onclick="clearInputBox()">Clear Box</button>
+    <br><br>
+
+    <!-- Button to send a GET request -->
+    <button onclick="callServer()">Make HTTPS Ping Call</button>
+    <br>
+    <p id="fetchingURL"></p>  <!-- Displays the attempted GET request URL -->
+    <div id="responseContainer"></div> <!-- Displays server response for GET request -->
+
+    <br><br>
+
+    <!-- Divider -->
+    <hr style="border: 1px solid #ccc;">
+
+    <!-- Upload JSON file below Call Flask Server section -->
+    <h2>Upload JSONGrapher File to Use for Simulate Call</h2>
+    <input type="file" id="jsonFileInput">
+    <button onclick="validateAndLoadJson()">Load JSON</button>
+    <p id="jsonValidationResult"></p>
+
+    <br><br>
+
+    <!-- Button to send a POST request moved to the bottom -->
+    <h2>Send Simulate Call to Https Server After Loading JSON</h2>
+    <button onclick="postToServer()">Make HTTPS Simulate Call</button>
+    <br>
+    <p id="postFetchingURL"></p>  <!-- Displays the attempted POST request URL -->
+    <div id="postResponseContainer"></div> <!-- Displays server response for POST request -->
+
+    <script>
+        let testJson = {}; // Placeholder variable for JSON data
+
+        /**
+         * Validates and loads JSON file contents into the testJson variable
+         * Checks if 'simulate' exists at the top level; if absent, extracts it from 'data'
+         */
+        function validateAndLoadJson() {
+            const fileInput = document.getElementById('jsonFileInput');
+            const resultContainer = document.getElementById('jsonValidationResult');
+
+            if (fileInput.files.length === 0) {
+                resultContainer.textContent = "Error: No file selected.";
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                try {
+                    let parsedJson = JSON.parse(event.target.result);
+
+                    // Check if 'simulate' exists at the top level, otherwise extract from 'data'
+                    if (parsedJson.hasOwnProperty('simulate')) {
+                        testJson = parsedJson;
+                    } else if (parsedJson.hasOwnProperty('data') && Array.isArray(parsedJson.data) && parsedJson.data.length > 0 && parsedJson.data[0].hasOwnProperty('simulate')) {
+                        testJson = { "simulate": parsedJson.data[0].simulate };
+                    } else {
+                        resultContainer.textContent = "Error: No 'simulate' field found in JSON.";
+                        return;
+                    }
+                    resultContainer.textContent = "Valid JSON loaded successfully.";
+                } catch (error) {
+                    resultContainer.textContent = `Invalid JSON: ${error.message}`;
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        /**
+         * Normalizes the entered URL by trimming spaces, removing extra slashes, 
+         * and ensuring it doesn't contain "http://" or "https://"
+         * @param {string} input - The raw user input URL
+         * @returns {string} - Cleaned-up URL
+         */
+        function normalizeHttpsCallURL(input) {
+            return input.trim().replace(/^https?:\/\//, '').replace(/\/+$/, '');
+        }
+
+        /**
+         * Sends a GET request to the user-provided URL and displays the response
+         */
+        async function callServer() {
+            const rawInput = document.getElementById('httpsCallInput').value.trim();
+            if (!rawInput) {
+                appendMessage('responseContainer', "Error: Please enter a valid HTTPS call link.");
+                return;
+            }
+
+            // Prepare the cleaned-up URL for request
+            const httpsCallURL = normalizeHttpsCallURL(rawInput);
+            const fullURL = `https://${httpsCallURL}`;
+            document.getElementById('fetchingURL').innerText = `Attempting to fetch: ${fullURL}`;
+            console.log(`Fetching from: ${fullURL}`);
+            appendMessage('responseContainer', "Wait until you see text with the word 'Response' or the word 'Error'.");
+
+            try {
+                // Perform a "no-cors" fetch attempt
+                const noCorsResponse = await fetch(fullURL, { mode: 'no-cors' });
+                console.log('No-cors fetch succeeded:', noCorsResponse);
+                appendMessage('responseContainer', "Http call with GET no-cors passed.");
+            } catch (error) {
+                console.error('No-cors fetch error:', error);
+                appendMessage('responseContainer', "Http call with no-cors failed.");
+            }
+
+            try {
+                // Perform actual GET request with headers
+                const response = await fetch(fullURL, {
+                    method: 'GET',
+                    mode: 'cors',
+                    headers: new Headers({
+                        'Origin': 'adityasavara.github.io',
+                        'Referer': 'adityasavara.github.io',
+                        'X-Pinggy-No-Screen': 'True'
+                    })
+                });
+
+                // Extract response string and display it
+                const response_string_from_get = await response.text();
+                appendMessage('responseContainer', `Response from server:\n${response_string_from_get}`);
+            } catch (error) {
+                appendMessage('responseContainer', `Error: ${error.message}`);
+            }
+        }
+
+        /**
+         * Sends a POST request to the user-provided URL and displays the response
+         */
+        async function postToServer() {
+            const rawInput = document.getElementById('httpsCallInput').value.trim();
+            if (!rawInput) {
+                appendMessage('postResponseContainer', "Error: Please enter a valid HTTPS call link.");
+                return;
+            }
+
+            // Prepare the cleaned-up URL for request
+            const postCallURL = normalizeHttpsCallURL(rawInput);
+            const fullURL = `https://${postCallURL}`;
+            document.getElementById('postFetchingURL').innerText = `Attempting to fetch: ${fullURL}`;
+            console.log(`Posting to: ${fullURL}`);
+            appendMessage('postResponseContainer', "Wait until you see text with the word 'Response' or the word 'Error'.");
+
+            try {
+                // Perform a "no-cors" fetch attempt
+                const noCorsResponse = await fetch(fullURL, { mode: 'no-cors' });
+                console.log('No-cors fetch succeeded:', noCorsResponse);
+                appendMessage('postResponseContainer', "Http call with GET no-cors request passed.");
+                appendMessage('postResponseContainer', "Http call for POST cors request is next.");
+            } catch (error) {
+                console.error('No-cors fetch error:', error);
+                appendMessage('postResponseContainer', "Http call with no-cors failed.");
+            }
+
+            try {
+                // Perform actual POST request with JSON payload
+                const response = await fetch(fullURL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: new Headers({
+                        'Origin': 'adityasavara.github.io',
+                        'Referer': 'adityasavara.github.io',
+                        'X-Pinggy-No-Screen': 'True',
+                        'Content-Type': 'application/json'
+                    }),
+                    body: JSON.stringify(testJson) // Use the loaded JSON data
+                });
+
+                // Extract response string and display it
+                const response_string_from_post = await response.text();
+                appendMessage('postResponseContainer', `Response from POST:\n${response_string_from_post}`);
+            } catch (error) {
+                appendMessage('postResponseContainer', `Error during POST request: ${error.message}`);
+            }
+        }
+
+        /**
+         * Adds a message to the specified response container on the page
+         * @param {string} containerId - The ID of the container where the message should appear
+         * @param {string} message - The message to display
+         */
+        function appendMessage(containerId, message) {
+            const container = document.getElementById(containerId);
+            const newElement = document.createElement('p');
+            newElement.textContent = message;
+            container.appendChild(newElement);
+        }
+
+        /**
+         * Clears the input box and both response containers
+         */
+        function clearInputBox() {
+            document.getElementById('httpsCallInput').value = "";
+            document.getElementById('fetchingURL').innerText = "";
+            document.getElementById('postFetchingURL').innerText = "";
+            document.getElementById('responseContainer').innerHTML = "";
+            document.getElementById('postResponseContainer').innerHTML = "";
+        }
+    </script>
+
+</body>
+</html>

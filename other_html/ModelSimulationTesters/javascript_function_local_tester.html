@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulate Runner</title>
+</head>
+<body>
+    <h1>Simulate Function Runner</h1>
+
+    <!-- File upload inputs -->
+    <label for="jsonFile">Upload JSON File:</label>
+    <input type="file" id="jsonFile" accept=".json"><br><br>
+
+    <label for="jsFile">Upload JavaScript File:</label>
+    <input type="file" id="jsFile" accept=".js"><br><br>
+
+    <button id="runSimulate">Run Simulate</button>
+    <pre id="output"></pre>
+
+    <script>
+        // Handle file uploads and run the simulate function
+        document.getElementById('runSimulate').addEventListener('click', async () => {
+            const outputElement = document.getElementById('output');
+            outputElement.textContent = ''; // Clear previous output
+
+            // Get JSON file
+            const jsonFile = document.getElementById('jsonFile').files[0];
+            if (!jsonFile) {
+                outputElement.textContent = 'Please upload a JSON file.';
+                return;
+            }
+
+            // Parse JSON file and extract the simulate field
+            let simulateJSON; // just initializing
+            try {
+                const jsonText = await jsonFile.text();
+                const jsonData = JSON.parse(jsonText);
+
+                // Ensure the field structure exists before accessing it
+                if (jsonData.data && Array.isArray(jsonData.data) && jsonData.data[0]?.simulate) {
+                    simulateJSON = jsonData.data[0]; // Extract "dataset" object which has "simulate" in it
+                } else {
+                    throw new Error('Invalid JSON structure: Missing "data[0].simulate" field.');
+                }
+            } catch (error) {
+                outputElement.textContent = `Error parsing JSON: ${error.message}`;
+                return;
+            }
+
+
+            // Get JavaScript file
+            const jsFile = document.getElementById('jsFile').files[0];
+            if (!jsFile) {
+                outputElement.textContent = 'Please upload a JavaScript file.';
+                return;
+            }
+
+            // Append JavaScript to the head
+            try {
+                const jsText = await jsFile.text();
+                const scriptElement = document.createElement('script');
+                scriptElement.textContent = jsText;
+                document.head.appendChild(scriptElement);
+            } catch (error) {
+                outputElement.textContent = 'Error appending JavaScript file.';
+                return;
+            }
+
+            // Run the `simulate` function
+            try {
+                if (typeof simulate !== 'function') {
+                    outputElement.textContent = 'The uploaded JavaScript does not define a "simulate" function.';
+                    return;
+                }
+                const result = await simulate(simulateJSON);
+                outputElement.textContent = `Output:\n${JSON.stringify(result, null, 2)}`;
+            } catch (error) {
+                outputElement.textContent = `Error running "simulate": ${error.message}`;
+            }
+        });
+    </script>
+</body>
+</html>
