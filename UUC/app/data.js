@@ -35,7 +35,7 @@ Units object is the database of all known units.
 
 const Units = [
 	//EIGHT BASIC UNITS
-	{v: [1,0,0,0,0,0,0,0], id: 'm', name: {cz: 'metr', en: 'metre'}, k:1, SI: true, basic: true, prefix: 'all'},
+	{v: [1,0,0,0,0,0,0,0], id: 'm', name: {cz: 'metr', en: 'meter', am: 'meter'}, k:1, SI: true, basic: true, prefix: 'all'},
 	{v: [0,1,0,0,0,0,0,0], id: 'kg', name: {cz: 'kilogram', en: 'kilogram'}, k:1, SI: true, basic: true, note: {
 		cz: 'To protože kilogram se obtížně programuje, neboť samo "kilo" je předpona. Proto jsem definoval také gram jako odvozenou jednotku SI, která může mít jakékoliv předpony.',
 		en: 'That\'s because kilogram is problematic to code, since the "kilo" itself is a prefix. Therefore I have also defined gram as a derived SI unit, which can have all prefixes.'}},
