@@ -191,7 +191,7 @@
         let resultJSON = JSON.parse(JSON.stringify(plotlyTemplate, null, 2)); // clone of the template. The ", null, 2" is optional to make the json more human readable.
 
         resultJSON.comments = comments;
-        resultJSON.datatype = data_type;
+        resultJSON.title = data_type;
         resultJSON.layout.title = chart_label;
         resultJSON.layout.xaxis.title = x_label;
         resultJSON.layout.yaxis.title = y_label;
@@ -247,7 +247,7 @@
         let resultJSON = JSON.parse(JSON.stringify(plotlyTemplate, null, 2)); // clone of the template. The "null, 2" are optional arguments that increase human readability.
 
         resultJSON.comments = comments;
-        resultJSON.datatype = data_type;
+        resultJSON.title = data_type;
         resultJSON.layout.title = chart_label;
         resultJSON.layout.xaxis.title = x_label;
         resultJSON.layout.yaxis.title = y_label;
@@ -311,34 +311,34 @@
         return !!urlPattern.test(urlString);
       }
 
-      // function to extract from the datatype the location of the schema
+      // function to extract from the title the location of the schema
       function getSchemaLocation(jsonified, template = false) {
-        if (isValidUrl(jsonified.datatype)) {
-          const template_suffix = jsonified.datatype.replace(
+        if (isValidUrl(jsonified.title)) {
+          const template_suffix = jsonified.title.replace(
             ".schema.json",
             ".schema.template.json"
           );
-          return !template ? jsonified.datatype : template_suffix;
-        } else if (jsonified.datatype.endsWith("schema.json")) {
+          return !template ? jsonified.title : template_suffix;
+        } else if (jsonified.title.endsWith("schema.json")) {
           if (template) {
-            const template_suffix = jsonified.datatype.replace(
+            const template_suffix = jsonified.title.replace(
               ".schema.json",
               ".schema.template.json"
             );
             return "./schema/" + template_suffix;
           } else {
-            return "./schema/" + jsonified.datatype;
+            return "./schema/" + jsonified.title;
           }
         } else {
           if (template) {
-            return "./schema/" + jsonified.datatype + ".schema.template.json";
+            return "./schema/" + jsonified.title + ".schema.template.json";
           } else {
-            return "./schema/" + jsonified.datatype + ".schema.json";
+            return "./schema/" + jsonified.title + ".schema.json";
           }
         }
       }
 
-      // function to extract from the datatype the json schema
+      // function to extract from the title the json schema
       async function getSchemaType(jsonified) {
         let schema2body;
         schema_location = getSchemaLocation(jsonified);
@@ -592,7 +592,7 @@
         const xLabel = jsonified.layout.xaxis.title;
         const yLabel = jsonified.layout.yaxis.title;
         const comments = jsonified.comments;
-        const dataType = jsonified.datatype;
+        const dataType = jsonified.title;
         const chartLabel = jsonified.layout.title;
         const dataSets = jsonified.data;
         const dataSetIndex = jsonified.data.length - 1;
@@ -990,7 +990,7 @@
             } else {
               // If the Jsonified is not the first file uploaded, then we can proceed to the next step
               if (
-                globalData.datatype === jsonified.datatype &&
+                globalData.title === jsonified.title &&
                 globalData.layout.xaxis.title.text ===
                   jsonified.layout.xaxis.title.text &&
                 globalData.layout.yaxis.title.text ===
