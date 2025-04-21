@@ -9,8 +9,8 @@
     <h1>Create JSONGrapher Record</h1>
 
     <form id="jsonForm">
-        <label for="title">Enter Data-Type, such as experiment type:</label>
-        <input type="text" id="title" name="title" required><br><br>
+        <label for="datatype">Datatype such as experiment type:</label>
+        <input type="text" id="datatype" name="datatype" required><br><br>
 
         <label for="comments">Description and Comments (optional):</label><br>
         <textarea id="comments" name="comments" rows="3" cols="50"></textarea><br><br>
@@ -55,7 +55,7 @@
         }
 
         function createJSON() {
-            const title = document.getElementById('title').value;
+            const datatype = document.getElementById('datatype').value;
             const comments = document.getElementById('comments').value; // Collect comments field value
             const uid = document.getElementById('uid').value;
             const seriesName = document.getElementById('seriesName').value;
@@ -71,7 +71,7 @@
 
             const jsonData = {
                 comments: comments || "// Default comments for the JSON record.",
-                title: title,
+                datatype: datatype,
                 data: [
                     {
                         comments: "// The curly bracket starts a data series. A file can have more than one data series. The uid is an optional unique ID and can even be a doi, for example.",

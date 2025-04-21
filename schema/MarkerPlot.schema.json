@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "title": {
+    "datatype": {
       "type": "string"
     },
     "data": {
@@ -45,7 +45,6 @@
         }
       },
       "required": ["name", "type", "x", "y"],
-      "title": "Datum"
     },
     "layout": {
       "type": "object",
@@ -74,7 +73,6 @@
         }
       },
       "required": ["title", "xaxis", "yaxis"],
-      "title": "Layout"
     },
     "Line": {
       "type": "object",
@@ -87,12 +85,10 @@
           "type": "integer"
         }
       },
-      "title": "Line"
     },
     "Legend": {
       "type": "object",
       "additionalProperties": true,
-      "title": "Legend"
     },
     "Xaxis": {
       "type": "object",
@@ -109,7 +105,6 @@
         }
       },
       "required": ["title"],
-      "title": "Xaxis"
     },
     "Yaxis": {
       "type": "object",
@@ -129,7 +124,6 @@
         }
       },
       "required": ["title"],
-      "title": "Yaxis"
     }
   },
   "required": ["title", "data", "layout"],

@@ -6,7 +6,7 @@
       "type": "object",
       "additionalProperties": true,
       "properties": {
-        "title": {
+        "datatype": {
           "type": "string",
           "comments": "// The pattern should match the beginning of the Schema filename and should have no spaces. The filename should end in .schema.json",
           "pattern": "CO2__Adsorption_Isotherm"
@@ -17,8 +17,7 @@
         },
         "layout": {}
       },
-      "required": ["data", "layout", "title"],
-      "title": "requiredProperties"
+      "required": ["data", "layout", "datatype"],
     },
     "Datum": {
       "type": "object",
@@ -44,7 +43,6 @@
         }
       },
       "required": ["name", "type", "x", "y"],
-      "title": "Datum"
     },
     "Line": {
       "type": "object",
@@ -57,7 +55,6 @@
           "type": "integer"
         }
       },
-      "title": "Line"
     },
     "Layout": {
       "type": "object",
@@ -80,12 +77,10 @@
         }
       },
       "required": ["title", "xaxis", "yaxis"],
-      "title": "Layout"
     },
     "Legend": {
       "type": "object",
       "additionalProperties": true,
-      "title": "Legend"
     },
     "Xaxis": {
       "type": "object",
@@ -104,7 +99,6 @@
         }
       },
       "required": ["title"],
-      "title": "Xaxis"
     },
     "Yaxis": {
       "type": "object",
@@ -126,7 +120,6 @@
         }
       },
       "required": ["title"],
-      "title": "Yaxis"
     }
   }
 }
