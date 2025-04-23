@@ -1,6 +1,9 @@
 /*
 	data.js
 	contains all of the program constants, the unit database, and database of prefixes
+	"ae" has been added for American English for the following units:
+
+
 */
 
 //program constants
@@ -131,7 +134,7 @@ const Units = [
 	{v: [3,0,0,0,0,0,0,0], id: 'pt', name: {cz: 'pinta', en: 'pint'}, k:568.261e-6},
 	{v: [3,0,0,0,0,0,0,0], id: 'gal', name: {cz: 'americký galon', en: 'US gallon'}, k:3.785412e-3},
 	{v: [3,0,0,0,0,0,0,0], id: 'bsh', name: {cz: 'americký bušl', en: 'US bushel'}, k:35.2391e-3},
-	{v: [3,0,0,0,0,0,0,0], id: 'ccm', name: {cz: 'kubický centimetr', en: 'cubic centimetr'}, k:1e-6},
+	{v: [3,0,0,0,0,0,0,0], id: 'ccm', name: {cz: 'kubický centimetr', en: 'cubic centimetre'}, k:1e-6},
 	{v: [3,0,0,0,0,0,0,0], id: 'bbl', name: {cz: 'barel ropy', en: 'oil barrel'}, k:csts.bbl, prefix: '+'},
 
 	{v: [3,0,-1,0,0,0,0,0], id: 'BPD', name: {cz: 'barel ropy za den', en: 'oil barrel per day'}, k:csts.bbl/3600/24, prefix: '+'},
