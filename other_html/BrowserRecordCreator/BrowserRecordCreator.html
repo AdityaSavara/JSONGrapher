@@ -18,10 +18,10 @@
         <label for="plotTitle">Graph Title:</label>
         <input type="text" id="plotTitle" name="plotTitle" required><br><br>
 
-        <label for="seriesName">Data Series Name:</label>
+        <label for="seriesName">Data Series Name for Legend:</label>
         <input type="text" id="seriesName" name="seriesName" required><br><br>
 
-        <label for="uid">Data Series Unique Identifier (optional):</label>
+        <label for="uid">Data Series Unique ID (optional):</label>
         <input type="text" id="uid" name="uid"><br><br>
        
         <label for="xLabel">X-Axis Label (excluding units):</label>
@@ -70,32 +70,32 @@
             const yValues = parseValues(document.getElementById('yValues').value);
 
             const jsonData = {
-                comments: comments || "// Default comments for the JSON record.",
+                comments: comments || "// The comments field can be used to put a description and metadata such as citations.",
                 datatype: datatype,
                 data: [
                     {
-                        comments: "// The curly bracket starts a data series. A file can have more than one data series. The uid is an optional unique ID and can even be a doi, for example.",
                         uid: uid || "",
                         name: seriesName,
                         x: xValues,
                         y: yValues,
-                        extraInformation: "This is just an example of how to add extra information for a series."
                     }
                 ],
                 layout: {
-                    comments: "// The title field of the layout is the title of the graph (not of a series).",
-                    title: plotTitle,
+                    title: {
+                        text: plotTitle
+                    },
                     xaxis: {
-                        comments: "// The x axis title must include the units that are expected.",
-                        title: `${xLabel} (${xUnit})`
+                        title: {
+                            text: `${xLabel} (${xUnit})`
+                        }
                     },
                     yaxis: {
-                        comments: "// The y axis title must include the units that are expected.",
-                        title: `${yLabel} (${yUnit})`
+                        title: {
+                            text: `${yLabel} (${yUnit})`
+                        }
                     }
-                }
-            };
-
+                },
+            }
             const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
