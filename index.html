@@ -192,9 +192,9 @@
 
         resultJSON.comments = comments;
         resultJSON.datatype = data_type;
-        resultJSON.layout.title = chart_label;
-        resultJSON.layout.xaxis.title = x_label;
-        resultJSON.layout.yaxis.title = y_label;
+        resultJSON.layout.title.text = chart_label;
+        resultJSON.layout.xaxis.title.text = x_label;
+        resultJSON.layout.yaxis.title.text = y_label;
 
         let newData = [];
         series_names_array.forEach((series_name, index) => {
@@ -248,9 +248,9 @@
 
         resultJSON.comments = comments;
         resultJSON.datatype = data_type;
-        resultJSON.layout.title = chart_label;
-        resultJSON.layout.xaxis.title = x_label;
-        resultJSON.layout.yaxis.title = y_label;
+        resultJSON.layout.title.text = chart_label;
+        resultJSON.layout.xaxis.title.text = x_label;
+        resultJSON.layout.yaxis.title.text = y_label;
 
         //Remove any series where the series name is blank.
         function isNotBlank(value) {
@@ -503,8 +503,8 @@
             // Javascript doesn't have deep clones so we use the JSON solution
             // source: https://stackoverflow.com/questions/597588/how-do-you-clone-an-array-of-objects-in-javascript
             let _simulatedData = JSON.parse(JSON.stringify(simulatedData));
-            const desiredXUnit = getUnitFromLabel(jsonified.layout.xaxis.title);
-            const desiredYUnit = getUnitFromLabel(jsonified.layout.yaxis.title);
+            const desiredXUnit = getUnitFromLabel(jsonified.layout.xaxis.title.text);
+            const desiredYUnit = getUnitFromLabel(jsonified.layout.yaxis.title.text);
             const simulatedXUnit = getUnitFromLabel(simulatedData.data.x_label);
             const simulatedYUnit = getUnitFromLabel(simulatedData.data.y_label);
 
@@ -563,8 +563,8 @@
       function mergeSimulationData(simulationResult, jsonified, index) {
         return new Promise((resolve, reject) => {
           try {
-            jsonified.layout.xaxis.title = simulationResult.data.x_label;
-            jsonified.layout.yaxis.title = simulationResult.data.y_label;
+            jsonified.layout.xaxis.title.text = simulationResult.data.x_label;
+            jsonified.layout.yaxis.title.text = simulationResult.data.y_label;
             jsonified.data[index].x = simulationResult.data.x;
             jsonified.data[index].y = simulationResult.data.y;
             resolve(jsonified);
@@ -589,11 +589,11 @@
         let errors = false;
         const csvHeadersArray = [];
         const csvValuesArray = [];
-        const xLabel = jsonified.layout.xaxis.title;
-        const yLabel = jsonified.layout.yaxis.title;
+        const xLabel = jsonified.layout.xaxis.title.text;
+        const yLabel = jsonified.layout.yaxis.title.text;
         const comments = jsonified.comments;
         const dataType = jsonified.datatype;
-        const chartLabel = jsonified.layout.title;
+        const chartLabel = jsonified.layout.title.text;
         const dataSets = jsonified.data;
         const dataSetIndex = jsonified.data.length - 1;
         const dataSet = jsonified.data[dataSetIndex];
@@ -755,8 +755,8 @@
         return new Promise((resolve, reject) => {
           try {
             jsonified.data.forEach((dataSet) => {
-              const newXUnit = getUnitFromLabel(jsonified.layout.xaxis.title);
-              const newYUnit = getUnitFromLabel(jsonified.layout.yaxis.title);
+              const newXUnit = getUnitFromLabel(jsonified.layout.xaxis.title.text);
+              const newYUnit = getUnitFromLabel(jsonified.layout.yaxis.title.text);
               if (globalData.unit.x !== newXUnit) {
                 const xConvertFactor = convert.fullConversion(
                   newXUnit,
@@ -941,8 +941,8 @@
               globalData = _jsonified;
 
               // Get the unit from the label
-              const xUnit = getUnitFromLabel(globalData.layout.xaxis.title);
-              const yUnit = getUnitFromLabel(globalData.layout.yaxis.title);
+              const xUnit = getUnitFromLabel(globalData.layout.xaxis.title.text);
+              const yUnit = getUnitFromLabel(globalData.layout.yaxis.title.text);
 
               // Adding the extracted units to globalData
               globalData.unit = {
