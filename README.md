@@ -14,9 +14,9 @@ The direct links to the example files are::
  https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/1-CO2__Adsorption_Isotherms/CO2AdsorptionNaX2.csv
  https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/1-CO2__Adsorption_Isotherms/CO2AdsorptionNaX2.tsv.txt
 
-Some additional files, including invalid files, are inside https://github.com/AdityaSavara/JSONGrapherExamples
+Some additional example files are available at https://github.com/AdityaSavara/JSONGrapherExamples
 
-The top level field of "title" describes the data type (such as CO2_Adsorption_Isotherm, CO2_Differential_Adsorption_Enthalpy, NH3_Temperature_Programmed_Desorption). The xaxis title and yaxis title are intended for units (such as kJ/mol and  mol/m^2).  All three of these titles must match when attempting to plot multiple series on the same graph. If the top level title does not match, that means the data should not be compared, and if either of the axes titles do not match between series, that will be taken as an indication that the units are not correct. In the future, there may be features to convert units or to upload data series by CSV files.
+The top level field of "datatype" describes the data type (such as CO2_Adsorption_Isotherm, CO2_Differential_Adsorption_Enthalpy, NH3_Temperature_Programmed_Desorption). The xaxis title and yaxis title are intended for units (such as kJ/mol and  mol/m^2).  All three of these titles must match when attempting to plot multiple series on the same graph. If the top level title does not match, that means the data should not be compared, and if either of the axes titles do not match between series, that will be taken as an indication that the units are not correct. In the future, there may be features to convert units or to upload data series by CSV files.
 
 Additional Information:
 
@@ -26,4 +26,4 @@ Piotr Paszek made the core code of JSON Grapher, which relies on plotly.  He has
 
 Med. Amar Filali added most of the additional features: including unit conversions (using UUC), the ability for external simulations, and CSV download of the last dataset. He has significant experience in making dynamic websites and specialized Javascript codes. He may be hired at https://www.upwork.com/freelancers/~01844d5a23ecf022cf
 
-The idea of JSONGrapher was conceived of by Aditya Savara, and it is used as a demonstration for the concepts described in the Publication ___
+The idea of JSONGrapher was conceived of by Aditya Savara, and it is used as a demonstration for the concepts described in a publication which has the core authors of Aditya Savara, Sylvain Gouttebroze, Stefan Andersson, Francesca Lønstad Bleken.
