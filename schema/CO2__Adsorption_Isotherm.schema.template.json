@@ -36,25 +36,25 @@
 			"extraInformation": "This is just an example of how to add extra information for a series."
         }
     ],
-    "layout": {
-		"comments": "// The title field of the layout is the title of the graph (not of a series).",
-        "title": "CO2 Adsorption", 
-        "xaxis": {
-			"comments": "// The x axis title must include the units that are expected.",
-            "title": "CO2 Pressure (Bar)", 
-            "showgrid": false,
-            "autorange": true
-        },
-        "yaxis": {
-			"comments": "// The y axis title must include the units that are expected.",
-            "title": "CO2 Adsorbed (mol/kg)",
-            "autorange": true,
-            "gridcolor": "rgb(208, 208, 208)",
-            "ticksuffix": "  "
-        },
-        "legend": {},
-        "autosize": true,
-        "plot_bgcolor": "rgb(242, 242, 242)",
-        "paper_bgcolor": "rgb(242, 242, 242)"
-    }
+  "layout": {
+      "comments": "// The title field of the layout is the title of the graph (not of a series).",
+      "title": { "text": "Adsorption" },
+      "xaxis": {
+          "comments": "// The x axis title must include the units that are expected.",
+          "title": { "text": "Pressure (Bar)" },
+          "showgrid": false,
+          "autorange": true
+      },
+      "yaxis": {
+          "comments": "// The y axis title must include the units that are expected.",
+          "title": { "text": "Amount Adsorbed (mol/kg)" },
+          "autorange": true,
+          "gridcolor": "rgb(208, 208, 208)",
+          "ticksuffix": "  "
+      },
+      "legend": {},
+      "autosize": true,
+      "plot_bgcolor": "rgb(242, 242, 242)",
+      "paper_bgcolor": "rgb(242, 242, 242)"
+  }
 }
