@@ -44,14 +44,18 @@
           "items": {}
         }
       },
-      "required": ["name", "type", "x", "y"],
+      "required": ["name", "type", "x", "y"]
     },
     "layout": {
       "type": "object",
       "additionalProperties": true,
       "properties": {
         "title": {
-          "type": "string"
+          "type": "object",
+          "properties": {
+            "text": { "type": "string" }
+          },
+          "required": ["text"]
         },
         "xaxis": {
           "$ref": "#/definitions/Xaxis"
@@ -72,7 +76,7 @@
           "type": "string"
         }
       },
-      "required": ["title", "xaxis", "yaxis"],
+      "required": ["title", "xaxis", "yaxis"]
     },
     "Line": {
       "type": "object",
@@ -84,18 +88,24 @@
         "width": {
           "type": "integer"
         }
-      },
+      }
     },
     "Legend": {
       "type": "object",
-      "additionalProperties": true,
+      "additionalProperties": true
     },
     "Xaxis": {
       "type": "object",
       "additionalProperties": true,
       "properties": {
         "title": {
-          "type": "string"
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string"
+            }
+          },
+          "required": ["text"]
         },
         "showgrid": {
           "type": "boolean"
@@ -104,14 +114,20 @@
           "type": "boolean"
         }
       },
-      "required": ["title"],
+      "required": ["title"]
     },
     "Yaxis": {
       "type": "object",
       "additionalProperties": true,
       "properties": {
         "title": {
-          "type": "string"
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string"
+            }
+          },
+          "required": ["text"]
         },
         "autorange": {
           "type": "boolean"
@@ -123,7 +139,7 @@
           "type": "string"
         }
       },
-      "required": ["title"],
+      "required": ["title"]
     }
   },
   "required": ["title", "data", "layout"],
