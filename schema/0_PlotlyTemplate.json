@@ -37,17 +37,17 @@
         }
     ],
     "layout": {
-		"comments": "// The title field of the layout is the title of the graph (not of a series).",
-        "title": "Chart Title", 
+        "comments": "// The title field of the layout is the title of the graph (not of a series).",
+        "title": { "text": "Chart Title" }, 
         "xaxis": {
-			"comments": "// The x axis title must include the units that are expected.",
-            "title": "x_label with units", 
+            "comments": "// The x axis title must include the units that are expected.",
+            "title": { "text": "x_label with units" }, 
             "showgrid": false,
             "autorange": true
         },
         "yaxis": {
-			"comments": "// The y axis title must include the units that are expected.",
-            "title": "y_label with units",
+            "comments": "// The y axis title must include the units that are expected.",
+            "title": { "text": "y_label with units" },
             "autorange": true,
             "gridcolor": "rgb(208, 208, 208)",
             "ticksuffix": "  "
