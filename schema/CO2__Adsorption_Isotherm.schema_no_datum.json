@@ -61,7 +61,11 @@
       "additionalProperties": true,
       "properties": {
         "title": {
-          "type": "string"
+          "type": "object",
+          "properties": {
+            "text": { "type": "string" }
+          },
+          "required": ["text"]
         },
         "xaxis": {},
         "yaxis": {},
@@ -87,9 +91,15 @@
       "additionalProperties": true,
       "properties": {
         "title": {
-          "type": "string",
-          "comments": "//The pattern field below is where X units go.",
-          "pattern": "(?=.*CO2|CO_2)(?=.*Bar)"
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "comments": "// The pattern field below is where X units go.",
+              "pattern": "(?=.*CO2|CO_2)(?=.*Bar)"
+            }
+          },
+          "required": ["text"]
         },
         "showgrid": {
           "type": "boolean"
@@ -105,9 +115,15 @@
       "additionalProperties": true,
       "properties": {
         "title": {
-          "type": "string",
-          "comments": "//The pattern field below is where Y units go.",
-          "pattern": "mol/kg|mol kg^-1 "
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "comments": "// The pattern field below is where Y units go.",
+              "pattern": "mol/kg|mol kg^-1"
+            }
+          },
+          "required": ["text"]
         },
         "autorange": {
           "type": "boolean"

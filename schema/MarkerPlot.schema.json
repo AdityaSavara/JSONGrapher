@@ -51,7 +51,11 @@
       "additionalProperties": true,
       "properties": {
         "title": {
-          "type": "string"
+          "type": "object",
+          "properties": {
+            "text": { "type": "string" }
+          },
+          "required": ["text"]
         },
         "xaxis": {
           "$ref": "#/definitions/Xaxis"
@@ -95,7 +99,13 @@
       "additionalProperties": true,
       "properties": {
         "title": {
-          "type": "string"
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string"
+            }
+          },
+          "required": ["text"]
         },
         "showgrid": {
           "type": "boolean"
@@ -111,7 +121,13 @@
       "additionalProperties": true,
       "properties": {
         "title": {
-          "type": "string"
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string"
+            }
+          },
+          "required": ["text"]
         },
         "autorange": {
           "type": "boolean"

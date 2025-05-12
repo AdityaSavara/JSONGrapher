@@ -62,7 +62,11 @@
       "additionalProperties": true,
       "properties": {
         "title": {
-          "type": "string"
+          "type": "object",
+          "properties": {
+            "text": { "type": "string" }
+          },
+          "required": ["text"]
         },
         "xaxis": {
           "$ref": "#/definitions/Xaxis"
@@ -87,16 +91,23 @@
     },
     "Legend": {
       "type": "object",
-      "additionalProperties": true
+      "additionalProperties": true,
+      "properties": {}
     },
     "Xaxis": {
       "type": "object",
       "additionalProperties": true,
       "properties": {
         "title": {
-          "type": "string",
-          "comments": "//The pattern field below is where X units go.",
-          "pattern": "Bar"
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "comments": "// The pattern field below is where X units go.",
+              "pattern": "Bar"
+            }
+          },
+          "required": ["text"]
         },
         "showgrid": {
           "type": "boolean"
@@ -112,9 +123,15 @@
       "additionalProperties": true,
       "properties": {
         "title": {
-          "type": "string",
-          "comments": "//The pattern field below is where Y units go.",
-          "pattern": "mol/kg|mol kg^-1 "
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "comments": "// The pattern field below is where Y units go.",
+              "pattern": "mol/kg|mol kg^-1"
+            }
+          },
+          "required": ["text"]
         },
         "autorange": {
           "type": "boolean"
@@ -128,6 +145,7 @@
       },
       "required": ["title"]
     }
+
   },
   "additionalProperties": true,
   "required": ["data", "layout", "title"]
