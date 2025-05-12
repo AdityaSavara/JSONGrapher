@@ -45,7 +45,7 @@
           "items": {}
         }
       },
-      "required": ["name", "type", "x", "y"],
+      "required": ["name", "type", "x", "y"]
     },
     "Layout": {
       "type": "object",
@@ -73,7 +73,7 @@
           "type": "string"
         }
       },
-      "required": ["title", "xaxis", "yaxis"],
+      "required": ["title", "xaxis", "yaxis"]
     },
     "Line": {
       "type": "object",
@@ -85,11 +85,11 @@
         "width": {
           "type": "integer"
         }
-      },
+      }
     },
     "Legend": {
       "type": "object",
-      "additionalProperties": true,
+      "additionalProperties": true
     },
     "Xaxis": {
       "type": "object",
@@ -105,7 +105,7 @@
           "type": "boolean"
         }
       },
-      "required": ["title"],
+      "required": ["title"]
     },
     "Yaxis": {
       "type": "object",
@@ -124,7 +124,7 @@
           "type": "string"
         }
       },
-      "required": ["title"],
+      "required": ["title"]
     }
   },
   "required": ["title", "data", "layout"],
