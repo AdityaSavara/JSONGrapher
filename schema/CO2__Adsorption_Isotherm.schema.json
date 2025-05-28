@@ -146,5 +146,5 @@
     }
   },
   "additionalProperties": true,
-  "required": ["data", "layout", "title"]
+  "required": ["data", "layout", "datatype"]
 }

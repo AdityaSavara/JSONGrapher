@@ -139,6 +139,6 @@
       "required": ["title"]
     }
   },
-  "required": ["data", "layout", "title"],
+  "required": ["data", "layout", "datatype"],
   "additionalProperties": true
 }

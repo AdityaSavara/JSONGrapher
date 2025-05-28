@@ -143,6 +143,6 @@
       "required": ["title"]
     }
   },
-  "required": ["title", "data", "layout"],
+  "required": ["datatype", "data", "layout"],
   "additionalProperties": true
 }
