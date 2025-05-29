@@ -394,7 +394,7 @@
         }
         let unit = label.match(/\((.*)\)/);
         if (unit) {
-          return unit[1];
+          return unit[1].replace(/\*\*/g, "^");//The replace in here replaces ** with ^, to replace python style "raise to the power of" with the conventional symbol.
         }
         return "";
       }
@@ -402,7 +402,7 @@
       // A function that removes the unit from the label
       function removeUnitFromLabel(label) {
         const unit = getUnitFromLabel(label);
-        return label.replace(unit, "").replace("()", "");
+        return label.replace(/\*\*/g, "^").replace(unit, "").replace("()", ""); //need to first replace ** with ^ to be prepared for that part of getUnitFromLabel's processing.
       }
 
       // Checking if the dataSet has simulation
@@ -764,6 +764,8 @@
             jsonified.data.forEach((dataSet) => {
               const newXUnit = getUnitFromLabel(jsonified.layout.xaxis.title.text);
               const newYUnit = getUnitFromLabel(jsonified.layout.yaxis.title.text);
+              //console.log("In convertUnits. newXUnit, newUnit:", newXUnit, newYUnit);
+              //console.log("In convertUnits. globalData.unit.x, globalData.unit.y :", globalData.unit.x, globalData.unit.y);
               if (globalData.unit.x !== newXUnit) {
                 const xConvertFactor = convert.fullConversion(
                   newXUnit,
@@ -956,7 +958,6 @@
                 x: xUnit,
                 y: yUnit,
               };
-
               // STEP 4: Check if the object has a dataSet that has a simulate key in it, and runs the simulate function based on the value provided in the key model
               // Iterate through the dataset and check if there is a simulation to run for each dataset
               for (const dataSet of globalData.data) {
@@ -996,13 +997,26 @@
               });
             } else {
               // If the Jsonified is not the first file uploaded, then we can proceed to the next step
-              if (
-                globalData.datatype === jsonified.datatype &&
-                globalData.layout.xaxis.title.text ===
-                  jsonified.layout.xaxis.title.text &&
-                globalData.layout.yaxis.title.text ===
-                  jsonified.layout.yaxis.title.text
-              ) {
+              fieldsMatch=true; //initialize this variable as true, and set it to false if any fields that need to match do not.
+              //Check if the datatype fields match. Should actually be doing the hierarchical check with the underscores.
+              if (globalData.datatype !== jsonified.datatype){
+                fieldsMatch=false;
+                errorDiv.innerText += "The added record's datatype is different. Stopping merging. The two values are: " + String(globalData.datatype) + " " + +String(jsonified.datatype) +   "\n";
+              }
+              //Check if the xaxis titles are the same after removing the units area. Ideally, should check if the units are convertable.
+              if (removeUnitFromLabel(globalData.layout.xaxis.title.text) !==
+                  removeUnitFromLabel(jsonified.layout.xaxis.title.text)){
+                fieldsMatch=false;
+                errorDiv.innerText += "The added record's xaxis label text is different. Stopping merging. The two values are: " + removeUnitFromLabel(globalData.layout.xaxis.title.text) + " " +removeUnitFromLabel(jsonified.layout.xaxis.title.text) +   "\n";
+              }
+              //Check if the yaxis titles are the same after removing the units area. Ideally, should check if the units are convertable.
+              if (removeUnitFromLabel(globalData.layout.yaxis.title.text) !==
+                  removeUnitFromLabel(jsonified.layout.yaxis.title.text)){
+                fieldsMatch=false;
+                errorDiv.innerText += "The added record's yaxis label text is different. Stopping merging. The two values are: " + removeUnitFromLabel(globalData.layout.yaxis.title.text) + " " +removeUnitFromLabel(jsonified.layout.yaxis.title.text) +   "\n";
+              }
+              if(fieldsMatch)
+              {
                 // create a deep copy of jsonified to avoid mutating the original jsonified
                 let _jsonified = JSON.parse(JSON.stringify(jsonified));
                 let convertedJsonified = _jsonified;
@@ -1059,7 +1073,7 @@
                 });
               } else {
                 //clearData(); //Should not clear data when chart or axis titles do not match, just should not plot the new data.
-                errorDiv.innerText += `Added data not plotted. The units were not compatible or were not converted successfully. Click the button to clear data if you want to start a new graph. \n`;
+                errorDiv.innerText += `Added data not plotted. The records were not compatible for merging. Click the button to clear data if you want to start a new graph. \n`;
               }
             }
           } catch (err) {
