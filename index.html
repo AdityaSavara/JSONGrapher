@@ -308,9 +308,14 @@
         ); // validate fragment locator
         return !!urlPattern.test(urlString);
       }
-
+      
       // function to extract from the datatype the location of the schema
       function getSchemaLocation(jsonified, template = false) {
+        if (!jsonified.datatype) {
+          errorDiv.innerText += "Warning: The datatype field was not found in the record provided. Accordingly, a schema check will not be performed and the record will not be fully validated. \n";
+          jsonified.datatype = ""; // Populate with an empty string
+        }
+
         if (isValidUrl(jsonified.datatype)) {
           const template_suffix = jsonified.datatype.replace(
             ".schema.json",
@@ -785,7 +790,7 @@
                     return parseFloat(y) * yConvertFactor.output.num;
                   } else {
                     yConvertFactor.messages.forEach((message) => {
-                      errorDiv.innerText = message.message + "\n";
+                      errorDiv.innerText += message.message + "\n";
                     });
                   }
                 });
@@ -856,7 +861,7 @@
         })
         .catch((e) => {
           console.log(e);
-          errorDiv.innerText = "Error fetching json-schema files...\n";
+          errorDiv.innerText += "Error fetching json-schema files...\n";
         });
 
       // This function is called the user drops a file or upload it via the input button or drag and drop
@@ -885,7 +890,7 @@
             // try to parse the file as json
             jsonified = jsonifyData(fileType, dataLoaded);
           } catch (e) {
-            errorDiv.innerText = `Error: Data record could not be converted to JSON. If it is in a zipfile, unzip before uploading. Error Details: ${e.message} \n`;
+            errorDiv.innerText += `Error: Data record could not be converted to JSON. If it is in a zipfile, unzip before uploading. Error Details: ${e.message} \n`;
           }
 
           recentFileName = getFileName(event.target.fileName);
