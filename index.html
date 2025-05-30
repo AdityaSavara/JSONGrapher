@@ -398,6 +398,24 @@
         return "";
       }
 
+      //This is a helper function to create superscript tags for plotly right before plotting.
+      function replaceSuperscripts(inputString) {
+        // Step 1: Wrap superscript expressions in <sup> tags
+        let outputString = inputString.replace(/\^\((.*?)\)|\*\*\((.*?)\)/g, 
+          (match, p1, p2) => `<sup>${p1 || p2}</sup>`);
+
+        // Step 2: Remove parentheses if the content is only digits
+        outputString = outputString.replace(/<sup>\((\d+)\)<\/sup>/g, '<sup>$1</sup>');
+
+        // Step 3: Remove parentheses if the content is a negative number (- followed by digits)
+        outputString = outputString.replace(/<sup>\(-(\d+)\)<\/sup>/g, '<sup>-$1</sup>');
+
+        // Step 4: Remove parentheses if the superscript is a single letter
+        outputString = outputString.replace(/<sup>\((\w)\)<\/sup>/g, '<sup>$1</sup>');
+
+        return outputString;
+      }
+
       // A function that removes the unit from the label
       function removeUnitFromLabel(label) {
         const unit = getUnitFromLabel(label);
@@ -583,6 +601,9 @@
       // A function that visualizes the data with plotly
       function visualizeData(globalData) {
         let copyForPlotly = JSON.parse(JSON.stringify(globalData)); // Plotly mutates the input !!!
+        //replace superscripts in some fields for plotly.
+        copyForPlotly.layout.yaxis.title.text = replaceSuperscripts(copyForPlotly.layout.yaxis.title.text)
+        copyForPlotly.layout.xaxis.title.text = replaceSuperscripts(copyForPlotly.layout.xaxis.title.text)
         Plotly.newPlot("plotlyDiv", copyForPlotly.data, copyForPlotly.layout);
       }
 
