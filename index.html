@@ -20,13 +20,14 @@
     <script src="./UUC/app/convert_parse.js"></script>
     <script src="./UUC/app/convert_macro.js"></script>
     <script src="./UUC/app/data.js"></script>
-    <!--     //Load the layout styles here so that the other utils can use them. -->
+    <!-- Load the layout styles here so that the other utils can use them -->
     <script src="./styles/layout_styles_library.js"></script>
     <script src="./styles/trace_styles_collection_library.js"></script>
-
-    <script src="./utils/figDictUtils.js"></script>
-    <script src="./utils/styleUtils.js"></script>
-
+    <script type="module"> 
+      import { parsePlotStyle } from './utils/styleUtils.js'; 
+      import { applyPlotStyleToPlotlyDict } from './utils/styleUtils.js'; 
+      import { cleanJsonFigDict } from './utils/figDictUtils.js'; 
+    </script>  
     <style>
       .file-actions {
         display: flex;

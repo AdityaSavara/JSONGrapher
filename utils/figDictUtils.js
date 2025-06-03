@@ -340,3 +340,8 @@ function removeCustomUnitsChevrons(jsonFigDict) {
 
 
 // End section of code with functions for cleaning fig_dicts for plotly compatibility ###
+
+
+export { cleanJsonFigDict };
+
+window.cleanJsonFigDict = cleanJsonFigDict;
