@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math.js Unit Solver.</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.1/math.min.js"></script>
+</head>
+<body>
+    <h2>Math.js Unit Solver</h2>
+    <p id="output">Computing result... open inspect and console to check log.</p>
+    <script type="module"> 
+        import { parseVariable } from './equation_evaluator.js';
+        import { parseEquation } from './equation_evaluator.js';
+        import { solveEquation } from './equation_evaluator.js';
+        import { parseEquationDict } from './equation_evaluator.js';
+        import { generateMultiplicativePoints } from './equation_evaluator.js';
+        import { generatePointsBySpacing } from './equation_evaluator.js';
+        import { generatePointsFromRangeDict } from './equation_evaluator.js';
+        import { returnCustomUnitsMarkup } from './equation_evaluator.js';
+        import { extractTaggedStrings } from './equation_evaluator.js';
+        import { convertInverseUnits } from './equation_evaluator.js';
+        import { splitAtFirstDelimiter } from './equation_evaluator.js';
+        import { evaluateEquationDict } from './equation_evaluator.js';
+        console.log("Parse Variable from the importing file.", parseVariable);
+    </script>  
+    <script type="module">
+
+        // ############## PART 1: GETTING EQUATION EVALUATION TO WORK #####################
+        
+        /**
+         * Parses a variable string into a math.js Unit.
+         * Splits the string into its numeric part and unit part,
+         * then returns a math.js Unit by combining the numeric value with the unit.
+         *
+         * For example, "2 m/s" becomes math.multiply(2, math.unit("m/s")).
+         *
+         * @param {string} variableString - A string containing a number and a unit (e.g., "2 m/s").
+         * @returns {Object} A math.js Unit representing the variable.
+         * @throws {Error} If the variable format is invalid.
+         */
+
+
+        // Independent variables with correct formatting:
+        const independentVariables = {
+            x: parseVariable("2 m/s" ),
+            y: parseVariable("3 meter")
+        };
+
+        // Equation
+        const equationString = "x * t + y = 10 m";
+        const [lhs, rhs] = equationString.split("=").map(side => side.trim());
+        const dependentVariable = "t"; // Solving for t
+
+        // Convert RHS into a unit-aware Math.js object
+        const rhsValue = parseVariable(rhs);
+
+        // Solve for t: Rearranging equation → t = (rhs - y) / x
+        const tSolution = math.divide(math.subtract(rhsValue, independentVariables.y), independentVariables.x);
+
+        // Display result
+        document.getElementById("output").innerHTML = "Computed t: " + tSolution.toString() + "<br>Open inspect and console to check log for the more complex tests.";
+
+        // Example usage
+        const variables = {
+            "x": { value: 2, units: "m / s" },
+            "y": { value: 3, units: "meter" }
+        };
+
+        const equation = "(10 m - y) / x"; // Rearranged equation for solving "t"
+        const equation_output = parseEquation(equation, variables);
+        console.log("parseEquation input and output example:", equation, "gives", equation_output);
+        const evaluated_equation = math.evaluate(equation_output);
+
+        console.log(evaluated_equation); // Outputs the calculated value of t
+        console.log("output to string...", String(evaluated_equation)); // Outputs the calculated value of t
+
+
+
+        // ---------------------------------------------------------------------------
+        // Example usage:
+
+        // Using the helper function parseVariable to ensure proper parsing of independent variables.
+        const independentVariablesValuesAndUnits = {
+        x: "2 m/s",
+        y: "3 meter"
+        };
+
+        // An example equation. For this simple implementation, the equation must be rearranged so that 
+        // the dependent variable (in this case, "t") appears alone on one side.
+        const rearrangedEquation = "t = (10 m - y) / x";
+
+        // Solve the equation for "t"
+        console.log("Is this the error spot?");
+        const solutionList = solveEquation(rearrangedEquation, independentVariablesValuesAndUnits, "t");
+        console.log("Solutions for t:", solutionList);
+
+        //Try a case where there is a supersript for power.
+        const rearrangedEquation2 = "t = (10 m - y^(2)/m) / x";
+        // Solve the equation for "t"
+        const solutionList2 = solveEquation(rearrangedEquation2, independentVariablesValuesAndUnits, "t");
+        console.log("Solutions for t2:", solutionList2);
+
+        // ############## PART 2: PARSING FULL EQUATION DICT #####################
+
+        const equationDict = {
+                equation_string: "k = A*(e**((-Ea)/(R*T)))",
+                x_variable: "T (K)",  
+                y_variable: "k (s**(-1))",
+                constants: {
+                    Ea: "30000 (J)*(mol^(-1))",
+                    R: "8.314 (J)*(mol^(-1))*(K^(-1))",
+                    A: "1E13 (s**-1)",
+                    e: "2.71828"
+                },
+                num_of_points: 10,
+                x_range_default: [200, 500],
+                x_range_limits: [],
+                points_spacing: "Linear"
+            };
+
+        try {
+            const resultExtracted = parseEquationDict(equationDict);
+            console.log("Now extracting equation:");
+            console.log(resultExtracted);
+        } catch (error) {
+            console.log(`Error: ${error.message}`);
+        }
+
+
+
+        console.log("Test cases for multiplicative points funciton.");
+        console.log("Inputs: rangeMin=1, rangeMax=10, numOfPoints=5");
+        console.log("Output:", generateMultiplicativePoints(1, 10, 5));
+
+        console.log("Inputs: rangeMin=1, rangeMax=10, factor=2");
+        console.log("Output:", generateMultiplicativePoints(1, 10, null, 2));
+
+        console.log("Inputs: rangeMin=-10, rangeMax=10, numOfPoints=7");
+        console.log("Output:", generateMultiplicativePoints(-10, 10, 7));
+
+        console.log("Inputs: rangeMin=5, rangeMax=100, factor=1.5");
+        console.log("Output:", generateMultiplicativePoints(5, 100, null, 1.5));
+
+        console.log("Inputs: rangeMin=2, rangeMax=20, numOfPoints=4, reverseScaling=true");
+        console.log("Output:", generateMultiplicativePoints(2, 20, 4, null, true));
+
+
+
+
+
+        // Example usage demonstrating different spacing types:
+        console.log("Example usage demonstrating different spacing types:")
+        console.log("Linear spacing:", generatePointsBySpacing(10, 1, 100, "linear"));
+        console.log("Logarithmic spacing:", generatePointsBySpacing(10, 1, 100, "logarithmic"));
+        console.log("Exponential spacing:", generatePointsBySpacing(10, 1, 100, "exponential"));
+        console.log("Multiplicative factor spacing:", generatePointsBySpacing(10, 1, 100, 2));
+
+
+
+        // Example usage:
+        const rangeDict = {
+            x_range_default: [1, 100],
+            x_range_limits: [5, 90],
+            num_of_points: 10,
+            points_spacing: "logarithmic"
+        };
+
+        console.log("Example rangeDict Generated Points:", generatePointsFromRangeDict(rangeDict, "x"));
+
+
+
+        // Example usage:
+        const sampleUnits = "length, width, <customUnit1>, <customUnit2>";
+        const extracted = extractTaggedStrings("This unit is <kg> and that one is <m/s>.");
+        console.log("Extracted Tags:", extracted);
+
+        const markedUp = returnCustomUnitsMarkup("The velocity unit is m/s and the force unit is N.", ["m/s", "N"]);
+        console.log("Marked Up String:", markedUp);
+
+
+
+
+
+
+    // Example usage:
+    console.log("Converted Expression:", convertInverseUnits("1/bar"));
+    console.log("Converted Expression:", convertInverseUnits("1/(1/m)"));
+    console.log("Splitting example:", splitAtFirstDelimiter("5 m/s", " "));
+
+
+
+    // ---------------------------------------------------------------------------
+    // Example usage:
+    // 2D example:
+    const exampleEquationDict = {
+    equation_string: 'k = A*(e**((-Ea)/(R*T)))',
+    x_variable: 'T (K)',
+    y_variable: 'k (s**(-1))',
+    constants: {
+        Ea: '30000 (J)*(mol^(-1))',
+        R: '8.314 (J)*(mol^(-1))*(K^(-1))',
+        A: '1*10^13 (s^-1)',
+        e: '2.71828'
+    },
+    num_of_points: 10,
+    x_range_default: [200, 500],
+    x_range_limits: [],
+    x_points_specified: [],
+    points_spacing: 'Linear',
+    reverse_scaling: false
+    };
+
+    const exampleEvaluatedDict = evaluateEquationDict(exampleEquationDict);
+    console.log("This is after everything", exampleEvaluatedDict);
+
+
+    // Here is a 3D example.
+    const exampleEquationDict_3D = {
+    equation_string: 'k = A*(e**((-Ea)/(R*T)))',
+    graphical_dimensionality: 3,
+    x_variable: 'T (K)',  
+    y_variable: 'Ea (J)*(mol^(-1))',
+    z_variable: 'k (s**(-1))',
+    constants: {
+        R: '8.314 (J)*(mol^(-1))*(K^(-1))',
+        A: '1*10^13 (s^-1)',
+        e: '2.71828'
+    },
+    num_of_points: 10,
+    x_range_default: [200, 500],
+    x_range_limits: [],
+    y_range_default: [30000, 50000],
+    y_range_limits: [],
+    x_points_specified: [],
+    points_spacing: 'Linear',
+    reverse_scaling: false
+    };
+
+    const exampleEvaluatedDict_3D = evaluateEquationDict(exampleEquationDict_3D);
+    console.log(exampleEvaluatedDict_3D); // Outputs the evaluated dictionary
+
+
+    </script>
+</body>
+</html>

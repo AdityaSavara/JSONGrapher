@@ -11,6 +11,7 @@
     </script>
     <meta charset="UTF-8" />
     <title>JSONGrapher</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.1/math.min.js"></script>
     <script src="https://cdn.plot.ly/plotly-2.14.0.min.js"></script>
     <!--  We use AJV for json validation. We use the 6.12.6 version because the later version had a compilation error. To reduce the external dependency, we have the source code on our github in he AJV folder, it is an under an MIT LICENSE, as noted in the LICENSE file of JSON Grapher.
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ajv/6.12.6/ajv.bundle.min.js" integrity="sha512-Xl0g/DHU98OkfXTsDfAAuTswzkniYQWPwLyGXzcpgDxCeH52eePfaHj/ictLAv2GvlPX2qZ6YV+3oDsw17L9qw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> -->
@@ -27,6 +28,7 @@
       import { parsePlotStyle } from './utils/styleUtils.js'; 
       import { applyPlotStyleToPlotlyDict } from './utils/styleUtils.js'; 
       import { cleanJsonFigDict } from './utils/figDictUtils.js'; 
+      import {executeImplicitDataSeriesOperations} from './utils/json_equationer/implicitUtils.js'
     </script>  
     <style>
       .file-actions {
@@ -367,7 +369,6 @@
           return [schema1json, schema2json];
         } catch (err) {
           // TODO: !! error catching to be made informative.
-          //console.log("in getSchemaType error:");
           //errorDiv.innerText += "undocumented error in getSchemaType\n";
 
           try {
@@ -607,10 +608,8 @@
       }
 
       // A function that visualizes the data with plotly
-      function plot_with_plotly(globalData) {
-        let figDict = globalData; // Ensure figDict is declared
+      function plot_with_plotly(figDict) {
         let plotStyle = { layout_style: "", trace_styles_collection: "" };
-
           if (JSON.stringify(plotStyle) === JSON.stringify({ layout_style: "", trace_styles_collection: "" })) {
               plotStyle = figDict.plot_style ?? { layout_style: "", trace_styles_collection: "" };
           }
@@ -620,10 +619,10 @@
           // Apply the plot style
           figDict = applyPlotStyleToPlotlyDict(figDict, plotStyle);
           // Clean out the fields and make a Plotly object
-          figDict = cleanJsonFigDict(figDict, ["simulate", "custom_units_chevrons", "equation", "trace_style", "3d_axes", "bubble", "superscripts"]);
 
-          let copyForPlotly = JSON.parse(JSON.stringify(globalData)); // Plotly mutates the input
-          
+
+          let copyForPlotly = JSON.parse(JSON.stringify(figDict)); // Plotly mutates the input
+          copyForPlotly = cleanJsonFigDict(copyForPlotly, ["simulate", "custom_units_chevrons", "equation", "trace_style", "3d_axes", "bubble", "superscripts"]);          
           // Replace superscripts in some fields for Plotly
           if (copyForPlotly.layout.scene) {
             copyForPlotly.layout.scene.yaxis.title.text = replaceSuperscripts(copyForPlotly.layout.scene.yaxis.title?.text ?? "");
@@ -683,7 +682,8 @@
           const suffix = index === dataSets.length - 1 ? "\r\n" : "";
           csv += ",y" + idx + suffix;
         });
-
+        dataSets[0].x = dataSets[0].x || []; //create the x array if it does not exist (for equation dataseries etc.)
+        dataSets[0].y = dataSets[0].y || []; //create the y array if it does not exist (for equation dataseries etc.)
         dataSets[0].x.forEach((x, _index) => {
           let extraYValues = "";
           for (let i = 0; i < dataSets.length; i++) {
@@ -817,8 +817,6 @@
             jsonified.data.forEach((dataSet) => {
               const newXUnit = getUnitFromLabel(jsonified.layout.xaxis.title.text);
               const newYUnit = getUnitFromLabel(jsonified.layout.yaxis.title.text);
-              //console.log("In convertUnits. newXUnit, newUnit:", newXUnit, newYUnit);
-              //console.log("In convertUnits. globalData.unit.x, globalData.unit.y :", globalData.unit.x, globalData.unit.y);
               if (globalData.unit.x !== newXUnit) {
                 const xConvertFactor = convert.fullConversion(
                   newXUnit,
@@ -1013,6 +1011,9 @@
               };
               // STEP 4: Check if the object has a dataSet that has a simulate key in it, and runs the simulate function based on the value provided in the key model
               // Iterate through the dataset and check if there is a simulation to run for each dataset
+              // On 6/4/25, a call to the function executeImplicitDataSeriesOperations was added here to evaluate equations.
+              // In the longterm, the simulation logic should be moved into executeImplicitDataSeriesOperations
+              globalData = executeImplicitDataSeriesOperations(globalData); //globalData is a figDict.
               for (const dataSet of globalData.data) {
                 const index = globalData.data.indexOf(dataSet);
                 const hasSimulate = checkSimulate(dataSet);
@@ -1077,6 +1078,9 @@
 
                 // STEP 4: Check if the object has a dataSet that has a simulate key in it, and runs the simulate function based on the value provided in the key model
                 // Iterate through the dataset and check if there is a simulation to run for each dataset
+                // On 6/4/25, a call to the function executeImplicitDataSeriesOperations was added here to evaluate equations.
+                // In the longterm, the simulation logic should be moved into executeImplicitDataSeriesOperations
+                jsonified = executeImplicitDataSeriesOperations(jsonified); //globalData is a figDict.
                 for (const dataSet of _jsonified.data) {
                   const index = _jsonified.data.indexOf(dataSet);
                   const hasSimulate = checkSimulate(dataSet);
@@ -1106,8 +1110,8 @@
                   } else {
                     // STEP 5: Check if the units in the dataset are the same as the units in the previous object and convert them
                     convertedJsonified = await convertUnits(
-                      _jsonified,
-                      globalData
+                    _jsonified,
+                    globalData
                     );
                   }
                 }

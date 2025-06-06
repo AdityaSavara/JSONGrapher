@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unit Scaling Ratio Test</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.1/math.min.js"></script>
+    <script type="module">
+        import { getUnitsScalingRatio } from './unitScaling.js';
+
+        // Example test input
+        const unit1 = "m";  // Meter
+        const unit2 = "cm"; // Centimeter
+
+        // Run the function and log the output
+        const ratio = getUnitsScalingRatio(unit1, unit2);
+        console.log(`Scaling Ratio from '${unit1}' to '${unit2}':`, ratio);
+        
+        window.runUnitTest = function() {
+            const input1 = document.getElementById("unit1").value;
+            const input2 = document.getElementById("unit2").value;
+            try {
+                const result = getUnitsScalingRatio(input1, input2);
+                document.getElementById("output").innerText = `Scaling Ratio: ${result}`;
+            } catch (error) {
+                document.getElementById("output").innerText = `Error: ${error.message}`;
+            }
+        };
+    </script>
+</head>
+<body>
+    <h1>Unit Scaling Ratio Tester</h1>
+    <label for="unit1">Enter Unit 1:</label>
+    <input type="text" id="unit1" placeholder="e.g., m">
+    <br>
+    <label for="unit2">Enter Unit 2:</label>
+    <input type="text" id="unit2" placeholder="e.g., cm">
+    <br>
+    <button onclick="runUnitTest()">Check Ratio</button>
+    <p id="output"></p>
+</body>
+</html>

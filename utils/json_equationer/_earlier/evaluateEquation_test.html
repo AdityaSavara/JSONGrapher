@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math.js Testing Page</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/14.2.1/math.min.js"></script>
+    <script src="evaluateEquation.js" defer></script>
+    <script src="evaluateEquation_test_input.js" defer></script>
+</head>
+<body>
+    <h2>Math.js Testing Page</h2>
+    <p id="output">Result will appear here.</p>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.getElementById("output").textContent = "Computed Result: " + window.result;
+        });
+    </script>
+</body>
+</html>

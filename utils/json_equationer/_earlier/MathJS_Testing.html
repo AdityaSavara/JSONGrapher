@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math.js Expression Parser</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/14.2.1/math.min.js" 
+        integrity="sha512-VtnWaMtJXqcmxwDizzsWJOnZdX3Jaf9qlFWXEN4nL1KaoQzyNC+1f8lHFD6qd38cyfMgUeucF+pJCTc2p2SsVw==" 
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<body>
+    <h2>Math.js Expression Evaluation</h2>
+    Open this page in a browser. Inspect. Look at console.
+    <script>
+        // Example JSON input
+        const jsonData = {
+            "equation": {
+                "equation_string": "k = A * e^((-Ea) / (R * T))",
+                "constants": {
+                    "R": 8.314,  // J mol^-1 K^-1
+                    "A": 1e13,   // s^-1
+                    "e": 2.71828
+                }
+            }
+        };
+
+        // Function to evaluate equation
+        function evaluateEquation(jsonInput, variables) {
+            const equationString = jsonInput.equation.equation_string;
+            
+            // Remove 'k =' from equation string for evaluation
+            const expression = equationString.split("=")[1].trim();
+
+            // Merge constants and provided variables into one scope object
+            const scope = { ...jsonInput.equation.constants, ...variables };
+
+            try {
+                const result = math.evaluate(expression, scope);
+                console.log("Computed k:", result);
+            } catch (error) {
+                console.error("Error evaluating equation:", error);
+            }
+        }
+
+        // Example: Providing values for Ea and T
+        const variables = {
+            Ea: 40000, // J mol^-1
+            T: 300     // K
+        };
+
+        evaluateEquation(jsonData, variables);
+    </script>
+</body>
+</html>

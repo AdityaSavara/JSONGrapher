@@ -148,15 +148,15 @@ function applyTraceStyleToSingleDataSeries(dataSeries, traceStylesCollection = "
     if (traceStyleToApply !== "") {
         dataSeries.trace_style = traceStyleToApply;
     } else {
-        let traceStyle = dataSeries.trace_style || "";
+        traceStyleToApply = dataSeries.trace_style || "";
         // If "none", return unchanged
-        if (String(traceStyle).toLowerCase() === "none") {
+        if (String(traceStyleToApply).toLowerCase() === "none") {
             return dataSeries;
         }
 
         // If traceStyle is a dictionary, set traceStyleToApply to it
-        if (typeof traceStyle === "object") {
-            traceStyleToApply = traceStyle;
+        if (typeof traceStyleToApply === "object") {
+            traceStyleToApply = traceStyleToApply;
         }
     }
 
@@ -177,6 +177,21 @@ function applyTraceStyleToSingleDataSeries(dataSeries, traceStylesCollection = "
             traceStyleToApply = "default";
         }
     }
+
+
+    // Because the 3D traces will not plot correctly unless recognized,
+    // we have a hardcoded case for the situation where a 3D dataset is received without a plot style.
+    if (traceStylesCollection === "default") {
+        if (traceStyleToApply === "") {
+            if (dataSeries?.z) {  // Checking if 'z' exists in dataSeries
+                dataSeries["trace_style"] = "scatter3d";
+                const uid = dataSeries?.uid || "";
+                const name = dataSeries?.name || "";
+                console.warn(`Warning: A dataseries was found with no trace_style but with a 'z' field. uid: ${uid}. name: ${name}. The trace style for this dataseries is being set to scatter3d.`);
+            }
+        }
+    }
+
 
     // Remove existing formatting before applying new formatting
     //dataSeries = removeTraceStyleFromSingleDataSeries(dataSeries);
@@ -228,6 +243,19 @@ function applyTraceStyleToSingleDataSeries(dataSeries, traceStylesCollection = "
         }
     }
 
+    if (colorscale.endsWith("_r")) {
+        console.warn("Warning: Colorscale reverse with _r is not currently supported by browser-based Plotly. Colorscale reversing has been removed.");
+        colorscale = colorscale.slice(0, -2);
+    }
+
+    //in python, plotly colorscale can be lowercase. In Javascript, first letter must be capitalized.
+    // Capitalizes the first letter of the string if it's not already capitalized.
+    if (colorscale) {
+    colorscale = colorscale.charAt(0).toUpperCase() + colorscale.slice(1);
+    }
+
+
+    
     ({ dataSeries, colorscaleStructure} = determineColorScaleStructureFirstHalf(dataSeries, traceStyle, colorscale));  
     
     if (traceStyle in stylesCollectionDict) {
@@ -275,6 +303,7 @@ function determineColorScaleStructureFirstHalf(dataSeries, traceStyle, colorscal
 }
 
 function determineColorScaleStructureSecondHalf(dataSeries, traceStyle, colorscale) {
+    let colorscaleStructure = ''; //Ok to assign as new, because this function is only entered if it is already an empty string.
     if (dataSeries.mode.includes("markers") || dataSeries.mode.includes("markers+lines") || dataSeries.mode.includes("lines+markers")) {
         colorscaleStructure = "marker";
     } else if (dataSeries.mode.includes("lines")) {
@@ -282,7 +311,6 @@ function determineColorScaleStructureSecondHalf(dataSeries, traceStyle, colorsca
     } else if (dataSeries.type.includes("bar")) {
         colorscaleStructure = "marker";
     }
-
     return { dataSeries, colorscaleStructure };
 }
 
@@ -481,7 +509,8 @@ function applyLayoutStyleToPlotlyDict(figDict, layoutStyleToApply = "default") {
 
 export {parsePlotStyle};
 export {applyPlotStyleToPlotlyDict};
-console.log("parsePlotStyle loaded:", parsePlotStyle);
+export {copyJson};
 
 window.parsePlotStyle = parsePlotStyle;
 window.applyPlotStyleToPlotlyDict = applyPlotStyleToPlotlyDict;
+window.copyJson = copyJson;
