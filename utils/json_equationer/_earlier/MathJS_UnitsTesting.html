@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math.js Unit Solver</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.1/math.min.js"></script>
+</head>
+<body>
+    <h2>Math.js Unit Solver</h2>
+    <p id="output">Computing result...</p>
+
+    <script>
+        function parseVariable(variableString) {
+            // Split numeric part and unit
+            const match = variableString.match(/([\d.]+)\s*(.*)/);
+            if (!match) throw new Error("Invalid variable format.");
+
+            const numericValue = parseFloat(match[1]);
+            const unit = match[2].trim();
+
+            return math.multiply(numericValue, math.unit(unit)); // Combine number and unit properly
+        }
+
+        // Independent variables with correct parsing
+        const independentVariables = {
+            x: parseVariable("2 m/s" ),
+            y: parseVariable("3 meter")
+        };
+
+        // Equation
+        const equationString = "x * t + y = 10 m";
+        const [lhs, rhs] = equationString.split("=").map(side => side.trim());
+        const dependentVariable = "t"; // Solving for t
+
+        // Convert RHS into a unit-aware Math.js object
+        const rhsValue = parseVariable(rhs);
+
+        // Solve for t: Rearranging equation → t = (rhs - y) / x
+        const tSolution = math.divide(math.subtract(rhsValue, independentVariables.y), independentVariables.x);
+
+        // Display result
+        document.getElementById("output").textContent = `Computed t: ${tSolution.toString()}`;
+    </script>
+</body>
+</html>

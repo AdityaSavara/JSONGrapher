@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Equation Class Example</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.1/math.min.js"></script>
+    <style>
+        body { font-family: monospace; background-color: #f0f0f0; padding: 20px; }
+        pre { background-color: #fff; border: 1px solid #ddd; padding: 10px; overflow-x: auto; }
+        h2 { color: #333; }
+        .output-section { margin-top: 30px; border-top: 1px solid #ccc; padding-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Equation Class Example in Browser</h1>
+
+    <div class="output-section">
+        <h2>Output from console.log:</h2>
+        <pre id="consoleOutput"></pre>
+    </div>
+
+    <script type="module">
+        // Import the Equation class from its module file
+        import { Equation } from './equation_creator.js';
+
+        // Redirect console.log to a DOM element for visibility in browser
+        const consoleOutput = document.getElementById('consoleOutput');
+        const originalLog = console.log;
+        console.log = (...args) => {
+            originalLog(...args); // Still log to browser console
+            const p = document.createElement('p');
+            p.textContent = args.map(arg => {
+                // If it's a plain object or array, stringify it
+                if (typeof arg === 'object' && arg !== null) {
+                    return JSON.stringify(arg, null, 2);
+                }
+                return arg;
+            }).join(' ');
+            consoleOutput.appendChild(p);
+        };
+        const originalWarn = console.warn;
+        console.warn = (...args) => {
+            originalWarn(...args);
+            const p = document.createElement('p');
+            p.style.color = 'orange';
+            p.textContent = "WARNING: " + args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : arg).join(' ');
+            consoleOutput.appendChild(p);
+        };
+
+
+        // --- Example Usage ---
+
+        // Create an instance of Equation
+        const exampleArrhenius = new Equation();
+        exampleArrhenius.setEquation("k = A * (e ** (-Ea / (R * T)))");
+        exampleArrhenius.setXVariable("T (K)"); // Temperature in Kelvin
+        exampleArrhenius.setYVariable("k (s**-1)"); // Rate constant in inverse seconds
+
+        // Add constants using plain objects instead of Maps.
+        // The addConstants method in Equation class now expects plain objects or arrays of plain objects.
+        exampleArrhenius.addConstants({"Ea": "30000 J/mol"}); // Single constant
+        exampleArrhenius.addConstants([ // Array of constants
+            {"R": "8.314 J/(mol*K)"},
+            {"A": "1*10**13 (s**-1)"},
+            {"e": "2.71828"} // No unit required
+        ]);
+
+        // Optionally, set minimum number of points and limits for calculations.
+        exampleArrhenius.setNumOfPoints(10);
+        exampleArrhenius.setXRangeDefault([200, 500]);
+        exampleArrhenius.setXRangeLimits([null, 600]);
+
+        // Define additional properties directly on the plain object.
+        exampleArrhenius.equationDict.points_spacing = "Linear"; // Direct property assignment
+
+        // Retrieve and display the equation object (it's no longer a Map)
+        const exampleEquationDict = exampleArrhenius.getEquationDict();
+        console.log("--- Initial Arrhenius Equation Object ---");
+        console.log(exampleEquationDict);
+
+        console.log("\n--- Evaluated Arrhenius Equation Object (pretty print) ---");
+        exampleArrhenius.evaluateEquation();
+        exampleArrhenius.printEquationDict();
+
+
+        // Now for a 3D example.
+        // Initialize with a plain object directly.
+        const exampleArrhenius3DDict = {
+            equation_string: 'k = A*(e**((-Ea)/(R*T)))',
+            graphical_dimensionality: 3,
+            x_variable: 'T (K)',
+            y_variable: 'Ea (J)*(mol^(-1))',
+            z_variable: 'k (s**(-1))',
+            // Constants are now a plain object within the main object
+            constants: {'R': '8.314 (J)*(mol^(-1))*(K^(-1))', 'A': '1*10^13 (s^-1)', 'e': '2.71828'},
+            num_of_points: 10,
+            x_range_default: [200, 500],
+            x_range_limits: [],
+            y_range_default: [30000, 50000],
+            y_range_limits: [],
+            x_points_specified: [],
+            points_spacing: 'Linear',
+            reverse_scaling: false
+        };
+
+        const exampleArrhenius3DEquation = new Equation(exampleArrhenius3DDict);
+        const evaluatedOutput3D = exampleArrhenius3DEquation.evaluateEquation();
+        console.log("\n--- Evaluated 3D Arrhenius Equation Object (pretty print) ---");
+        exampleArrhenius3DEquation.printEquationDict();
+
+        // Optional: Get and log the Z matrix for the 3D example
+        console.log("\n--- 3D Z Matrix (calculated by getZMatrix) ---");
+        const zMatrix = exampleArrhenius3DEquation.getZMatrix();
+        console.log(zMatrix);
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Equation Evaluation</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.1/math.min.js"></script>    
+    <script type="module">
+        import { evaluateEquationForDataSeriesByIndex } from './implicitUtils.js';
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const figDict = {
+                'comments': '',
+                'datatype': '',
+                'data': [{
+                    'uid': '',
+                    'name': 'Arrhenius Example 3D plot',
+                    'trace_style': 'bubble',
+                    'x': [],
+                    'y': [],
+                    'equation': {
+                        'equation_string': 'k = A*(e**((-Ea)/(R*T)))',
+                        'graphical_dimensionality': 3,
+                        'x_variable': 'T (K)',
+                        'y_variable': 'Ea (J*mol^(-1))',
+                        'z_variable': 'k (s**(-1))',
+                        'constants': {'R': '8.314 (J*mol^(-1)*K^(-1))', 'A': '1*10^13 (s^(-1))', 'e': '2.71828'},
+                        'num_of_points': 10,
+                        'x_range_default': [200, 500],
+                        'y_range_default': [30000, 50000],
+                        'points_spacing': 'Linear',
+                        'reverse_scaling': false,
+                        'verbose': true
+                    }
+                }],
+                'layout': {
+                    'title': {'text': 'Bubble plot for Ea vs Temperature Behavior for a Rate Constant'},
+                    'xaxis': {'title': {'text': 'T (K)'}},
+                    'yaxis': {'title': {'text': 'Ea (J*mol^(-1))'}},
+                    'zaxis': {'title': {'text': 'k (s**(-1))'}}
+                },
+                'plot_style': {'layout_style': 'default'}
+            };
+
+            // Evaluate the equation with dataSeriesIndex = 0
+            const result = evaluateEquationForDataSeriesByIndex(figDict, 0);
+
+            // Print result to screen
+            const outputElement = document.getElementById("output");
+            outputElement.innerText = JSON.stringify(result, null, 2);
+        });
+    </script>
+</head>
+<body>
+    <h1>Equation Evaluation Output</h1>
+    <pre id="output"></pre>
+</body>
+</html>
