@@ -1,11 +1,13 @@
 # [JSONGrapher]()
 
-Online address for using the JSONGrapher: https://www.jsongrapher.com
-Python version of JSONgrapher: https://github.com/AdityaSavara/jsongrapher-py
+Online address for using the JSONGrapher: https://www.jsongrapher.com <br>
+Python version of JSONgrapher: https://github.com/AdityaSavara/jsongrapher-py <br>
 
 JSON grapher allows drag-and-drop plotting of 2D, 3D, and 4D plots from JSON files containing x,y or x,y,z data.
 Plot multiple datasets fromd different sources on the same graph.
 JSONGrapher automatically converts between different units such as (kg to g) or(km/s to m/s) to enable comparison of data.
+
+[![JSONGRapher Concept](https://adityasavara.github.io/JSONGrapher/ConceptImage.png)](https://adityasavara.github.io/JSONGrapher/ConceptImage.png)
 
 Try right clicking to download and save some of the example files below to drag and drop into jsongrapher.com::
  https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/1-CO2__Adsorption_Isotherms/CO2AdsorptionNaX2.json <br>
@@ -14,8 +16,8 @@ Try right clicking to download and save some of the example files below to drag 
  https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/1-CO2__Adsorption_Isotherms/CO2AdsorptionNaX2.tsv.txt <br>
  https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/9-3D-Arrhenius/Rate_Constant_mesh3d.json
  https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/9-3D-Arrhenius/Rate_Constant_scatter3d.json
+  
 
- 
 Some additional example files are available at https://github.com/AdityaSavara/JSONGrapherExamples
 
 The top level field of "datatype" describes the data type (such as CO2_Adsorption_Isotherm, CO2_Differential_Adsorption_Enthalpy, NH3_Temperature_Programmed_Desorption). The xaxis title and yaxis title are intended for units (such as kJ/mol and  mol/m^2).  All three of these titles must match when attempting to plot multiple series on the same graph. If the top level title does not match, that means the data should not be compared, and if either of the axes titles do not match between series, that will be taken as an indication that the units are not correct. In the future, there may be features to convert units or to upload data series by CSV files.
