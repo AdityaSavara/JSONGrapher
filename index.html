@@ -1080,7 +1080,7 @@
                 // Iterate through the dataset and check if there is a simulation to run for each dataset
                 // On 6/4/25, a call to the function executeImplicitDataSeriesOperations was added here to evaluate equations.
                 // In the longterm, the simulation logic should be moved into executeImplicitDataSeriesOperations
-                jsonified = executeImplicitDataSeriesOperations(jsonified); //globalData is a figDict.
+                _jsonified = executeImplicitDataSeriesOperations(_jsonified); //globalData is a figDict.
                 for (const dataSet of _jsonified.data) {
                   const index = _jsonified.data.indexOf(dataSet);
                   const hasSimulate = checkSimulate(dataSet);
