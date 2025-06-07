@@ -1,10 +1,12 @@
-The UUC code is under an MIT License. https://github.com/AdityaSavara/JSONGrapher/tree/main/UUC/LICENSE.txt
+BSD 3-Clause License
 
+The main code in the repository is under the BSD 3-Clause License, included below.
+
+The UUC code is under an MIT License. https://github.com/AdityaSavara/JSONGrapher/tree/main/UUC/LICENSE.txt
 The AJV code is under an MIT license: https://github.com/AdityaSavara/JSONGrapher/tree/main/AJV/LICENSE.txt
 
-All other code in the repository is under the BSD 3-Clause License, included below.
 ***
-BSD 3-Clause License
+
 
 Copyright 2025 Aditya Savara
 
