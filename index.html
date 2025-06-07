@@ -160,6 +160,18 @@
         return "json";
       }
 
+      //function to retrieve from url
+      async function loadJsonFromUrl(url) { 
+        try {
+          const response = await fetch(url);
+          if (!response.ok) throw new Error("Network response was not OK");
+          const jsonData = await response.json();
+          processData(jsonData);
+        } catch (error) {
+          console.error("Error fetching JSON:", error);
+        }
+      }
+
       // A function the jsonifies a tsv file
       function jsonifyTSV(fileContent) {
         //separate rows
@@ -879,6 +891,19 @@
         return merged;
       }
 
+      // Helper function to read file as text using Promises, so we can use await.
+      async function readFileAsText(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.fileName = file.name;
+
+          reader.addEventListener("load", () => resolve(reader.result), { once: true });
+          reader.addEventListener("error", () => reject(new Error("File reading error")));
+
+          reader.readAsText(file);
+        });
+      }
+
       ///############################ BELOW IS THE MAIN BLOCK OF CODE FOR JSON GRAPHER ##################################
 
       // STEP 0: Prepare the 'universal' schemas occurs inside initializeJSONGrapher
@@ -917,7 +942,7 @@
           errorDiv.innerText += "Error fetching json-schema files...\n";
         });
 
-      // This function is called the user drops a file or upload it via the input button or drag and drop
+      // This function is called when the user drops a file or uploads it via the input button or drag and drop
       async function loadAndPlotData(event, eventType) {
         // Checks if the file is dropped and if it is uploaded via the input button and gets the file
         // STEP 1: User selects a file from computer or drops a file on the browser
@@ -925,71 +950,73 @@
           eventType === "change"
             ? event.target.files[0]
             : event.dataTransfer.files[0];
+
         // Initialize the reader
         const reader = new FileReader();
         reader.fileName = file.name;
-        // Waits for the file to be loaded
-        reader.addEventListener("load", async (event) => {
-          // Get the loaded data from the reader
-          const dataLoaded = event.target.result;
-          document.getElementById("file-selector").value = "";
 
-          // STEP 2: If the file is a .csv or .tsv file it is converted to a .json file
-          // Test what is incoming
-          let fileType = findFileType(event.target.fileName);
-          let jsonified;
+        // Read file contents asynchronously
+        try {
+          dataLoaded = await readFileAsText(file);
+        } catch (error) {
+          errorDiv.innerText += `Error: Failed to read file. ${error.message} \n`;
+          return;
+        }
 
-          try {
-            // try to parse the file as json
-            jsonified = jsonifyData(fileType, dataLoaded);
-          } catch (e) {
-            errorDiv.innerText += `Error: Data record could not be converted to JSON. If it is in a zipfile, unzip before uploading. Error Details: ${e.message} \n`;
+        document.getElementById("file-selector").value = "";
+
+        // STEP 2: If the file is a .csv or .tsv file it is converted to a .json file
+        let fileType = findFileType(file.name);
+        let jsonified;
+
+        try {
+          // try to parse the file as json
+          jsonified = jsonifyData(fileType, dataLoaded);
+        } catch (e) {
+          errorDiv.innerText += `Error: Data record could not be converted to JSON. If it is in a zipfile, unzip before uploading. Error Details: ${e.message} \n`;
+        }
+
+        recentFileName = getFileName(file.name);
+
+        // Checking if the uploaded data is valid against the schema
+        // STEP 3: Check if the jsonified object is a valid JSON file against the schema
+        const [schema_type, schema_template] = await getSchemaType(jsonified);
+
+        if (Object.keys(schema_type).length === 0) {
+          errorDiv.innerText +=
+            "Schema check: There was no Schema specific to this DataType, or the schema was not compatible. The default scatter plot schema was used.\n";
+          schema_type = schema;
+        }
+
+        // validate the json
+        const validate = ajv.compile(schema_type);
+        const valid = validate(jsonified);
+
+        if (!valid) {
+          // Console log an error if the data is not valid against the schema
+          console.log("validate errors: ", JSON.stringify(validate.errors));
+          // Display an error message if the data is not valid against the schema
+          errorDiv.innerText += `Json file does not match the schema. ${JSON.stringify(
+            validate.errors
+          )}\n`;
+          errorDiv.innerText += `Json file does not match the schema. ${JSON.stringify(
+            validate.errors
+          )}\n`;
+        } else {
+          let _jsonified = jsonified;
+          if (Object.keys(schema_template).length !== 0) {
+            _jsonified = mergeObjects(jsonified, schema_template);
           }
-
-          recentFileName = getFileName(event.target.fileName);
-
-          // Checking if the uploaded data is valid against the schema
-          // STEP 3: Check if the jsonified object is a valid JSON file against the schema
-          const [schema_type, schema_template] = await getSchemaType(jsonified);
-
-          if (Object.keys(schema_type).length === 0) {
-            errorDiv.innerText +=
-              "Schema check: There was no Schema specific to this DataType, or the schema was not compatible. The default scatter plot schema was used.\n";
-            schema_type = schema;
-          }
-
-          // validate the json
-          const validate = ajv.compile(schema_type);
-          const valid = validate(jsonified);
-
-          if (!valid) {
-            // Console log an error if the data is not valid against the schema
-            console.log("validate errors: ", JSON.stringify(validate.errors));
-            // Display an error message if the data is not valid against the schema
-            errorDiv.innerText += `Json file does not match the schema. ${JSON.stringify(
-              validate.errors
-            )}\n`;
-            errorDiv.innerText += `Json file does not match the schema. ${JSON.stringify(
-              validate.errors
-            )}\n`;
-          } else {
-            let _jsonified = jsonified;
-            if (Object.keys(schema_template).length !== 0) {
-              _jsonified = mergeObjects(jsonified, schema_template);
-            }
-            // If the data is valid against the schema, then we can proceed to the next step
-            // if necessary create download button with json
-            // STEP 4 and STEP 5 is done in the prepareForPlotting function
-            const res = await prepareForPlotting(_jsonified, recentFileName);
-            // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
-            appendDownloadButtons(res.downloadData, res.fileName);
-            // STEP 7: The plotly template is rendered on the browser
-            plot_with_plotly(res.data);
-          }
-        });
-        reader.readAsText(file);
+          // If the data is valid against the schema, then we can proceed to the next step
+          // if necessary create download button with json
+          // STEP 4 and STEP 5 is done in the prepareForPlotting function
+          const res = await prepareForPlotting(_jsonified, recentFileName);
+          // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
+          appendDownloadButtons(res.downloadData, res.fileName);
+          // STEP 7: The create a plotly JSON, clean it, and render it on the browser
+          plot_with_plotly(res.data);
+        }
       }
-
 
       // This a function that plots the data on the graph
       function prepareForPlotting(jsonified, filename) {
