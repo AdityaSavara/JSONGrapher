@@ -944,39 +944,39 @@
 
       // This function is called when the user drops a file or uploads it via the input button or drag and drop
       async function loadAndPlotData(event, eventType) {
+        let fileType //Initializing filetype.
         // Checks if the file is dropped and if it is uploaded via the input button and gets the file
-        // STEP 1: User selects a file from computer or drops a file on the browser
-        const file =
-          eventType === "change"
-            ? event.target.files[0]
-            : event.dataTransfer.files[0];
-
-        // Initialize the reader
-        const reader = new FileReader();
-        reader.fileName = file.name;
-
-        // Read file contents asynchronously
-        try {
-          dataLoaded = await readFileAsText(file);
-        } catch (error) {
-          errorDiv.innerText += `Error: Failed to read file. ${error.message} \n`;
-          return;
+        // STEP 1 (Variation A): User selects a file from computer or drops a file on the browser
+        if (eventType === "change" || eventType === "drop") {
+          let file;
+          if (eventType === "change") {
+            file = event.target.files[0];
+          } else if (eventType === "drop") {
+            file = event.dataTransfer.files[0];
+          }
+          // Initialize the reader
+          const reader = new FileReader();
+          reader.fileName = file.name;
+          // Read file contents asynchronously
+          try {
+            dataLoaded = await readFileAsText(file);
+          } catch (error) {
+            errorDiv.innerText += `Error: Failed to read file. ${error.message} \n`;
+            return;
+          }
+          document.getElementById("file-selector").value = "";
+          fileType = findFileType(file.name); //initialized near beginning of loadAndPlotData
+          recentFileName = getFileName(file.name);//This is a global variable.
         }
 
-        document.getElementById("file-selector").value = "";
-
-        // STEP 2: If the file is a .csv or .tsv file it is converted to a .json file
-        let fileType = findFileType(file.name);
+        // STEP 2 (VARIATION A): If the file is a .csv or .tsv file it is converted to a .json file
         let jsonified;
-
         try {
           // try to parse the file as json
           jsonified = jsonifyData(fileType, dataLoaded);
         } catch (e) {
           errorDiv.innerText += `Error: Data record could not be converted to JSON. If it is in a zipfile, unzip before uploading. Error Details: ${e.message} \n`;
         }
-
-        recentFileName = getFileName(file.name);
 
         // Checking if the uploaded data is valid against the schema
         // STEP 3: Check if the jsonified object is a valid JSON file against the schema
