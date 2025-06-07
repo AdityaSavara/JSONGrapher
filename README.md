@@ -7,7 +7,7 @@ JSON grapher allows drag-and-drop plotting of 2D, 3D, and 4D plots from JSON fil
 Plot multiple datasets fromd different sources on the same graph.
 JSONGrapher automatically converts between different units such as (kg to g) or(km/s to m/s) to enable comparison of data.
 
-[![JSONGRapher Concept](https://adityasavara.github.io/JSONGrapher/ConceptImage.png)](https://adityasavara.github.io/JSONGrapher/ConceptImage.png)
+[![JSONGrapher Concept](./other_html/ConceptImage.png)](./other_html/ConceptImage.png)
 
 Try right clicking to download and save some of the example files below to drag and drop into jsongrapher.com::
  https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/1-CO2__Adsorption_Isotherms/CO2AdsorptionNaX2.json <br>
