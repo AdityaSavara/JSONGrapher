@@ -8,11 +8,11 @@ You can upload the example files to the above link to try using JSONGrapher.
 
 JSONGrapher also automatically converts between different units, which are provided within parentheses in the data file.
 
-The direct links to the example files are::  
- https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/1-CO2__Adsorption_Isotherms/CO2AdsorptionNaX2.json
- https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/1-CO2__Adsorption_Isotherms/CO2Adsorption_NaX_and_CaX_two_series.json
- https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/1-CO2__Adsorption_Isotherms/CO2AdsorptionNaX2.csv
- https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/1-CO2__Adsorption_Isotherms/CO2AdsorptionNaX2.tsv.txt
+The direct links to some example files are::  
+ https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/1-CO2__Adsorption_Isotherms/CO2AdsorptionNaX2.json <br>
+ https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/1-CO2__Adsorption_Isotherms/CO2Adsorption_NaX_and_CaX_two_series.json <br>
+ https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/1-CO2__Adsorption_Isotherms/CO2AdsorptionNaX2.csv <br>
+ https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/1-CO2__Adsorption_Isotherms/CO2AdsorptionNaX2.tsv.txt <br>
 
 Some additional example files are available at https://github.com/AdityaSavara/JSONGrapherExamples
 
@@ -22,8 +22,10 @@ Additional Information:
 
 The format that is recommended to be used is shown in the file CO2AdsorptionNaX2.json. When using this format, it is possible to add additional series onto the existing plot from multiple json files.  When doing so, the top-level title must match, as well as the X axis title and Y axis title. The axes titles are meant to be used for units. All other settings, such as chart title, will be taken from the first json file loaded.
 
-Piotr Paszek made the core code of JSON Grapher, which relies on plotly.  He has significant experience with javascript and data visualization, and he may be hired at https://www.upwork.com/freelancers/paszek
+Piotr Paszek made the initial core code of JSON Grapher, which relies on plotly.  He has significant experience with javascript and data visualization, and he may be hired at https://www.upwork.com/freelancers/paszek
 
 Med. Amar Filali added most of the additional features: including unit conversions (using UUC), the ability for external simulations, and CSV download of the last dataset. He has significant experience in making dynamic websites and specialized Javascript codes. He may be hired at https://www.upwork.com/freelancers/~01844d5a23ecf022cf
 
-The idea of JSONGrapher was conceived of by Aditya Savara, and it is used as a demonstration for the concepts described in a publication which has the core authors of Aditya Savara, Sylvain Gouttebroze, Stefan Andersson, Francesca Lønstad Bleken.
+Aditya Savara added advanced features such as 3D plotting, color gradients (colorscales), and the symbolic expressions (equations) module.
+
+The idea of JSONGrapher was conceived of by Aditya Savara, and it is used as a demonstration for the concepts described in a publication which has the core authors of Aditya Savara, Sylvain Gouttebroze, Stefan Andersson, Francesca Lï¿½nstad Bleken.
