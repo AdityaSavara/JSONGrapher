@@ -1,18 +1,22 @@
 # [JSONGrapher]()
 
-Online address for using the JSON Grapher: 
-https://adityasavara.github.io/JSONGrapher/
+Online address for using the JSONGrapher: https://www.jsongrapher.com <br>
+Python version of JSONgrapher: https://github.com/AdityaSavara/jsongrapher-py <br>
 
-JSON grapher allows creating scatter-line plots from one or more JSON files containing x-y data.
-You can upload the example files to the above link to try using JSONGrapher.
+JSON grapher allows drag-and-drop plotting of 2D, 3D, and 4D plots from JSON files containing x,y or x,y,z data.
+Plot multiple datasets fromd different sources on the same graph.
+JSONGrapher automatically converts between different units such as (kg to g) or(km/s to m/s) to enable comparison of data.
 
-JSONGrapher also automatically converts between different units, which are provided within parentheses in the data file.
+[![JSONGRapher Concept](https://adityasavara.github.io/JSONGrapher/ConceptImage.png)](https://adityasavara.github.io/JSONGrapher/ConceptImage.png)
 
-The direct links to some example files are::  
+Try right clicking to download and save some of the example files below to drag and drop into jsongrapher.com::
  https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/1-CO2__Adsorption_Isotherms/CO2AdsorptionNaX2.json <br>
  https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/1-CO2__Adsorption_Isotherms/CO2Adsorption_NaX_and_CaX_two_series.json <br>
  https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/1-CO2__Adsorption_Isotherms/CO2AdsorptionNaX2.csv <br>
  https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/1-CO2__Adsorption_Isotherms/CO2AdsorptionNaX2.tsv.txt <br>
+ https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/9-3D-Arrhenius/Rate_Constant_mesh3d.json
+ https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/9-3D-Arrhenius/Rate_Constant_scatter3d.json
+  
 
 Some additional example files are available at https://github.com/AdityaSavara/JSONGrapherExamples
 
@@ -28,4 +32,4 @@ Med. Amar Filali added most of the additional features: including unit conversio
 
 Aditya Savara added advanced features such as 3D plotting, color gradients (colorscales), and the symbolic expressions (equations) module.
 
-The idea of JSONGrapher was conceived of by Aditya Savara, and it is used as a demonstration for the concepts described in a publication which has the core authors of Aditya Savara, Sylvain Gouttebroze, Stefan Andersson, Francesca L�nstad Bleken.
+The idea of JSONGrapher was conceived of by Aditya Savara, and it is used as a demonstration for the concepts described in a publication which has the core authors of Aditya Savara, Sylvain Gouttebroze, Stefan Andersson, Francesca Lønstad Bleken.
