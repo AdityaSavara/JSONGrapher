@@ -1,19 +1,21 @@
 # [JSONGrapher]()
 
-Online address for using the JSON Grapher: 
-https://adityasavara.github.io/JSONGrapher/
+Online address for using the JSONGrapher: https://www.jsongrapher.com
+Python version of JSONgrapher: https://github.com/AdityaSavara/jsongrapher-py
 
-JSON grapher allows creating scatter-line plots from one or more JSON files containing x-y data.
-You can upload the example files to the above link to try using JSONGrapher.
+JSON grapher allows drag-and-drop plotting of 2D, 3D, and 4D plots from JSON files containing x,y or x,y,z data.
+Plot multiple datasets fromd different sources on the same graph.
+JSONGrapher automatically converts between different units such as (kg to g) or(km/s to m/s) to enable comparison of data.
 
-JSONGrapher also automatically converts between different units, which are provided within parentheses in the data file.
-
-The direct links to some example files are::  
+Try right clicking to download and save some of the example files below to drag and drop into jsongrapher.com::
  https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/1-CO2__Adsorption_Isotherms/CO2AdsorptionNaX2.json <br>
  https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/1-CO2__Adsorption_Isotherms/CO2Adsorption_NaX_and_CaX_two_series.json <br>
  https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/1-CO2__Adsorption_Isotherms/CO2AdsorptionNaX2.csv <br>
  https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/1-CO2__Adsorption_Isotherms/CO2AdsorptionNaX2.tsv.txt <br>
+ https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/9-3D-Arrhenius/Rate_Constant_mesh3d.json
+ https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/9-3D-Arrhenius/Rate_Constant_scatter3d.json
 
+ 
 Some additional example files are available at https://github.com/AdityaSavara/JSONGrapherExamples
 
 The top level field of "datatype" describes the data type (such as CO2_Adsorption_Isotherm, CO2_Differential_Adsorption_Enthalpy, NH3_Temperature_Programmed_Desorption). The xaxis title and yaxis title are intended for units (such as kJ/mol and  mol/m^2).  All three of these titles must match when attempting to plot multiple series on the same graph. If the top level title does not match, that means the data should not be compared, and if either of the axes titles do not match between series, that will be taken as an indication that the units are not correct. In the future, there may be features to convert units or to upload data series by CSV files.
