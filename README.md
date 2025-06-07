@@ -33,3 +33,6 @@ Med. Amar Filali added most of the additional features: including unit conversio
 Aditya Savara added advanced features such as 3D plotting, color gradients (colorscales), and the symbolic expressions (equations) module.
 
 The idea of JSONGrapher was conceived of by Aditya Savara, and it is used as a demonstration for the concepts described in a publication which has the core authors of Aditya Savara, Sylvain Gouttebroze, Stefan Andersson, Francesca Lønstad Bleken.
+
+
+A direct link to JSONGrapher is: https://adityasavara.github.io/JSONGrapher/index.html
