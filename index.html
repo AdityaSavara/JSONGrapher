@@ -15,12 +15,12 @@
     <script src="https://cdn.plot.ly/plotly-2.14.0.min.js"></script>
     <!--  We use AJV for json validation. We use the 6.12.6 version because the later version had a compilation error. To reduce the external dependency, we have the source code on our github in he AJV folder, it is an under an MIT LICENSE, as noted in the LICENSE file of JSON Grapher.
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ajv/6.12.6/ajv.bundle.min.js" integrity="sha512-Xl0g/DHU98OkfXTsDfAAuTswzkniYQWPwLyGXzcpgDxCeH52eePfaHj/ictLAv2GvlPX2qZ6YV+3oDsw17L9qw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> -->
-    <script src="./AJV//6.12.6/ajv.bundle.min.js"></script>
+    <script src="./utils/AJV//6.12.6/ajv.bundle.min.js"></script>
     <link rel="stylesheet" href="./other_html/styles.css" />
-    <script src="./UUC/app/convert.js"></script>
-    <script src="./UUC/app/convert_parse.js"></script>
-    <script src="./UUC/app/convert_macro.js"></script>
-    <script src="./UUC/app/data.js"></script>
+    <script src="./utils/UUC/app/convert.js"></script>
+    <script src="./utils/UUC/app/convert_parse.js"></script>
+    <script src="./utils/UUC/app/convert_macro.js"></script>
+    <script src="./utils/UUC/app/data.js"></script>
     <!-- Load the layout styles here so that the other utils can use them -->
     <script src="./styles/layout_styles_library.js"></script>
     <script src="./styles/trace_styles_collection_library.js"></script>
@@ -361,15 +361,15 @@
               ".schema.json",
               ".schema.template.json"
             );
-            return "./schema/" + template_suffix;
+            return "./utils/schema/" + template_suffix;
           } else {
-            return "./schema/" + jsonified.datatype;
+            return "./utils/schema/" + jsonified.datatype;
           }
         } else {
           if (template) {
-            return "./schema/" + jsonified.datatype + ".schema.template.json";
+            return "./utils/schema/" + jsonified.datatype + ".schema.template.json";
           } else {
-            return "./schema/" + jsonified.datatype + ".schema.json";
+            return "./utils/schema/" + jsonified.datatype + ".schema.json";
           }
         }
       }
@@ -396,7 +396,7 @@
           //errorDiv.innerText += "undocumented error in getSchemaType\n";
 
           try {
-            const schema1 = await fetch("./schema/0_PlotlyTemplate.json");
+            const schema1 = await fetch("./utils/schema/0_PlotlyTemplate.json");
             const schema1body = await schema1.text();
             const schema1json = JSON.parse(schema1body);
             return [schema1json, {}];
@@ -409,10 +409,10 @@
 
       // A function that prepares the plotly schema and the template for the jsonification
       async function prepareUniversalSchemas() {
-        const schema1 = await fetch("./schema/plot-schema.json");
+        const schema1 = await fetch("./utils/schema/plot-schema.json");
         const schema1body = await schema1.text();
         const schema1json = JSON.parse(schema1body);
-        const schema2 = await fetch("./schema/0_PlotlyTemplate.json");
+        const schema2 = await fetch("./utils/schema/0_PlotlyTemplate.json");
         const schema2body = await schema2.text();
         const schema2json = await JSON.parse(schema2body);
         return [schema1json, schema2json];
