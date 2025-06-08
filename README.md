@@ -1,11 +1,9 @@
 # [JSONGrapher]()
 
-Online address for using the JSONGrapher: https://www.jsongrapher.com <br>
-Python version of JSONgrapher: https://github.com/AdityaSavara/jsongrapher-py <br>
-
-JSON grapher allows drag-and-drop plotting of 2D, 3D, and 4D plots from JSON files containing x,y or x,y,z data.
-Plot multiple datasets fromd different sources on the same graph.
-JSONGrapher automatically converts between different units such as (kg to g) or(km/s to m/s) to enable comparison of data.
+JSONGrapher (https://www.jsongrapher.com) allows drag-and-drop plotting of 2D, 3D, and 4D plots.<br>
+The python version of JSONgrapher can also be used to create records: https://github.com/AdityaSavara/jsongrapher-py <br>
+Plot multiple datasets fromd different sources on the same graph. <br>
+JSONGrapher automatically converts between different units such as (kg to g) or(km/s to m/s) to enable comparison of data. The files must be JSON files containing x,y or x,y,z data<br>
 
 [![JSONGrapher Concept](./other_html/ConceptImage.png)](./other_html/ConceptImage.png)
 
