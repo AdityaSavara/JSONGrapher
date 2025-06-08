@@ -1032,6 +1032,8 @@
 
       // This function is called when the user drops a file or uploads it via the input button or drag and drop
       async function loadAndPlotData(event, eventType) {
+        let loadingMessage = "Loading and plotting data, including evaluating any equations and running any simulations.";
+        errorDiv.innerText += loadingMessage; //We want to use a variable so we can remove the loading message, later.
         let fileType; //Initializing filetype.
         let jsonified; // initializing
         // Checks if the file is dropped and if it is uploaded via the input button and gets the file
@@ -1113,6 +1115,7 @@
           // STEP 7: The create a plotly JSON, clean it, and render it on the browser
           plot_with_plotly(res.data);
         }
+        errorDiv.innerText = errorDiv.innerText.replace(loadingMessage,"");
       }
 
       // This a function that plots the data on the graph
