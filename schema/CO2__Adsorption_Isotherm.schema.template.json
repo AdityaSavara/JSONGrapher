@@ -41,7 +41,7 @@
       "title": { "text": "Adsorption" },
       "xaxis": {
           "comments": "// The x axis title must include the units that are expected.",
-          "title": { "text": "Pressure (Bar)" },
+          "title": { "text": "CO2 Pressure (Bar)" },
           "showgrid": false,
           "autorange": true
       },
