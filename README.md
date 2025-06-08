@@ -6,7 +6,7 @@ Plot multiple datasets from different sources on the same graph. JSONGrapher aut
 
 [![JSONGrapher Concept](./other_html/ConceptImage.png)](./other_html/ConceptImage.png)
 
-Try right-clicking to download and save some of the example files below to drag and drop into [JSONGrapher](https://jsongrapher.com):
+Try right-clicking to download and save some of the example files below to drag and drop into [JSONGrapher](http://www.jsongrapher.com):
 - [SrTiO3_rainbow.json](https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/2-Differential_Heats_of_Adsorption/SrTiO3_rainbow.json)
 - [CO2AdsorptionNaX2.json](https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/1-CO2__Adsorption_Isotherms/CO2AdsorptionNaX2.json)
 - [CO2Adsorption_NaX_and_CaX_two_series.json](https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/1-CO2__Adsorption_Isotherms/CO2Adsorption_NaX_and_CaX_two_series.json)
