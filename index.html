@@ -91,6 +91,7 @@
       <div class="file-actions">
         <input type="file" id="file-selector" />
         <button id="reset" onclick="clearData()">Clear Data</button>
+        <button id="load-from-url">From URL</button>        
         <button id="download" style="display: none">
           Download Last Data Set as a JSON File
         </button>
@@ -106,6 +107,7 @@
       </div>
       <div id="errorDiv"></div>
       <div id="downloadLink"></div>
+      <div id="copyUrlLink"></div>
       <div id="conceptDiv">
         <!-- The concept image will be shown in this div. -->
         <pre></pre>
@@ -123,14 +125,19 @@
       // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
       // STEP 7: The plotly template is rendered on the browser
 
+
       // Global Variables
       let globalData = null;
       let plotlyTemplate = null;
       let schema = null;
       let recentFileName = null;
-
       let schemaURL = "";
       let schemaTemplateURL = "";
+      let url = window.location.href; // Get the current page URL         
+      let params = new URLSearchParams(new URL(url).search);
+      let urlParamsString = params.get("fromUrl"); //default ends up as null.
+      let urlReceived = "" //Start as an empty string. Will populate this later from the user's input or from the urlParamsString
+
 
       // Initializing the AJV validator
       const ajv = new Ajv();
@@ -141,9 +148,12 @@
       // A function that clears the data from global variables and removes the error text and plotly chart
       function clearData() {
         globalData = null;
+        urlParamsString = null; //empty this global variable.
+        urlReceived = null; //empty this global variable.
         document.getElementById("errorDiv").innerHTML = "";
         document.getElementById("downloadButtonsContainer").innerHTML = "";
         document.getElementById("file-selector").value = "";
+        document.getElementById("load-from-url").value = "";
         document.getElementById("download").style.display = "none";
         Plotly.purge("plotlyDiv");
       }
@@ -160,15 +170,16 @@
         return "json";
       }
 
-      //function to retrieve from url
+      //function to retrieve JSON Record from url
       async function loadJsonFromUrl(url) { 
         try {
           const response = await fetch(url);
           if (!response.ok) throw new Error("Network response was not OK");
           const jsonData = await response.json();
-          processData(jsonData);
+          return jsonData;
         } catch (error) {
           console.error("Error fetching JSON:", error);
+          return null;
         }
       }
 
@@ -724,22 +735,16 @@
       function createDownloadCSVLink(csv, filename) {
         let csvFile;
         let downloadLink;
-
         // CSV file
         csvFile = new Blob([csv], { type: "text/csv" });
-
         // Download link
         downloadLink = document.createElement("a");
-
         // File name
         downloadLink.download = filename;
-
         // Create a link to the file
         downloadLink.href = window.URL.createObjectURL(csvFile);
-
         // Hide download link
         downloadLink.style.display = "none";
-
         return downloadLink;
       }
 
@@ -747,26 +752,63 @@
       function createDownloadJSONLink(json, filename) {
         let jsonFile;
         let downloadLink;
-
         // JSON file
         jsonFile = new Blob([JSON.stringify(json)], {
           type: "application/json",
         });
-
         // Download link
         downloadLink = document.createElement("a");
-
         // File name
         downloadLink.download = filename;
-
         // Create a link to the file
         downloadLink.href = window.URL.createObjectURL(jsonFile);
-
         // Hide download link
         downloadLink.style.display = "none";
-
         return downloadLink;
       }
+
+      // A function that will create a bz2 and encoded URL for the final graph.
+      // This approach was abandoned because the URL strings were too long for both some browsers and some webservers limits.
+      function jsonToUrl(json) {
+          const url = window.location.href.split('?')[0]; // gets url from browser and removes query parameters
+          const prefix = `${url}?fromUrl=`;
+          // Convert JSON to a string
+          let jsonString = JSON.stringify(json);         
+          // Concatenate with prefix and apply URL encoding, which is like the python urllib.parse.quote(json_string) and urllib.parse.unquote(encoded_string)
+          let urlString = prefix + encodeURIComponent(jsonString); 
+          // wanted to Compress using Bzip2, but didn't succeed in importing a JS version without problems.
+          //urlString = compressjs.Bzip2.compressFile(new TextEncoder().encode(urlString));
+          return urlString;
+      }
+
+      // A function that will create a URL string that allows graphing from a remote json.
+      function createCopyUrlLink(jsonURL) {
+          const url = window.location.href.split('?')[0]; // gets url from browser and removes query parameters
+          const prefix = `${url}?fromUrl=`;
+          // Concatenate with prefix and apply URL encoding, which is like the python urllib.parse.quote(json_string) and urllib.parse.unquote(encoded_string)
+          let urlString = prefix + encodeURIComponent(jsonURL); 
+          // wanted to Compress using Bzip2, but didn't succeed in importing a JS version without problems.
+          //urlString = compressjs.Bzip2.compressFile(new TextEncoder().encode(urlString));
+          return urlString;
+      }
+
+      function createCopyURLButton(jsonURL) {
+        // Generate the URL
+          const urlString = createCopyUrlLink(jsonURL);
+          // Create the button
+          const copyButton = document.createElement("button");
+          copyButton.innerText = "Copy URL";
+          // Add click event listener to copy to clipboard
+          copyButton.addEventListener("click", () => {
+              navigator.clipboard.writeText(urlString).then(() => {
+                  confirm("URL copied to clipboard! \nNow you can paste it elsewhere! \n\n\n" + urlString + "\n\n\n\n\n");
+              }).catch(err => {
+                  console.error("Error copying to clipboard:", err);
+              });
+          });
+          return copyButton;
+      }
+
 
       // A function that will create a download button for the csv file
       function createDownloadCSVButton(csv, filename) {
@@ -807,8 +849,17 @@
         // Create download csv button
         const downloadCSVButton = createDownloadCSVButton(csvContent, filename);
         // Create Download JSON button
-        const downloadJSONBUTTON = createDownlodJSONButton(jsonified, filename);
-        // Get the buttons container
+        const downloadJSONButton = createDownlodJSONButton(jsonified, filename);
+        // Create Download URL button (technically a copy button)
+        // Only show this button if someone has loaded from url.
+        let downloadURLButton = null // initializing.
+        if (urlReceived){  //use "if urlReceived" because it can be null or "" and this will catch both cases.
+          console.log("In Index.html addpendDownloadButtons, urlReceived", urlReceived)
+          downloadURLButton = createCopyURLButton(urlReceived);
+          // Below was when I tried to put the whole JSON record into the URL, but that was quickly too long for webservers and browsers.
+          //const downloadURLButton = createCopyURLButton(jsonified);
+        };
+        
         const buttonsContainer = document.getElementById(
           "downloadButtonsContainer"
         );
@@ -817,9 +868,13 @@
         buttonsContainer.innerHTML =
           "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Download Last Data Set As:"; //&nbsp; is HTML code to add a space.
         // Add download JSON button
-        buttonsContainer.appendChild(downloadJSONBUTTON);
+        buttonsContainer.appendChild(downloadJSONButton);
         // Add download CSV button
         buttonsContainer.appendChild(downloadCSVButton);
+        // Add download URL button, but only if load from url was used.
+        if (urlReceived){  //use "if urlReceived" because it can be null or "" and this will catch both cases.
+          buttonsContainer.appendChild(downloadURLButton);
+        }
       }
 
       // Convert the received dataset units to the first dataset units
@@ -904,36 +959,68 @@
         });
       }
 
-      ///############################ BELOW IS THE MAIN BLOCK OF CODE FOR JSON GRAPHER ##################################
 
+      async function loadFromUrlParams(urlInput){
+        if (isValidUrl(urlInput)){ 
+          const url = parseUrl(urlInput);
+          urlReceived = url //This line is populating a global variable. 
+          console.log("Index.html loadFromURLButton 2", url)
+          loadAndPlotData(url, "url");
+        } else {
+          console.error("No URL entered.");
+          errorDiv.innerText += "Error: Please enter a valid URL.\n";
+        }
+      };
+      ///############################ BELOW IS THE MAIN BLOCK OF CODE FOR JSON GRAPHER ##################################
+      if (urlParamsString){ loadFromUrlParams(urlParamsString)};
       // STEP 0: Prepare the 'universal' schemas occurs inside initializeJSONGrapher
       initializeJSONGrapher()
         .then((resp) => {
           // Assign variables to the two universal schemas.
           schema = resp[0];
           plotlyTemplate = resp[1];
-          // STEP 1: User selects a file from computer or drops a file on the browser
-          // Checks if the browser supports the File API
+           // STEP 1: User selects a file from computer or drops a file on the browser
+           // Checks if the browser supports the File API
+           // User selects a file or drags/drops one
           if (window.FileList && window.File) {
             // Event that fires when the user selects a file from the computer from the choose file button
-            document
-              .getElementById("file-selector")
-              .addEventListener("change", (event) => {
-                // Launches the loadFile function after the file is selected
+            const fileSelector = document.getElementById("file-selector");
+            if (fileSelector) {
+              fileSelector.addEventListener("change", (event) => {
                 loadAndPlotData(event, "change");
               });
-
+            }
             // Event listener for drag and drop
             const dropArea = document.getElementById("file-drop-area");
-            dropArea.addEventListener("dragover", (event) => {
-              event.stopPropagation();
-              event.preventDefault();
-              event.dataTransfer.dropEffect = "copy";
-            });
-            dropArea.addEventListener("drop", (event) => {
-              event.preventDefault();
-              // Launches the loadFile function after the file is dropped
-              loadAndPlotData(event, "drop");
+            if (dropArea) {
+              dropArea.addEventListener("dragover", (event) => {
+                event.stopPropagation();
+                event.preventDefault();
+                event.dataTransfer.dropEffect = "copy";
+              });
+
+              dropArea.addEventListener("drop", (event) => {
+                event.preventDefault();
+                loadAndPlotData(event, "drop");
+              });
+            }
+          }
+
+          // User inputs URL via a prompt instead of selecting/dropping a file
+          const loadFromUrlButton = document.getElementById("load-from-url");
+          if (loadFromUrlButton) {
+            loadFromUrlButton.addEventListener("click", () => {
+              const urlInput = window.prompt("Enter the URL with a desired .json File:");
+              console.log("Index.html loadFromURLButton 1", urlInput)
+              if (isValidUrl(urlInput)){ 
+                const url = parseUrl(urlInput);
+                urlReceived = url //This line is populating a global variable. 
+                console.log("Index.html loadFromURLButton 2", url)
+                loadAndPlotData(url, "url");
+              } else {
+                console.error("No URL entered.");
+                errorDiv.innerText += "Error: Please enter a valid URL.\n";
+              }
             });
           }
         })
@@ -942,11 +1029,14 @@
           errorDiv.innerText += "Error fetching json-schema files...\n";
         });
 
+
       // This function is called when the user drops a file or uploads it via the input button or drag and drop
       async function loadAndPlotData(event, eventType) {
-        let fileType //Initializing filetype.
+        let fileType; //Initializing filetype.
+        let jsonified; // initializing
         // Checks if the file is dropped and if it is uploaded via the input button and gets the file
         // STEP 1 (Variation A): User selects a file from computer or drops a file on the browser
+        //TODO: Variation A should probably be functionalized to take event, eventType and return jsonified
         if (eventType === "change" || eventType === "drop") {
           let file;
           if (eventType === "change") {
@@ -964,20 +1054,27 @@
             errorDiv.innerText += `Error: Failed to read file. ${error.message} \n`;
             return;
           }
-          document.getElementById("file-selector").value = "";
+          document.getElementById("file-selector").value = ""; // resetting to blank.
           fileType = findFileType(file.name); //initialized near beginning of loadAndPlotData
           recentFileName = getFileName(file.name);//This is a global variable.
         }
-
-        // STEP 2 (VARIATION A): If the file is a .csv or .tsv file it is converted to a .json file
-        let jsonified;
-        try {
-          // try to parse the file as json
-          jsonified = jsonifyData(fileType, dataLoaded);
-        } catch (e) {
-          errorDiv.innerText += `Error: Data record could not be converted to JSON. If it is in a zipfile, unzip before uploading. Error Details: ${e.message} \n`;
+        // STEP 1 (Variation B): User Providees a URL.
+        //Should actually also also csv, probably.
+        if (eventType === "url"){
+          jsonified = await loadJsonFromUrl(event);//the event will have the url in it.
+          filetype = "json";
         }
 
+       
+        // STEP 2 (VARIATION A): If the file is a .csv or .tsv file it is converted to a .json file
+        if (eventType === "change" || eventType === "drop") {
+          try {
+            // try to parse the file as json
+            jsonified = jsonifyData(fileType, dataLoaded);
+          } catch (e) {
+            errorDiv.innerText += `Error: Data record could not be converted to JSON. If it is in a zipfile, unzip before uploading. Error Details: ${e.message} \n`;
+          }
+        }
         // Checking if the uploaded data is valid against the schema
         // STEP 3: Check if the jsonified object is a valid JSON file against the schema
         const [schema_type, schema_template] = await getSchemaType(jsonified);
