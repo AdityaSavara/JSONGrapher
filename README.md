@@ -7,9 +7,9 @@ Plot multiple datasets from different sources on the same graph. JSONGrapher aut
 [![JSONGrapher Concept](./other_html/ConceptImage.png)](./other_html/ConceptImage.png)
 
 Try right-clicking to download and save some of the example files below to drag and drop into [JSONGrapher](http://www.jsongrapher.com):
-- [SrTiO3_rainbow.json](https://raw.githubusercontent.com/AdityaSavara/JSONGrapherExamples/main/ExampleDataRecords/2-Differential_Heats_of_Adsorption/SrTiO3_rainbow.json)
 - [CO2AdsorptionNaX2.json](https://raw.githubusercontent.com/AdityaSavara/JSONGrapherExamples/main/ExampleDataRecords/1-CO2__Adsorption_Isotherms/CO2AdsorptionNaX2.json)
 - [CO2Adsorption_NaX_and_CaX_two_series.json](https://raw.githubusercontent.com/AdityaSavara/JSONGrapherExamples/main/ExampleDataRecords/1-CO2__Adsorption_Isotherms/CO2Adsorption_NaX_and_CaX_two_series.json)
+- [SrTiO3_rainbow.json](https://raw.githubusercontent.com/AdityaSavara/JSONGrapherExamples/main/ExampleDataRecords/2-Differential_Heats_of_Adsorption/SrTiO3_rainbow.json)
 - [Rate_Constant_mesh3d.json](https://raw.githubusercontent.com/AdityaSavara/JSONGrapherExamples/main/ExampleDataRecords/9-3D-Arrhenius/Rate_Constant_mesh3d.json)
 - [Rate_Constant_scatter3d.json](https://raw.githubusercontent.com/AdityaSavara/JSONGrapherExamples/main/ExampleDataRecords/9-3D-Arrhenius/Rate_Constant_scatter3d.json)
 
