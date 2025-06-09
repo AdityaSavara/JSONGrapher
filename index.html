@@ -801,21 +801,40 @@
       }
 
       function createCopyURLButton(jsonURL) {
-        // Generate the URL
+          // Generate the URL
           const urlString = createCopyUrlLink(jsonURL);
+          
           // Create the button
           const copyButton = document.createElement("button");
           copyButton.innerText = "Copy URL";
+          
+          // Function to copy text using a fallback method if navigator way doesn't work.
+          function fallbackCopyText(text) {
+              const textArea = document.createElement("textarea");
+              textArea.value = text;
+              document.body.appendChild(textArea);
+              textArea.select();
+              document.execCommand("copy");
+              document.body.removeChild(textArea);
+          }
+
           // Add click event listener to copy to clipboard
           copyButton.addEventListener("click", () => {
-              navigator.clipboard.writeText(urlString).then(() => {
-                  confirm("URL copied to clipboard! \nNow you can paste it elsewhere! \n\n\n" + urlString + "\n\n\n\n\n");
-              }).catch(err => {
-                  console.error("Error copying to clipboard:", err);
-              });
+              if (navigator.clipboard && navigator.clipboard.writeText) {
+                  navigator.clipboard.writeText(urlString).then(() => {
+                      alert("URL copied to clipboard!\nNow you can paste it elsewhere!\n\n" + urlString);
+                  }).catch(err => {
+                      console.error("Error copying to clipboard:", err);
+                  });
+              } else {
+                  fallbackCopyText(urlString);
+                  alert("URL copied to clipboard!\nNow you can paste it elsewhere!\n\n" + urlString);
+              }
           });
+
           return copyButton;
       }
+
 
 
       // A function that will create a download button for the csv file
