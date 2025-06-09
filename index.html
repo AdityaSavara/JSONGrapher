@@ -1112,7 +1112,9 @@
           jsonified = await loadJsonFromUrl(event);//the event will have the url in it.
           filetype = "json";
           const toggleSection = document.getElementById("toggleSection");
+          const toRevealSection = document.getElementById("toReveal"); //get toReveal section so actions can reveal
           toggleSection.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
+          toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
         }
       
         // STEP 2 (VARIATION A): If the file is a .csv or .tsv file it is converted to a .json file
