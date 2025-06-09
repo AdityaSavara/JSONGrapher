@@ -1,4 +1,5 @@
 # [JSONGrapher]()
+Imagine a world where a person can simply drag a datafile into a graphing utility and a plot will be made, including scientific units, and more plots can be dragged in from data from other sources (and other units) to compare all of the data together, in an interactive graph.
 
 JSONGrapher (http://www.jsongrapher.com) allows drag-and-drop plotting of 2D, 3D, and 4D plots. The python version of JSONgrapher can also be used to create records: https://github.com/AdityaSavara/jsongrapher-py <br>
 
