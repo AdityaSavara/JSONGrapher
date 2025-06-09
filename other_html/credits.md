@@ -1,6 +1,6 @@
 # Credits
 
-JSON Grapher utilizes plotly, UUC, AJV, and custom code. <br/>
+JSON Grapher utilizes Plotly, UUC, AJV, MathJS and custom code. <br/>
 https://plotly.com/  <br/>
 https://github.com/Lemonexe/UUC <br/>
 https://ajv.js.org/ <br/>
