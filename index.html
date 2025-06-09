@@ -778,8 +778,10 @@
       // A function that will create a bz2 and encoded URL for the final graph.
       // This approach was abandoned because the URL strings were too long for both some browsers and some webservers limits.
       function jsonToUrl(json) {
-          const url = window.location.href.split('?')[0]; // gets url from browser and removes query parameters
-          const prefix = `${url}?fromUrl=`;
+          //For now, am hardcoding url, because otherwise the repository github pages url gets prefixed. The repository github pages url works, but does not look as nice.
+          const prefix = `http://www.jsongrapher.com?fromUrl=`;
+          //const url = window.location.href.split('?')[0]; // gets url from browser and removes query parameters
+          //const prefix = `${url}?fromUrl=`;
           // Convert JSON to a string
           let jsonString = JSON.stringify(json);         
           // Concatenate with prefix and apply URL encoding, which is like the python urllib.parse.quote(json_string) and urllib.parse.unquote(encoded_string)
@@ -791,8 +793,10 @@
 
       // A function that will create a URL string that allows graphing from a remote json.
       function createCopyUrlLink(jsonURL) {
-          const url = window.location.href.split('?')[0]; // gets url from browser and removes query parameters
-          const prefix = `${url}?fromUrl=`;
+          //For now, am hardcoding url, because otherwise the repository github pages url gets prefixed. The repository github pages url works, but does not look as nice.
+          const prefix = `http://www.jsongrapher.com?fromUrl=`;
+          //const url = window.location.href.split('?')[0]; // gets url from browser and removes query parameters
+          //const prefix = `${url}?fromUrl=`;
           // Concatenate with prefix and apply URL encoding, which is like the python urllib.parse.quote(json_string) and urllib.parse.unquote(encoded_string)
           let urlString = prefix + encodeURIComponent(jsonURL); 
           // wanted to Compress using Bzip2, but didn't succeed in importing a JS version without problems.
