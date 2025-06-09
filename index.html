@@ -73,18 +73,21 @@
       </div>
     </header>
     <div class="page">
-      <h1>JSONGrapher</h1>
-<p>
-    JSONGrapher plots data from one or more files directly in your browser, creating interactive graphs to compare data! 
-</p><p>Try plotting one of the 
-    <a href="https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/DemonstrationFiles.zip" target="_blank">example files</a> 
-    (first unzip, then plot with JSONGrapher).   Just drag-and-drop an example file into the box below, or use the browse-to-upload option. Then, add more files to compare more data on the same graph!</p>
-
-<p>
-    To make your own files, use the <a href="https://github.com/AdityaSavara/jsongrapher-py" target="_blank">python JSONGrapher</a>,
-    or the <a href="https://adityasavara.github.io/JSONGrapher/other_html/BrowserRecordCreator/BrowserRecordCreator.html" target="_blank"> browser record creator</a>,
-    or see the <a href="https://adityasavara.github.io/JSONGrapher/Manual.pdf" target="_blank">manual</a>. <br />
+    <h1>JSONGrapher</h1>
+    <p>
+    JSONGrapher plots data from one or more files directly in your browser, creating interactive graphs to compare data!        
+    </p>
+      <div id="toggleSection">
+    <p>Try plotting one of the 
+        <a href="https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/DemonstrationFiles.zip" target="_blank">example files</a> 
+        (first unzip, then plot with JSONGrapher). Just drag-and-drop an example file into the box below, or use the browse-to-upload option. Then, add more files to compare more data on the same graph!
+    </p>
+        To make your own files, use the <a href="https://github.com/AdityaSavara/jsongrapher-py" target="_blank">python JSONGrapher</a>,
+        or the <a href="https://adityasavara.github.io/JSONGrapher/other_html/BrowserRecordCreator/BrowserRecordCreator.html" target="_blank"> browser record creator</a>,
+        or see the <a href="https://adityasavara.github.io/JSONGrapher/Manual.pdf" target="_blank">manual</a>.
+    </div>
     <a href="https://www.dropbox.com/s/1s8ib1rsv3xmj1c/3_edited.mp4?dl=0" target="_blank">How to Plot and Features Video</a> | 
+    <a href="https://adityasavara.github.io/JSONGrapher/Manual.pdf" target="_blank">Manual</a> |
     <a href="https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/DemonstrationFiles.zip" target="_blank">Example Files</a> | 
     <a href="https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords.zip" target="_blank">More Examples</a>
 </p>
@@ -1005,6 +1008,7 @@
       // STEP 0: Prepare the 'universal' schemas occurs inside initializeJSONGrapher
       initializeJSONGrapher()
         .then((resp) => {
+          const toggleSection = document.getElementById("toggleSection"); //get toggle section so actions can hide it.
           // Assign variables to the two universal schemas.
           schema = resp[0];
           plotlyTemplate = resp[1];
@@ -1016,6 +1020,7 @@
             const fileSelector = document.getElementById("file-selector");
             if (fileSelector) {
               fileSelector.addEventListener("change", (event) => {
+                toggleSection.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
                 loadAndPlotData(event, "change");
               });
             }
@@ -1030,6 +1035,7 @@
 
               dropArea.addEventListener("drop", (event) => {
                 event.preventDefault();
+                toggleSection.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
                 loadAndPlotData(event, "drop");
               });
             }
@@ -1043,6 +1049,7 @@
               if (isValidUrl(urlInput)){ 
                 const url = parseUrl(urlInput);
                 urlReceived = url //This line is populating a global variable. 
+                toggleSection.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
                 loadAndPlotData(url, "url");
               } else {
                 console.error("No URL entered.");
@@ -1092,9 +1099,10 @@
         if (eventType === "url"){
           jsonified = await loadJsonFromUrl(event);//the event will have the url in it.
           filetype = "json";
+          const toggleSection = document.getElementById("toggleSection");
+          toggleSection.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
         }
-
-       
+      
         // STEP 2 (VARIATION A): If the file is a .csv or .tsv file it is converted to a .json file
         if (eventType === "change" || eventType === "drop") {
           try {

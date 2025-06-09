@@ -66,3 +66,8 @@ a:hover div.button {
 #myDiv {
   margin-top: 20px;
 }
+
+
+#toggleSection {
+    margin-bottom: 0;
+}
