@@ -1,20 +1,23 @@
 # [JSONGrapher]()
 Imagine a world where a person can simply drag a datafile into a graphing utility and a plot will be made, including scientific units, and more plots can be dragged in from data from other sources (and other units) to compare all of the data together, in an interactive graph.
 
-JSONGrapher (http://www.jsongrapher.com) allows drag-and-drop plotting of 2D, 3D, and 4D plots. The python version of JSONgrapher can also be used to create records: https://github.com/AdityaSavara/jsongrapher-py <br>
+Online address for using the JSONGrapher: https://www.jsongrapher.com <br>
+Python version of JSONgrapher: https://github.com/AdityaSavara/jsongrapher-py <br>
 
-Plot multiple datasets from different sources on the same graph. JSONGrapher automatically converts between different units such as (kg to g) or(km/s to m/s) to enable comparison of data. The files must be JSON files containing x,y or x,y,z data<br>
+JSON grapher allows drag-and-drop plotting of 2D, 3D, and 4D plots from JSON files containing x,y or x,y,z data.
+Plot multiple datasets fromd different sources on the same graph.
+JSONGrapher automatically converts between different units such as (kg to g) or(km/s to m/s) to enable comparison of data.
 
 [![JSONGrapher Concept](./other_html/ConceptImage.png)](./other_html/ConceptImage.png)
 
-Try right-clicking to download and save some of the example files below to drag and drop into [JSONGrapher](http://www.jsongrapher.com):
-- [CO2AdsorptionNaX2.json](https://raw.githubusercontent.com/AdityaSavara/JSONGrapherExamples/main/ExampleDataRecords/1-CO2__Adsorption_Isotherms/CO2AdsorptionNaX2.json)
-- [CO2Adsorption_NaX_and_CaX_two_series.json](https://raw.githubusercontent.com/AdityaSavara/JSONGrapherExamples/main/ExampleDataRecords/1-CO2__Adsorption_Isotherms/CO2Adsorption_NaX_and_CaX_two_series.json)
-- [SrTiO3_rainbow.json](https://raw.githubusercontent.com/AdityaSavara/JSONGrapherExamples/main/ExampleDataRecords/2-Differential_Heats_of_Adsorption/SrTiO3_rainbow.json)
-- [Rate_Constant_mesh3d.json](https://raw.githubusercontent.com/AdityaSavara/JSONGrapherExamples/main/ExampleDataRecords/9-3D-Arrhenius/Rate_Constant_mesh3d.json)
-- [Rate_Constant_scatter3d.json](https://raw.githubusercontent.com/AdityaSavara/JSONGrapherExamples/main/ExampleDataRecords/9-3D-Arrhenius/Rate_Constant_scatter3d.json)
-
-
+Try right clicking to download and save some of the example files below to drag and drop into jsongrapher.com::
+ https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/1-CO2__Adsorption_Isotherms/CO2AdsorptionNaX2.json <br>
+ https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/1-CO2__Adsorption_Isotherms/CO2Adsorption_NaX_and_CaX_two_series.json <br>
+ https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/1-CO2__Adsorption_Isotherms/CO2AdsorptionNaX2.csv <br>
+ https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/1-CO2__Adsorption_Isotherms/CO2AdsorptionNaX2.tsv.txt <br>
+ https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/9-3D-Arrhenius/Rate_Constant_mesh3d.json
+ https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords/9-3D-Arrhenius/Rate_Constant_scatter3d.json
+  
 
 Some additional example files are available at https://github.com/AdityaSavara/JSONGrapherExamples
 
