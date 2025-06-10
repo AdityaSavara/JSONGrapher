@@ -756,6 +756,7 @@
 
       // A function that will create a download link for the csv file
       function createDownloadCSVLink(csv, filename) {
+        if (filename===null){filename="JSONGrapherRecord.csv";};
         let csvFile;
         let downloadLink;
         // CSV file
@@ -773,6 +774,7 @@
 
       // A function that will create a download link for the json file
       function createDownloadJSONLink(json, filename) {
+        if (filename===null){filename="JSONGrapherRecord.json";};
         let jsonFile;
         let downloadLink;
         // JSON file
