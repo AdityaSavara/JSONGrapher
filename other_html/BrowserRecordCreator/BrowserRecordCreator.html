@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JSONGrapher Record Creator</title>
+    <title>JSONGrapher Record Creator</title><version 1.0>
 </head>
 <body>
     <h1>Create JSONGrapher Record</h1>
@@ -14,10 +14,13 @@
 
         <label for="comments">Description and Comments (optional):</label><br>
         <textarea id="comments" name="comments" rows="3" cols="50"></textarea><br><br>
-
+       
         <label for="plotTitle">Graph Title:</label>
         <input type="text" id="plotTitle" name="plotTitle" required><br><br>
 
+        <label for="traceStyle">Trace Style (optional):</label>
+        <input type="text" id="traceStyle" name="traceStyle" required><br><br>
+        
         <label for="seriesName">Data Series Name for Legend:</label>
         <input type="text" id="seriesName" name="seriesName" required><br><br>
 
@@ -35,9 +38,7 @@
 
         <label for="yUnit">Y-Axis Units (you may include multiplication "*", division "/" and as many parentheses "( )" as you want):</label>
         <input type="text" id="yUnit" name="yUnit" required><br><br>
-
-
-        
+       
         <label for="xValues">X Values (copy and paste - either a column or comma separated values):</label><br>
         <textarea id="xValues" name="xValues" rows="5" cols="50" required></textarea><br><br>
 
@@ -47,7 +48,6 @@
         <label>Select Plot Type:</label><br>
         <input type="radio" id="scatter" name="plotType" value="scatter"> Scatter<br>
         <input type="radio" id="bar" name="plotType" value="bar"> Bar<br><br>
-
 
         <label for="filename">Filename (optional)</label><br>
         <textarea id="filename" name="filename" rows="1" cols="50"></textarea><br><br>
@@ -66,10 +66,12 @@
 
         function createJSON() {
             const datatype = document.getElementById('datatype').value;
+            const plotTitle = document.getElementById('plotTitle').value;
+            const traceStyle = document.getElementById('traceStyle').value;
             const comments = document.getElementById('comments').value;
             const uid = document.getElementById('uid').value;
             const seriesName = document.getElementById('seriesName').value;
-            const plotTitle = document.getElementById('plotTitle').value;
+            
 
             const xLabel = document.getElementById('xLabel').value;
             const xUnit = document.getElementById('xUnit').value;
@@ -85,7 +87,9 @@
 
             const jsonData = {
                 comments: comments || "// The comments field can be used to put a description and metadata such as citations.",
+                jsongrapher: "To plot this file, go to www.jsongrapher.com and drag this file into your browser, or use the python version of JSONGrapher. File created with Browser Record Creator Version 1.0",
                 datatype: datatype,
+                trace_style: traceStyle,                
                 data: [
                     {
                         uid: uid || "",
