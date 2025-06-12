@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>JSONGrapher Record Creator</title>
+</head>
+<body>
+  <h1>Create JSONGrapher Record</h1>
+
+  <form id="jsonForm">
+    <label for="datatype">Datatype such as experiment type:</label>
+    <input type="text" id="datatype" name="datatype" required><br><br>
+
+    <label for="plotTitle">Graph Title:</label>
+    <input type="text" id="plotTitle" name="plotTitle" required><br><br>
+
+    <label for="seriesName">Data Series Name for Legend:</label>
+    <input type="text" id="seriesName" name="seriesName" required><br><br>
+
+    <label for="uid">Data Series Unique ID (optional):</label>
+    <input type="text" id="uid" name="uid"><br><br>
+
+    <label for="equationString">Equation String. Put powers in parentheses, <br> use a variable for any intercepts that have units, such as k = c*L^(2) + a :</label><br>
+    <input type="text" id="equationString" name="equationString" size="50" required><br><br>
+
+    <label for="xVariable">X Variable name and units, such as L (m^(2)) :</label>
+    <input type="text" id="xVariable" name="xVariable" required><br><br>
+
+    <label for="yVariable">Y Variable name and units such as k (s) :</label>
+    <input type="text" id="yVariable" name="yVariable" required><br><br>
+
+    <label for="zVariable">Z Variable name and units such as k (s) :</label>
+    <input type="text" id="zVariable" name="zVariable" required><br><br>
+
+    <label for="constants">Constants and their units (in JSON-like format) such as {"A": "1*10^13 (s^-1)", "Ea": "30000 (J*mol^(-1))"}:</label><br>
+    <textarea id="constants" name="constants" rows="5" cols="100" placeholder='{"A": "1*10^13 (s^-1)", "Ea": "30000 (J*mol^(-1))"}'></textarea><br><br>
+
+    <label for="numPoints">Number of Points (to plot and connect by curve):</label>
+    <input type="number" id="numPoints" name="numPoints" value="10" min="2" required><br><br>
+
+    <label for="xRange">x_range_default (min,max):</label>
+    <input type="text" id="xRange" name="xRange" placeholder="e.g., 200,500" required><br><br>
+
+    <label for="yRange">y_range_default (min,max):</label>
+    <input type="text" id="xyange" name="yRange" placeholder="e.g., 200,500" required><br><br>
+
+    <label for="xLabel">X-Axis Label (excluding units):</label>
+    <input type="text" id="xLabel" name="xLabel" required><br><br>
+
+    <label for="xUnit">X-Axis Units (you may include multiplication "*", division "/" and as many parentheses "( )" as you want):</label>
+    <input type="text" id="xUnit" name="xUnit" required><br><br>
+
+    <label for="yLabel">Y-Axis Label (excluding units):</label>
+    <input type="text" id="yLabel" name="yLabel" required><br><br>
+
+    <label for="yUnit">Y-Axis Units (you may include multiplication "*", division "/" and as many parentheses "( )" as you want):</label>
+    <input type="text" id="yUnit" name="yUnit" required><br><br>
+
+    <label for="zLabel">Z-Axis Label (excluding units):</label>
+    <input type="text" id="zLabel" name="zLabel" required><br><br>
+
+    <label for="zUnit">Z-Axis Units (you may include multiplication "*", division "/" and as many parentheses "( )" as you want):</label>
+    <input type="text" id="zUnit" name="zUnit" required><br><br>
+
+
+    <label>Select Plot Type:</label><br>
+    <input type="radio" id="scatter3d" name="traceStyle" value="scatter3d">scatter3d<br>
+    <input type="radio" id="mesh3d" name="traceStyle" value="mesh3d">mesh3d<br>
+    <input type="radio" id="noTraceStyle" name="traceStyle" value="">no selection<br><br>
+
+
+    <button type="button" onclick="createJSON()">Create JSONGrapher Record File</button>
+  </form>
+
+  <script>
+    function createJSON() {
+      const datatype = document.getElementById('datatype').value;
+      const plotTitle = document.getElementById('plotTitle').value;    
+      const uid = document.getElementById('uid').value;
+      const seriesName = document.getElementById('seriesName').value;
+      const equationString = document.getElementById('equationString').value;
+      const xVariable = document.getElementById('xVariable').value;
+      const yVariable = document.getElementById('yVariable').value;
+      const constantsRaw = document.getElementById('constants').value;
+      const numPoints = document.getElementById('numPoints').value;
+      const xRange = document.getElementById('xRange').value;
+      const yRange = document.getElementById('yRange').value;
+
+      const xLabel = document.getElementById('xLabel').value;
+      const xUnit = document.getElementById('xUnit').value;
+      const yLabel = document.getElementById('yLabel').value;
+      const yUnit = document.getElementById('yUnit').value;
+      const zLabel = document.getElementById('zLabel').value;
+      const zUnit = document.getElementById('zUnit').value;
+
+      const xRangeArray = xRange.replace(/[()]/g, '').split(',').map(v => parseFloat(v.trim()));
+      const yRangeArray = yRange.replace(/[()]/g, '').split(',').map(v => parseFloat(v.trim()));
+
+      const equation_dict = {
+        equation_string: equationString,
+        x_variable: xVariable,
+        y_variable: yVariable,
+        z_variable: zVariable,
+        constants: JSON.parse(constantsRaw),
+        num_of_points: parseInt(numPoints),
+        x_range_default: xRangeArray,
+        y_range_default: yRangeArray,
+        x_range_limits: [],
+        x_points_specified: [],
+        points_spacing: "Linear",
+        reverse_scaling: false
+      };
+
+      const jsonData = {
+        comments: "// The comments field can be used to put a description and metadata such as citations.",
+        jsongrapher: "To plot this file, go to www.jsongrapher.com and drag this file into your browser, or use the python version of JSONGrapher. File created with Browser Record Creator Version 1.0",
+        datatype: datatype,
+        trace_style: "",
+        data: [
+          {
+            uid: uid || "",
+            name: seriesName || "",
+            equation: equation_dict,
+            x: [],
+            y: [],
+            type: "scatter"
+          }
+        ],
+        layout: {
+          title: {
+            text: plotTitle
+          },
+          xaxis: {
+            title: {
+              text: `${xLabel} (${xUnit})`
+            }
+          },
+          yaxis: {
+            title: {
+              text: `${yLabel} (${yUnit})`
+            }
+          }
+          zaxis: {
+            title: {
+              text: `${zLabel} (${zUnit})`
+            }
+          }
+        };
+
+      const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'JSONGrapherRecord.json';
+      link.click();
+    }
+  </script>
+</body>
+</html>
