@@ -17,7 +17,7 @@
        
         <label for="plotTitle">Graph Title:</label>
         <input type="text" id="plotTitle" name="plotTitle" required><br><br>
-       
+        
         <label for="seriesName">Data Series Name for Legend:</label>
         <input type="text" id="seriesName" name="seriesName" required><br><br>
 
@@ -35,22 +35,29 @@
 
         <label for="yUnit">Y-Axis Units (you may include multiplication "*", division "/" and as many parentheses "( )" as you want):</label>
         <input type="text" id="yUnit" name="yUnit" required><br><br>
-       
+
+        <label for="zLabel">Z-Axis Label (excluding units):</label>
+        <input type="text" id="zLabel" name="zLabel" required><br><br>
+
+        <label for="zUnit">Z-Axis Units (you may include multiplication "*", division "/" and as many parentheses "( )" as you want):</label>
+        <input type="text" id="zUnit" name="zUnit" required><br><br>
+      
         <label for="xValues">X Values (copy and paste - either a column or comma separated values):</label><br>
         <textarea id="xValues" name="xValues" rows="5" cols="50" required></textarea><br><br>
 
         <label for="yValues">Y Values (copy and paste - either a column or comma separated values):</label><br>
         <textarea id="yValues" name="yValues" rows="5" cols="50" required></textarea><br><br>
+
+        <label for="zValues">Z Values (copy and paste - either a column or comma separated values):</label><br>
+        <textarea id="zValues" name="zValues" rows="5" cols="50" required></textarea><br><br>
+
         
-        <label>Select Plot Type:</label><br>
-        <input type="radio" id="scatter" name="traceStyle" value="scatter">scatter<br>
-        <input type="radio" id="spline" name="traceStyle" value="spline">spline<br>
-        <input type="radio" id="line" name="traceStyle" value="line">line<br>
-        <input type="radio" id="bar" name="traceStyle" value="bar">bar<br>        
-        <input type="radio" id="scatter_spline" name="traceStyle" value="scatter_spline">scatter_spline<br>
-        <input type="radio" id="scatter_line" name="traceStyle" value="scatter_line">scatter_line<br>
+        <label>Select Trace Style:</label><br>
+        <input type="radio" id="scatter3d" name="traceStyle" value="scatter3d">scatter3d<br>
+        <input type="radio" id="mesh3d" name="traceStyle" value="mesh3d">mesh3d<br>
         <input type="radio" id="noTraceStyle" name="traceStyle" value="">no selection<br><br>
 
+        
         <label for="filename">Filename (optional)</label><br>
         <textarea id="filename" name="filename" rows="1" cols="50"></textarea><br><br>
         
@@ -84,7 +91,7 @@
             const yValues = parseValues(document.getElementById('yValues').value);
             const filename = document.getElementById('filename').value;
             // Capture selected plot types
-            // const plotType = document.querySelector('input[name="plotType"]:checked')?.value || '';
+            //const plotType = document.querySelector('input[name="plotType"]:checked')?.value || '';
 
 
             const jsonData = {
@@ -98,6 +105,7 @@
                         name: seriesName,
                         x: xValues,
                         y: yValues,
+                        type: plotType // Add plot type field
                     }
                 ],
                 layout: {
