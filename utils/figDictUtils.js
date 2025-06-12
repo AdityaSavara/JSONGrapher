@@ -94,7 +94,6 @@ function updateSuperscriptsStrings(figDictOrSubdict, depth = 1, maxDepth = 10) {
     if (depth > maxDepth || typeof figDictOrSubdict !== "object" || figDictOrSubdict === null) {
         return figDictOrSubdict;
     }
-
     for (const [key, value] of Object.entries(figDictOrSubdict)) {
         if (key === "title" && figDictOrSubdict[key].text) { // Axis labels and graph title
             figDictOrSubdict[key].text = replaceSuperscripts(figDictOrSubdict[key].text);
@@ -124,7 +123,10 @@ function replaceSuperscripts(inputString) {
      * @param {String} inputString - The text containing superscripts.
      * @returns {String} Modified text with superscript HTML formatting.
      */
-
+    if (typeof inputString !== 'string') {
+        console.log("In the replaceSuperscripts Function, encountered an inputString that is not a string.", inputString);
+        throw new TypeError("Expected a string but received: " + typeof inputString + " " + String(inputString));
+    }
     return inputString
         .replace(/\^\((.*?)\)|\*\*\((.*?)\)/g, (_, group1, group2) => `<sup>${group1 || group2}</sup>`)
         .replace(/<sup>\((\d+)\)<\/sup>/g, "<sup>$1</sup>")  // Remove parentheses for numbers

@@ -115,6 +115,7 @@
         <pre></pre>
       </div>
       <div id="messagesToUserDiv"></div>
+      <div id="errorDiv"></div>
       <div id="plotlyDiv">
         <!-- Plotly chart will be drawn inside this DIV -->
       </div>
@@ -153,6 +154,7 @@
 
       // Initializing the AJV validator
       const ajv = new Ajv();
+      const errorDiv = document.getElementById("errorDiv");
       const messagesToUserDiv = document.getElementById("messagesToUserDiv");
       // Initiating the UUC converter
       const convert = new Convert();
@@ -162,6 +164,7 @@
         globalData = null;
         urlParamsString = null; //empty this global variable.
         urlReceived = null; //empty this global variable.
+        document.getElementById("errorDiv").innerHTML = "";
         document.getElementById("messagesToUserDiv").innerHTML = "";
         document.getElementById("downloadButtonsContainer").innerHTML = "";
         document.getElementById("file-selector").value = "";
@@ -360,7 +363,7 @@
       // function to extract from the datatype the location of the schema
       function getSchemaLocation(jsonified, template = false) {
         if (!jsonified.datatype) {
-          messagesToUserDiv.innerText += "Warning: The datatype field was not found in the record provided. Accordingly, a schema check will not be performed and the record will not be fully validated. \n";
+          errorDiv.innerText += "Warning: The datatype field was not found in the record provided. Accordingly, a schema check will not be performed and the record will not be fully validated. \n";
           jsonified.datatype = ""; // Populate with an empty string
         }
 
@@ -408,7 +411,7 @@
           return [schema1json, schema2json];
         } catch (err) {
           // TODO: !! error catching to be made informative.
-          //messagesToUserDiv.innerText += "undocumented error in getSchemaType\n";
+          //errorDiv.innerText += "undocumented error in getSchemaType\n";
 
           try {
             const schema1 = await fetch("./utils/schema/0_PlotlyTemplate.json");
@@ -580,7 +583,7 @@
                   return parseFloat(x) * xConvertFactor.output.num;
                 } else {
                   xConvertFactor.messages.forEach((message) => {
-                    messagesToUserDiv.innerText += message.message + "\n";
+                    errorDiv.innerText += message.message + "\n";
                   });
                 }
               });
@@ -602,7 +605,7 @@
                   return parseFloat(y) * yConvertFactor.output.num;
                 } else {
                   yConvertFactor.messages.forEach((message) => {
-                    messagesToUserDiv.innerText += message.message + "\n";
+                    errorDiv.innerText += message.message + "\n";
                   });
                 }
               });
@@ -941,7 +944,7 @@
                     return parseFloat(x) * xConvertFactor.output.num;
                   } else {
                     xConvertFactor.messages.forEach((message) => {
-                      messagesToUserDiv.innerText += message.message + "\n";
+                      errorDiv.innerText += message.message + "\n";
                     });
                   }
                 });
@@ -957,7 +960,7 @@
                     return parseFloat(y) * yConvertFactor.output.num;
                   } else {
                     yConvertFactor.messages.forEach((message) => {
-                      messagesToUserDiv.innerText += message.message + "\n";
+                      errorDiv.innerText += message.message + "\n";
                     });
                   }
                 });
@@ -1014,7 +1017,7 @@
           loadAndPlotData(url, "url");
         } else {
           console.error("No URL entered.");
-          messagesToUserDiv.innerText += "Error: Please enter a valid URL.\n";
+          errorDiv.innerText += "Error: Please enter a valid URL.\n";
         }
       };
       ///############################ BELOW IS THE MAIN BLOCK OF CODE FOR JSON GRAPHER ##################################
@@ -1071,21 +1074,21 @@
                 loadAndPlotData(url, "url");
               } else {
                 console.error("No URL entered.");
-                messagesToUserDiv.innerText += "Error: Please enter a valid URL.\n";
+                errorDiv.innerText += "Error: Please enter a valid URL.\n";
               }
             });
           }
         })
         .catch((e) => {
           console.log(e);
-          messagesToUserDiv.innerText += "Error fetching json-schema files...\n";
+          errorDiv.innerText += "Error fetching json-schema files...\n";
         });
 
 
       // This function is called when the user drops a file or uploads it via the input button or drag and drop
       async function loadAndPlotData(event, eventType) {
         let loadingMessage = "Loading and plotting data, including evaluating any equations and running any simulations.";
-        messagesToUserDiv.innerText += loadingMessage; //We want to use a variable so we can remove the loading message, later.
+        errorDiv.innerText += loadingMessage; //We want to use a variable so we can remove the loading message, later.
         let fileType; //Initializing filetype.
         let jsonified; // initializing
         // Checks if the file is dropped and if it is uploaded via the input button and gets the file
@@ -1105,7 +1108,7 @@
           try {
             dataLoaded = await readFileAsText(file);
           } catch (error) {
-            messagesToUserDiv.innerText += `Error: Failed to read file. ${error.message} \n`;
+            errorDiv.innerText += `Error: Failed to read file. ${error.message} \n`;
             return;
           }
           document.getElementById("file-selector").value = ""; // resetting to blank.
@@ -1129,7 +1132,7 @@
             // try to parse the file as json
             jsonified = jsonifyData(fileType, dataLoaded);
           } catch (e) {
-            messagesToUserDiv.innerText += `Error: Data record could not be converted to JSON. If it is in a zipfile, unzip before uploading. Error Details: ${e.message} \n`;
+            errorDiv.innerText += `Error: Data record could not be converted to JSON. If it is in a zipfile, unzip before uploading. Error Details: ${e.message} \n`;
           }
         }
         // Checking if the uploaded data is valid against the schema
@@ -1137,7 +1140,7 @@
         const [schema_type, schema_template] = await getSchemaType(jsonified);
 
         if (Object.keys(schema_type).length === 0) {
-          messagesToUserDiv.innerText +=
+          errorDiv.innerText +=
             "Schema check: There was no Schema specific to this DataType, or the schema was not compatible. The default scatter plot schema was used.\n";
           schema_type = schema;
         }
@@ -1150,10 +1153,10 @@
           // Console log an error if the data is not valid against the schema
           console.log("validate errors: ", JSON.stringify(validate.errors));
           // Display an error message if the data is not valid against the schema
-          messagesToUserDiv.innerText += `Json file does not match the schema. ${JSON.stringify(
+          errorDiv.innerText += `Json file does not match the schema. ${JSON.stringify(
             validate.errors
           )}\n`;
-          messagesToUserDiv.innerText += `Json file does not match the schema. ${JSON.stringify(
+          errorDiv.innerText += `Json file does not match the schema. ${JSON.stringify(
             validate.errors
           )}\n`;
         } else {
@@ -1169,8 +1172,13 @@
           appendDownloadButtons(res.downloadData, res.fileName);
           // STEP 7: The create a plotly JSON, clean it, and render it on the browser
           plot_with_plotly(res.data);
-          messagesToUserDiv.innerText += "\u2003\u2003\u2003\u2003\u2003\u2003 Data plotted! Add more data or click 'Clear Data' to start a new graph! \u2003\u2003\u2003\u2003\u2003\u2003 \n"        }
-        messagesToUserDiv.innerText = messagesToUserDiv.innerText.replace(loadingMessage,"");
+          //Replace existing "Data Plotted" message if it is already there, to avoid duplicating it.
+          if (!messagesToUserDiv.innerText){ //Currently, we assume the below message is present or not present. If we later put additional messagesToUser, we may need to add more logic.
+            const dataPlottedMessage = "\u2003\u2003\u2003\u2003\u2003\u2003 Data plotted! Add more data or click 'Clear Data' to start a new graph! \u2003\u2003\u2003\u2003\u2003\u2003"
+            messagesToUserDiv.innerText += dataPlottedMessage
+          }
+          }
+        errorDiv.innerText = errorDiv.innerText.replace(loadingMessage,"");
       }
 
       // This a function that plots the data on the graph
@@ -1224,19 +1232,19 @@
               //Check if the datatype fields match. Should actually be doing the hierarchical check with the underscores.
               if (globalData.datatype !== jsonified.datatype){
                 fieldsMatch=false;
-                messagesToUserDiv.innerText += "The added record's datatype is different. Stopping merging. The two values are: " + String(globalData.datatype) + " " + +String(jsonified.datatype) +   "\n";
+                errorDiv.innerText += "The added record's datatype is different. Stopping merging. The two values are: " + String(globalData.datatype) + " " + +String(jsonified.datatype) +   "\n";
               }
               //Check if the xaxis titles are the same after removing the units area. Ideally, should check if the units are convertable.
               if (removeUnitFromLabel(globalData.layout.xaxis.title.text) !==
                   removeUnitFromLabel(jsonified.layout.xaxis.title.text)){
                 fieldsMatch=false;
-                messagesToUserDiv.innerText += "The added record's xaxis label text is different. Stopping merging. The two values are: " + removeUnitFromLabel(globalData.layout.xaxis.title.text) + " " +removeUnitFromLabel(jsonified.layout.xaxis.title.text) +   "\n";
+                errorDiv.innerText += "The added record's xaxis label text is different. Stopping merging. The two values are: " + removeUnitFromLabel(globalData.layout.xaxis.title.text) + " " +removeUnitFromLabel(jsonified.layout.xaxis.title.text) +   "\n";
               }
               //Check if the yaxis titles are the same after removing the units area. Ideally, should check if the units are convertable.
               if (removeUnitFromLabel(globalData.layout.yaxis.title.text) !==
                   removeUnitFromLabel(jsonified.layout.yaxis.title.text)){
                 fieldsMatch=false;
-                messagesToUserDiv.innerText += "The added record's yaxis label text is different. Stopping merging. The two values are: " + removeUnitFromLabel(globalData.layout.yaxis.title.text) + " " +removeUnitFromLabel(jsonified.layout.yaxis.title.text) +   "\n";
+                errorDiv.innerText += "The added record's yaxis label text is different. Stopping merging. The two values are: " + removeUnitFromLabel(globalData.layout.yaxis.title.text) + " " +removeUnitFromLabel(jsonified.layout.yaxis.title.text) +   "\n";
               }
               if(fieldsMatch)
               {
@@ -1278,8 +1286,8 @@
                 });
               } else {
                 //clearData(); //Should not clear data when chart or axis titles do not match, just should not plot the new data.
-                messagesToUserDiv.innerText += `Added data not plotted. The records were not compatible for merging. You may continue trying to add data sets, or may click "Clear Data" to start a new graph. These error messages will be automatically cleared after 10 seconds. \n`;
-                setTimeout(() => { messagesToUserDiv.innerText = '';  }, 10000); // Clears the text after 10 seconds
+                errorDiv.innerText += `Added data not plotted. The records were not compatible for merging. You may continue trying to add data sets, or may click "Clear Data" to start a new graph. These error messages will be automatically cleared after 10 seconds. \n`;
+                setTimeout(() => { errorDiv.innerText = '';  }, 10000); // Clears the text after 10 seconds
               }
             }
           } catch (err) {
