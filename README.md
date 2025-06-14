@@ -1,5 +1,5 @@
 # [JSONGrapher]()
-Imagine a world where a person can simply drag a datafile into a graphing utility and a plot will be made -- including axes with units. Imagine that data from data other sources (with other units) can then be dragged in for comparison, with all data plotted on an interactive graph. Imagine that the units of all of these datasets will be converted automatically, as needed, for the comparison.
+Imagine a world where a person can simply drag a data file into a graphing utility and a plot will be made -- including axes with units. Imagine that data from data other sources (with other units) can then be dragged in for comparison, with all data plotted on an interactive graph. Imagine that the units of all of these datasets will be converted automatically, as needed, for the comparison.
 
 Online address for using the JSONGrapher: https://www.jsongrapher.com <br>
 Python version of JSONgrapher: https://github.com/AdityaSavara/jsongrapher-py <br>
