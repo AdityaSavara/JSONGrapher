@@ -145,7 +145,7 @@ function convertInverseUnits(expression, depth = 100) {
         for (const pattern of patterns) {
             // Need to reset lastIndex for global regex in a loop
             pattern.lastIndex = 0;
-            newExpression = newExpression.replace(pattern, `($1)**(-1)`);
+            newExpression = newExpression.replace(pattern, `($1)^(-1)`);
         }
 
         // Stop early if no more changes are made
@@ -171,9 +171,8 @@ export function getUnitsScalingRatio(unitsString1, unitsString2) {
         return 1;
     }
 
-    let processedUnitsString1 = unitsString1.replace(/\^/g, "**");
-    let processedUnitsString2 = unitsString2.replace(/\^/g, "**");
-
+    let processedUnitsString1 = unitsString1.replace(/\*\*/g, "^");
+    let processedUnitsString2 = unitsString2.replace(/\*\*/g, "^");
     processedUnitsString1 = tagMicroUnits(processedUnitsString1);
     processedUnitsString2 = tagMicroUnits(processedUnitsString2);
 
@@ -186,9 +185,22 @@ export function getUnitsScalingRatio(unitsString1, unitsString2) {
     for (const customUnit of customUnits2) {
         addCustomUnitToMathJS(customUnit);
     }
+    
 
     processedUnitsString1 = removeTaggedStrings(processedUnitsString1);
     processedUnitsString2 = removeTaggedStrings(processedUnitsString2);
+
+    //Testing showed that MathJS required removal of () around powers for next lines.
+    // so adding a regular expression line with help of copilot.
+    //  mol^(-1)        	to      mol^-1
+    // J*(mol^(-1))	        to      J*(mol^-1)
+    // ((J)*(mol^(-1)))	    to      ((J)*(mol^-1))
+    function removeParenthesesAfterCaret(str) {
+        return str.replace(/\^\((-?\d+)\)/g, '^$1');
+    }
+
+    processedUnitsString1 = removeParenthesesAfterCaret(processedUnitsString1);
+    processedUnitsString2 = removeParenthesesAfterCaret(processedUnitsString2);
 
     let ratioOnly;
     try {

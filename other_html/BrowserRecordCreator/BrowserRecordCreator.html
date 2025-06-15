@@ -83,17 +83,16 @@
             const xValues = parseValues(document.getElementById('xValues').value);
             const yValues = parseValues(document.getElementById('yValues').value);
             const filename = document.getElementById('filename').value;
-            // Capture selected plot types
-            // const plotType = document.querySelector('input[name="plotType"]:checked')?.value || '';
-
+            const layoutStyle = 'default'
 
             const jsonData = {
                 comments: comments || "// The comments field can be used to put a description and metadata such as citations.",
                 jsongrapher: "To plot this file, go to www.jsongrapher.com and drag this file into your browser, or use the python version of JSONGrapher. File created with Browser Record Creator Version 1.0",
                 datatype: datatype,
-                trace_style: traceStyle,                
+                plot_style: {layout_style: layoutStyle},
                 data: [
                     {
+                        trace_style: traceStyle,                
                         uid: uid || "",
                         name: seriesName,
                         x: xValues,

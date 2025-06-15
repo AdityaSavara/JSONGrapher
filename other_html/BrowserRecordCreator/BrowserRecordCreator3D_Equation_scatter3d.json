@@ -1,0 +1,63 @@
+{
+  "comments": "// The comments field can be used to put a description and metadata such as citations.",
+  "jsongrapher": "To plot this file, go to www.jsongrapher.com and drag this file into your browser, or use the python version of JSONGrapher. File created with Browser Record Creator Version 1.0",
+  "datatype": "Arrhenius_plot_3D",
+  "plot_style": {
+    "layout_style": "default3d"
+  },
+  "data": [
+    {
+      "trace_style": "scatter3d",
+      "uid": "",
+      "name": "Arrhenius Example 3D plot",
+      "equation": {
+        "equation_string": "k = A*(e**((-Ea)/(R*T)))",
+        "graphical_dimensionality": 3,
+        "x_variable": "T (K)",
+        "y_variable": "Ea ((J)*(mol^(-1)))",
+        "z_variable": "k (s^(-1))",
+        "constants": {
+          "R": "8.314 (J)*(mol^(-1))*(K^(-1))",
+          "A": "1*10^13 (s^-1)",
+          "e": "2.71828"
+        },
+        "num_of_points": 10,
+        "x_range_default": [
+          200,
+          500
+        ],
+        "y_range_default": [
+          30000,
+          50000
+        ],
+        "x_range_limits": [],
+        "x_points_specified": [],
+        "points_spacing": "Linear",
+        "reverse_scaling": false
+      },
+      "x": [],
+      "y": [],
+      "type": "scatter"
+    }
+  ],
+  "layout": {
+    "title": {
+      "text": "Typical Temperature Behavior for a Rate Constant"
+    },
+    "xaxis": {
+      "title": {
+        "text": "Temperature (K)"
+      }
+    },
+    "yaxis": {
+      "title": {
+        "text": "Activation Energy (((J)*(mol^(-1))))"
+      }
+    },
+    "zaxis": {
+      "title": {
+        "text": "k (s^(-1))"
+      }
+    }
+  }
+}
