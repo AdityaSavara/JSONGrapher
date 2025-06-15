@@ -1,0 +1,50 @@
+{
+  "comments": "// The comments field can be used to put a description and metadata such as citations.",
+  "jsongrapher": "To plot this file, go to www.jsongrapher.com and drag this file into your browser, or use the python version of JSONGrapher. File created with Browser Record Creator Version 1.0",
+  "datatype": "Arrhenius_2D_Plot",
+  "trace_style": "",
+  "data": [
+    {
+      "uid": "",
+      "name": "",
+      "equation": {
+        "equation_string": "k = A*e^(-Ea/(R*T))",
+        "x_variable": "T (K)",
+        "y_variable": "k (s^(-1))",
+        "constants": {
+          "Ea": "30000 (J*mol^(-1))",
+          "R": "8.314 (J*mol^(-1)*K^(-1))",
+          "A": "1*10^13 (s^-1)",
+          "e": "2.71828"
+        },
+        "num_of_points": 10,
+        "x_range_default": [
+          200,
+          500
+        ],
+        "x_range_limits": [],
+        "x_points_specified": [],
+        "points_spacing": "Linear",
+        "reverse_scaling": false
+      },
+      "x": [],
+      "y": [],
+      "type": "scatter"
+    }
+  ],
+  "layout": {
+    "title": {
+      "text": "Arrhenius 2D"
+    },
+    "xaxis": {
+      "title": {
+        "text": "Temperature (K)"
+      }
+    },
+    "yaxis": {
+      "title": {
+        "text": "Rate Constant (s^(-1))"
+      }
+    }
+  }
+}
