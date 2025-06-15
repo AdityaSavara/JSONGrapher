@@ -43,7 +43,7 @@
     <input type="text" id="xRange" name="xRange" placeholder="e.g., 200,500" required><br><br>
 
     <label for="yRange">y_range_default (min,max):</label>
-    <input type="text" id="xyange" name="yRange" placeholder="e.g., 200,500" required><br><br>
+    <input type="text" id="yRange" name="yRange" placeholder="e.g., 200,500" required><br><br>
 
     <label for="xLabel">X-Axis Label (excluding units):</label>
     <input type="text" id="xLabel" name="xLabel" required><br><br>
@@ -82,6 +82,7 @@
       const equationString = document.getElementById('equationString').value;
       const xVariable = document.getElementById('xVariable').value;
       const yVariable = document.getElementById('yVariable').value;
+      const zVariable = document.getElementById('zVariable').value;
       const constantsRaw = document.getElementById('constants').value;
       const numPoints = document.getElementById('numPoints').value;
       const xRange = document.getElementById('xRange').value;
@@ -94,6 +95,7 @@
       const zLabel = document.getElementById('zLabel').value;
       const zUnit = document.getElementById('zUnit').value;
 
+      const traceStyle = document.querySelector('input[name="traceStyle"]:checked')?.value || '';
       const xRangeArray = xRange.replace(/[()]/g, '').split(',').map(v => parseFloat(v.trim()));
       const yRangeArray = yRange.replace(/[()]/g, '').split(',').map(v => parseFloat(v.trim()));
 
@@ -116,9 +118,9 @@
         comments: "// The comments field can be used to put a description and metadata such as citations.",
         jsongrapher: "To plot this file, go to www.jsongrapher.com and drag this file into your browser, or use the python version of JSONGrapher. File created with Browser Record Creator Version 1.0",
         datatype: datatype,
-        trace_style: "",
         data: [
           {
+            trace_style: traceStyle,
             uid: uid || "",
             name: seriesName || "",
             equation: equation_dict,
@@ -140,13 +142,14 @@
             title: {
               text: `${yLabel} (${yUnit})`
             }
-          }
+          },
           zaxis: {
             title: {
               text: `${zLabel} (${zUnit})`
             }
           }
-        };
+        }
+      };
 
       const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
       const link = document.createElement('a');
