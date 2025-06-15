@@ -52,6 +52,10 @@
     <label for="yUnit">Y-Axis Units (you may include multiplication "*", division "/" and as many parentheses "( )" as you want):</label>
     <input type="text" id="yUnit" name="yUnit" required><br><br>
 
+    <label>Select Verbosity (optional):</label><br>
+    <input type="radio" id="verbose" name="traceStyle" value="verbose">verbose<br>
+    <input type="radio" id="noVerbosity" name="traceStyle" value="">no selection<br><br>
+
     <label>Select Plot Type:</label><br>
     <input type="radio" id="scatter" name="traceStyle" value="scatter">scatter<br>
     <input type="radio" id="spline" name="traceStyle" value="spline">spline<br>
@@ -83,13 +87,24 @@
       const yLabel = document.getElementById('yLabel').value;
       const yUnit = document.getElementById('yUnit').value;
 
+      const verbosity = document.querySelector('input[name="verbosity"]:checked')?.value || ''; 
+
       const traceStyle = document.querySelector('input[name="traceStyle"]:checked')?.value || '';
       const layoutStyle = "default";
       const xRangeArray = xRange.replace(/[()]/g, '').split(',').map(v => parseFloat(v.trim()));
 
+      let verbosityBoolean;
+      if (verbosity === "verbose") {
+          verbosityBoolean = true;
+      } else {
+          verbosityBoolean = false;
+      };
+
+
       const equation_dict = {
         equation_string: equationString,
         graphical_dimensionality: 2,
+        verbose: verbosityBoolean,
         x_variable: xVariable,
         y_variable: yVariable,
         constants: JSON.parse(constantsRaw),
