@@ -2,14 +2,17 @@
   "comments": "// The comments field can be used to put a description and metadata such as citations.",
   "jsongrapher": "To plot this file, go to www.jsongrapher.com and drag this file into your browser, or use the python version of JSONGrapher. File created with Browser Record Creator Version 1.0",
   "datatype": "Arrhenius_plot_3D",
+  "plot_style": {
+    "layout_style": "default3d"
+  },
   "data": [
     {
-      "trace_style": "scatter3d",
+      "trace_style": "mesh3d",
       "uid": "",
       "name": "Arrhenius Example 3D plot",
       "equation": {
-        "graphical_dimensionality" : 3,
         "equation_string": "k = A*(e**((-Ea)/(R*T)))",
+        "graphical_dimensionality": 3,
         "x_variable": "T (K)",
         "y_variable": "Ea ((J)*(mol^(-1)))",
         "z_variable": "k (s^(-1))",
@@ -32,6 +35,8 @@
         "points_spacing": "Linear",
         "reverse_scaling": false
       },
+      "x": [],
+      "y": [],
       "type": "scatter"
     }
   ],

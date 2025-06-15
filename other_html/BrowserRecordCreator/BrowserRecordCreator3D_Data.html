@@ -55,6 +55,7 @@
         <label>Select Trace Style:</label><br>
         <input type="radio" id="scatter3d" name="traceStyle" value="scatter3d">scatter3d<br>
         <input type="radio" id="mesh3d" name="traceStyle" value="mesh3d">mesh3d<br>
+        <input type="radio" id="bubble" name="traceStyle" value="bubble">bubble<br>
         <input type="radio" id="noTraceStyle" name="traceStyle" value="">no selection<br><br>
 
         
@@ -93,19 +94,26 @@
             // Capture selected plot types
             //const plotType = document.querySelector('input[name="plotType"]:checked')?.value || '';
 
+            let layoutStyle;
+            if (traceStyle === "bubble") {
+                layoutStyle = "default";
+            } else {
+                layoutStyle = "default3d";
+            };
+
 
             const jsonData = {
                 comments: comments || "// The comments field can be used to put a description and metadata such as citations.",
                 jsongrapher: "To plot this file, go to www.jsongrapher.com and drag this file into your browser, or use the python version of JSONGrapher. File created with Browser Record Creator Version 1.0",
                 datatype: datatype,
-                trace_style: traceStyle,                
+                plot_style: {layout_style: layoutStyle},                
                 data: [
                     {
+                        trace_style: traceStyle,                
                         uid: uid || "",
                         name: seriesName,
                         x: xValues,
                         y: yValues,
-                        type: plotType // Add plot type field
                     }
                 ],
                 layout: {

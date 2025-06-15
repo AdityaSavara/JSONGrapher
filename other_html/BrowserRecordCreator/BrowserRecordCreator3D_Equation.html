@@ -67,6 +67,7 @@
     <label>Select Plot Type:</label><br>
     <input type="radio" id="scatter3d" name="traceStyle" value="scatter3d">scatter3d<br>
     <input type="radio" id="mesh3d" name="traceStyle" value="mesh3d">mesh3d<br>
+    <input type="radio" id="bubble" name="traceStyle" value="bubble">bubble<br>
     <input type="radio" id="noTraceStyle" name="traceStyle" value="">no selection<br><br>
 
 
@@ -99,8 +100,16 @@
       const xRangeArray = xRange.replace(/[()]/g, '').split(',').map(v => parseFloat(v.trim()));
       const yRangeArray = yRange.replace(/[()]/g, '').split(',').map(v => parseFloat(v.trim()));
 
+      let layoutStyle;
+      if (traceStyle === "bubble") {
+          layoutStyle = "default";
+      } else {
+          layoutStyle = "default3d";
+      };
+
       const equation_dict = {
         equation_string: equationString,
+        graphical_dimensionality: 3,
         x_variable: xVariable,
         y_variable: yVariable,
         z_variable: zVariable,
@@ -118,6 +127,7 @@
         comments: "// The comments field can be used to put a description and metadata such as citations.",
         jsongrapher: "To plot this file, go to www.jsongrapher.com and drag this file into your browser, or use the python version of JSONGrapher. File created with Browser Record Creator Version 1.0",
         datatype: datatype,
+        plot_style: {layout_style: layoutStyle},
         data: [
           {
             trace_style: traceStyle,
