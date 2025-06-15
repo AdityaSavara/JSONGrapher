@@ -8,6 +8,7 @@
       "uid": "",
       "name": "Arrhenius Example 3D plot",
       "equation": {
+        "graphical_dimensionality" : 3,
         "equation_string": "k = A*(e**((-Ea)/(R*T)))",
         "x_variable": "T (K)",
         "y_variable": "Ea ((J)*(mol^(-1)))",
@@ -31,8 +32,6 @@
         "points_spacing": "Linear",
         "reverse_scaling": false
       },
-      "x": [],
-      "y": [],
       "type": "scatter"
     }
   ],
