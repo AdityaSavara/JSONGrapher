@@ -392,7 +392,7 @@ function prepareBubbleSizes(dataSeries) {
     }
 
     // Scale the bubbles to a max size
-    const maxBubbleSize = dataSeries.max_bubble_size || 10;
+    const maxBubbleSize = dataSeries.max_bubble_size || 50;
     dataSeries.marker.size = dataSeries.marker.size.map(value => value * maxBubbleSize);
 
     // Set hover text to original z values
