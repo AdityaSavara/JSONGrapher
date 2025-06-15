@@ -83,6 +83,7 @@
       const yLabel = document.getElementById('yLabel').value;
       const yUnit = document.getElementById('yUnit').value;
 
+      const traceStyle = document.querySelector('input[name="traceStyle"]:checked')?.value || '';
       const xRangeArray = xRange.replace(/[()]/g, '').split(',').map(v => parseFloat(v.trim()));
 
       const equation_dict = {
@@ -102,9 +103,10 @@
         comments: "// The comments field can be used to put a description and metadata such as citations.",
         jsongrapher: "To plot this file, go to www.jsongrapher.com and drag this file into your browser, or use the python version of JSONGrapher. File created with Browser Record Creator Version 1.0",
         datatype: datatype,
-        trace_style: "",
+
         data: [
           {
+            trace_style: traceStyle,
             uid: uid || "",
             name: seriesName || "",
             equation: equation_dict,
