@@ -1,175 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JSONGrapher Record Creator</title><version 1.0>
-      <style>
-        .nav-bar {
-          display: flex;
-          justify-content: center;
-          gap: 12px;
-          margin-bottom: 30px;
-          flex-wrap: wrap;
-        }
-
-        .nav-bar button {
-          padding: 12px 20px;
-          font-size: 1em;
-          background-color: #156082;
-          color: white;
-          border: none;
-          border-radius: 6px;
-          cursor: pointer;
-          text-align: left;
-          min-width: 220px;
-          transition: background-color 0.3s;
-        }
-
-        .nav-bar button span {
-          padding-left: 1em;
-        }
-
-        .nav-bar button:hover:not(.active) {
-          background-color: #12526f;
-        }
-
-        .nav-bar .active {
-          background-color: #4CAF50;
-          font-weight: bold;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>JSONGrapher Browser Record Creator</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 40px;
+      background-color: #f9f9f9;
+    }
+    h1 {
+      font-size: 1.8em;
+      margin-bottom: 10px;
+    }
+    p {
+      font-size: 1.1em;
+      margin-bottom: 30px;
+    }
+    button {
+      display: block;
+      width: 220px;
+      margin: 12px auto;
+      padding: 12px;
+      font-size: 1em;
+      background-color: #156082;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      text-align: left;
+      padding-left: 20px;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #12526f;
+    }
+  </style>
 </head>
 <body>
-    <div class="nav-bar">
-      <button class="active" onclick="location.href='BrowserRecordCreator2D_Data.html'"><span>2D Data</span></button>
-      <button onclick="location.href='BrowserRecordCreator2D_Equation.html'"><span>2D Equation</span></button>
-      <button onclick="location.href='BrowserRecordCreator3D_Data.html'"><span>3D Data</span></button>
-      <button onclick="location.href='BrowserRecordCreator3D_Equation.html'"><span>3D Equation</span></button>
-    </div>
-    <h1>Create JSONGrapher Record</h1>
-
-    <form id="jsonForm">
-        <label for="datatype">Datatype such as experiment type:</label>
-        <input type="text" id="datatype" name="datatype" required><br><br>
-
-        <label for="comments">Description and Comments (optional):</label><br>
-        <textarea id="comments" name="comments" rows="3" cols="50"></textarea><br><br>
-       
-        <label for="plotTitle">Graph Title:</label>
-        <input type="text" id="plotTitle" name="plotTitle" required><br><br>
-       
-        <label for="seriesName">Data Series Name for Legend:</label>
-        <input type="text" id="seriesName" name="seriesName" required><br><br>
-
-        <label for="uid">Data Series Unique ID (optional):</label>
-        <input type="text" id="uid" name="uid"><br><br>
-       
-        <label for="xLabel">X-Axis Label (excluding units):</label>
-        <input type="text" id="xLabel" name="xLabel" required><br><br>
-
-        <label for="xUnit">X-Axis Units (you may include multiplication "*", division "/" and as many parentheses "( )" as you want):</label>
-        <input type="text" id="xUnit" name="xUnit" required><br><br>
-
-        <label for="yLabel">Y-Axis Label (excluding units):</label>
-        <input type="text" id="yLabel" name="yLabel" required><br><br>
-
-        <label for="yUnit">Y-Axis Units (you may include multiplication "*", division "/" and as many parentheses "( )" as you want):</label>
-        <input type="text" id="yUnit" name="yUnit" required><br><br>
-       
-        <label for="xValues">X Values (copy and paste - either a column or comma separated values):</label><br>
-        <textarea id="xValues" name="xValues" rows="5" cols="50" required></textarea><br><br>
-
-        <label for="yValues">Y Values (copy and paste - either a column or comma separated values):</label><br>
-        <textarea id="yValues" name="yValues" rows="5" cols="50" required></textarea><br><br>
-        
-        <label>Select Plot Type:</label><br>
-        <input type="radio" id="scatter" name="traceStyle" value="scatter">scatter<br>
-        <input type="radio" id="spline" name="traceStyle" value="spline">spline<br>
-        <input type="radio" id="line" name="traceStyle" value="line">line<br>
-        <input type="radio" id="bar" name="traceStyle" value="bar">bar<br>        
-        <input type="radio" id="scatter_spline" name="traceStyle" value="scatter_spline">scatter_spline<br>
-        <input type="radio" id="scatter_line" name="traceStyle" value="scatter_line">scatter_line<br>
-        <input type="radio" id="noTraceStyle" name="traceStyle" value="">no selection<br><br>
-
-        <label for="filename">Filename (optional)</label><br>
-        <textarea id="filename" name="filename" rows="1" cols="50"></textarea><br><br>
-        
-        <button type="button" onclick="createJSON()">Create JSONGrapher Record File</button>
-    </form>
-
-    <script>
-        function parseValues(input) {
-            return input
-                .split(/\r?\n/) // Split by line breaks
-                .map(val => val.split(',').map(v => parseFloat(v.trim()))) // Handle commas within lines
-                .flat() // Flatten the resulting array
-                .filter(val => !isNaN(val)); // Remove invalid values
-        }
-
-        function createJSON() {
-            const datatype = document.getElementById('datatype').value;
-            const plotTitle = document.getElementById('plotTitle').value;
-            const traceStyle = document.getElementById('traceStyle').value;
-            const comments = document.getElementById('comments').value;
-            const uid = document.getElementById('uid').value;
-            const seriesName = document.getElementById('seriesName').value;
-            
-
-            const xLabel = document.getElementById('xLabel').value;
-            const xUnit = document.getElementById('xUnit').value;
-            const yLabel = document.getElementById('yLabel').value;
-            const yUnit = document.getElementById('yUnit').value;
-
-            const xValues = parseValues(document.getElementById('xValues').value);
-            const yValues = parseValues(document.getElementById('yValues').value);
-            const filename = document.getElementById('filename').value;
-            const layoutStyle = 'default'
-
-            const jsonData = {
-                comments: comments || "// The comments field can be used to put a description and metadata such as citations.",
-                jsongrapher: "To plot this file, go to www.jsongrapher.com and drag this file into your browser, or use the python version of JSONGrapher. File created with Browser Record Creator Version 1.0",
-                datatype: datatype,
-                plot_style: {layout_style: layoutStyle},
-                data: [
-                    {
-                        trace_style: traceStyle,                
-                        uid: uid || "",
-                        name: seriesName,
-                        x: xValues,
-                        y: yValues,
-                    }
-                ],
-                layout: {
-                    title: {
-                        text: plotTitle
-                    },
-                    xaxis: {
-                        title: {
-                            text: `${xLabel} (${xUnit})`
-                        }
-                    },
-                    yaxis: {
-                        title: {
-                            text: `${yLabel} (${yUnit})`
-                        }
-                    }
-                }
-            };
-
-            const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            // use a default filename if filename is blank or null. If ".json" isn't already in the filename, we add it at the end.
-            if (!filename) { 
-                link.download = 'JSONGrapherRecord.json';
-            } else {
-                link.download = filename.toLowerCase().endsWith('.json') ? filename : filename + '.json';
-            }
-
-            link.click();
-        }
-
-    </script>
+  <h1>JSONGrapher Browser Record Creator</h1>
+  <p>First Choose Your Record Type by Clicking:</p>
+  <button onclick="location.href='BrowserRecordCreator2D_Data.html'">2D Graph from Data</button>
+  <button onclick="location.href='BrowserRecordCreator2D_Equation.html'">2D Graph from Equation</button>
+  <button onclick="location.href='BrowserRecordCreator3D_Data.html'">3D Graph from Data</button>
+  <button onclick="location.href='BrowserRecordCreator3D_Equation.html'">3D Graph from Equation</button>
 </body>
 </html>
