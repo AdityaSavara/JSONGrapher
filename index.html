@@ -11,12 +11,12 @@
     </script>
     <meta charset="UTF-8" />
     <title>JSONGrapher</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.1/math.min.js"></script>
+    <link rel="stylesheet" href="./other_html/styles.css" />
     <script src="https://cdn.plot.ly/plotly-2.14.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.1/math.min.js"></script>    
     <!--  We use AJV for json validation. We use the 6.12.6 version because the later version had a compilation error. To reduce the external dependency, we have the source code on our github in he AJV folder, it is an under an MIT LICENSE, as noted in the LICENSE file of JSON Grapher.
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ajv/6.12.6/ajv.bundle.min.js" integrity="sha512-Xl0g/DHU98OkfXTsDfAAuTswzkniYQWPwLyGXzcpgDxCeH52eePfaHj/ictLAv2GvlPX2qZ6YV+3oDsw17L9qw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> -->
     <script src="./utils/AJV//6.12.6/ajv.bundle.min.js"></script>
-    <link rel="stylesheet" href="./other_html/styles.css" />
     <script src="./utils/UUC/app/convert.js"></script>
     <script src="./utils/UUC/app/convert_parse.js"></script>
     <script src="./utils/UUC/app/convert_macro.js"></script>
@@ -25,11 +25,11 @@
     <script src="./styles/layout_styles_library.js"></script>
     <script src="./styles/trace_styles_collection_library.js"></script>
     <script type="module"> 
-      import { copyJson } from './utils/styleUtils.js'; 
-      import { parsePlotStyle } from './utils/styleUtils.js'; 
-      import { applyPlotStyleToPlotlyDict } from './utils/styleUtils.js'; 
+      import { copyJson, parsePlotStyle, applyPlotStyleToPlotlyDict } from './utils/styleUtils.js';
       import { cleanJsonFigDict } from './utils/figDictUtils.js'; 
       import {executeImplicitDataSeriesOperations} from './utils/json_equationer/implicitUtils.js'
+      import { jsonifyData, findFileType, jsonifyTSV, jsonifyCSV, getFileName, readFileAsText } from './utils/fileUtils.js'; 
+      import { loadJsonFromUrl, isValidUrl, createDownloadJSONLink, createDownloadCSVLink, jsonToUrl, createCopyUrlLink, addOpeningURLonButtonClick, addDownloadingLinkToButton, parseUrl } from './utils/linkUtils.js'; 
     </script>  
     <style>
       .file-actions {
@@ -77,26 +77,70 @@
     <p>
     JSONGrapher plots data from one or more files directly in your browser, creating interactive graphs to compare data!        
     </p>
-    <div id="toggleSection">
-    <p>Try plotting one of the 
-        <a href="https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/DemonstrationFiles.zip" target="_blank">example files</a> 
-        (first unzip, then plot with JSONGrapher). Just drag-and-drop an example file into the box below, or use the browse-to-upload option. Then, add more files to compare more data on the same graph!
-    </p>
+    <div id="toggleSection1">
+      <p>
+        Try plotting one of the example files. Click to download 
+        <button id="Example1" name="Example1">Example 1</button>
+        <button id="Example2" name="Example2">Example 2</button>
+        <button id="Example3" name="Example3">Example 3</button>
+        <button id="AllExamples" name="AllExamples">Download All</button>.
+        Just drag-and-drop an example file into the box below, or use the browse-to-upload option. 
+        Then, drag in more files to compare additional records on the same graph!
+      </p>
+    </div>
+    <script>
+     //Need to wait until DOM is loaded, otherwise the addLinkToButton function won't work.
+     //We actually shouldn't need the if statement with 'loading' check below, but am doing it just in case.
+      async function myInitCode() {
+        //Get urls of the 3 examples (and parse them for true direct links)
+        const example1Url = parseUrl("https://github.com/AdityaSavara/JSONGrapherExamples/blob/main/ExampleDataRecords/1-CO2__Adsorption_Isotherms/amino_silane_silica_combined_343.json");
+        const example2Url = parseUrl("https://github.com/AdityaSavara/JSONGrapherExamples/blob/main/ExampleDataRecords/1-CO2__Adsorption_Isotherms/amino_silane_silica_combined_383.json");
+        const example3Url = parseUrl("https://github.com/AdityaSavara/JSONGrapherExamples/blob/main/ExampleDataRecords/1-CO2__Adsorption_Isotherms/pei_carbon_exp_343.json");
+        //now need to get the json content from them, because we don't want the browser to open them.
+        const example1json = await loadJsonFromUrl(example1Url);
+        const example2json = await loadJsonFromUrl(example2Url);
+        const example3json = await loadJsonFromUrl(example3Url);
+        //then make "json download JSON links" which allow us to embed the jsons into this webpage on demand..
+        const example1DownloadJSONLink = createDownloadJSONLink(example1json, "Example1_JSONGrapher.json");
+        const example2DownloadJSONLink = createDownloadJSONLink(example2json, "Example2_JSONGrapher.json");
+        const example3DownloadJSONLink = createDownloadJSONLink(example3json, "Example3_JSONGrapher.json");
+        addDownloadingLinkToButton("Example1", example1DownloadJSONLink); //Desired filename will be extracted from downloadLink object
+        addDownloadingLinkToButton("Example2", example2DownloadJSONLink); //Desired filename will be extracted from downloadLink object
+        addDownloadingLinkToButton("Example3", example3DownloadJSONLink); //Desired filename will be extracted from downloadLink object
+        //Now add each of the three links to the AllExamples button.
+        addDownloadingLinkToButton("AllExamples", example1DownloadJSONLink); //Desired filename will be extracted from downloadLink object
+        addDownloadingLinkToButton("AllExamples", example2DownloadJSONLink); //Desired filename will be extracted from downloadLink object
+        addDownloadingLinkToButton("AllExamples", example3DownloadJSONLink); //Desired filename will be extracted from downloadLink object
+      }
+
+      // Function to run myInitCode once DOM is ready. Must be functionalized so can use await inside.
+      async function initWhenReady() {
+        if (document.readyState !== 'loading') {
+          // DOM is already ready
+          await myInitCode();
+        } else { // Wait for it to be ready
+          document.addEventListener('DOMContentLoaded', async () => {
+            // DOMContentLoaded event fired
+            await myInitCode();
+          });
+        }
+      }
+      initWhenReady();
+    </script>
+    <div id="toggleSection2">    
         To make your own files, use the <a href="https://github.com/AdityaSavara/jsongrapher-py" target="_blank">python JSONGrapher</a>,
         or the <a href="https://adityasavara.github.io/JSONGrapher/other_html/BrowserRecordCreator/BrowserRecordCreator.html" target="_blank"> browser record creator</a>,
         or see the <a href="https://adityasavara.github.io/JSONGrapher/Manual.pdf" target="_blank">manual</a>.<br>
 
     <a href="https://www.dropbox.com/s/1s8ib1rsv3xmj1c/3_edited.mp4?dl=0" target="_blank">How to Plot and Features Video</a> | 
     <a href="https://adityasavara.github.io/JSONGrapher/Manual.pdf" target="_blank">Manual</a> |
-    <a href="https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/DemonstrationFiles.zip" target="_blank">Example Files</a> | 
-    <a href="https://github.com/AdityaSavara/JSONGrapherExamples/" target="_blank">More Examples</a>
+    <a href="https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords.zip" target="_blank">Advanced Examples</a> (extract from zip to plot)
     </div>
 
-    
+        
     <div id="toReveal" style="display: none;""><a href="https://www.dropbox.com/s/1s8ib1rsv3xmj1c/3_edited.mp4?dl=0" target="_blank">How to Plot and Features Video</a> | 
     <a href="https://adityasavara.github.io/JSONGrapher/Manual.pdf" target="_blank">Manual</a> |
-    <a href="https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/DemonstrationFiles.zip" target="_blank">Example Files</a> (Files must be unzipped to plot) | 
-    <a href="https://github.com/AdityaSavara/JSONGrapherExamples/" target="_blank">More Examples</a> |
+    <a href="https://github.com/AdityaSavara/JSONGrapherExamples/raw/main/ExampleDataRecords.zip" target="_blank">Advanced Examples</a> (extract from zip to plot)
     </div>
 </p>
 
@@ -170,196 +214,15 @@
         document.getElementById("file-selector").value = "";
         document.getElementById("load-from-url").value = "";
         document.getElementById("download").style.display = "none";
-        const toggleSection = document.getElementById("toggleSection"); //Now will reveal again.
+        const toggleSection1 = document.getElementById("toggleSection1"); //Now will reveal again.
+        const toggleSection2 = document.getElementById("toggleSection2"); //Now will reveal again.
         const toRevealSection = document.getElementById("toReveal");   // Now will hide.
-        toggleSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
+        toggleSection1.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
+        toggleSection2.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
         toRevealSection.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
         Plotly.purge("plotlyDiv");
       }
 
-      // A function that checks if the uploaded file extension
-      function findFileType(fileName) {
-        let arrayName = fileName.split(".");
-        if (arrayName.includes("csv")) {
-          return "csv";
-        }
-        if (arrayName.includes("tsv")) {
-          return "tsv";
-        }
-        return "json";
-      }
-
-      //function to retrieve JSON Record from url
-      async function loadJsonFromUrl(url) { 
-        try {
-          const response = await fetch(url);
-          if (!response.ok) throw new Error("Network response was not OK");
-          const jsonData = await response.json();
-          return jsonData;
-        } catch (error) {
-          console.error("Error fetching JSON:", error);
-          return null;
-        }
-      }
-
-      // A function the jsonifies a tsv file
-      function jsonifyTSV(fileContent) {
-        //separate rows
-        let arr = fileContent.split("\n");
-
-        //if last row is empty remove it
-        if (arr[arr.length - 1].length < 2) {
-          arr = arr.slice(0, arr.length - 1);
-        }
-
-        //count number of columns
-        let number_of_columns = arr[0].split("\t").length;
-
-        //extract the config information
-        let comments = arr[0].split("\t")[0].split(":")[1].trim();
-        let data_type = arr[1].split("\t")[0].split(":")[1].trim();
-        let chart_label = arr[2].split("\t")[0].split(":")[1].trim();
-        let x_label = arr[3].split("\t")[0].split(":")[1].trim();
-        let y_label = arr[4].split("\t")[0].split(":")[1].trim();
-        custom = arr[5]; //This field is for custom json objects and is currently ignored.
-
-        //extract the series names
-        let series_names_array = arr[5]
-          .split(":")[1]
-          .split('"')[0]
-          .split("\t")
-          .map((n) => n.trim());
-
-        //ignore arr[7] which is custom_variables:
-
-        //extract the data
-        let data = arr
-          .slice(8)
-          .map((r) => r.split("\t").map((str) => Number(str)));
-
-        let resultJSON = JSON.parse(JSON.stringify(plotlyTemplate, null, 2)); // clone of the template. The ", null, 2" is optional to make the json more human readable.
-
-        resultJSON.comments = comments;
-        resultJSON.datatype = data_type;
-        resultJSON.layout.title = { text: chart_label };
-        resultJSON.layout.xaxis.title = { text: x_label };
-        resultJSON.layout.yaxis.title = { text: y_label };
-
-        let newData = [];
-        series_names_array.forEach((series_name, index) => {
-          let dataClone = JSON.parse(
-            JSON.stringify(plotlyTemplate.data[0], null, 2)
-          ); // the ", null, 2" is optional to make the json more human readable.
-          dataClone.name = series_name;
-          dataClone.x = data.map((r) => r[0]);
-          dataClone.y = data.map((r) => r[index + 1]);
-          dataClone.uid = dataClone.uid + String(index);
-          newData.push(dataClone);
-        });
-
-        resultJSON.data = newData;
-
-        return resultJSON;
-      }
-
-      // A function the jsonifies a csv file
-      function jsonifyCSV(fileContent) {
-        //separate rows
-        let arr = fileContent.split("\n");
-        //if last row is empty remove it
-        if (arr[arr.length - 1].length < 2) {
-          arr = arr.slice(0, arr.length - 1);
-        }
-
-        //count number of columns
-        let number_of_columns = arr[5].split(",").length;
-
-        //extract the config information
-        let comments = arr[0].split(",")[0].split(":")[1].trim();
-        let data_type = arr[1].split(",")[0].split(":")[1].trim();
-        let chart_label = arr[2].split(",")[0].split(":")[1].trim();
-        let x_label = arr[3].split(",")[0].split(":")[1].trim();
-        let y_label = arr[4].split(",")[0].split(":")[1].trim();
-
-        //extract the series names
-        let series_names_array = arr[5]
-          .split(":")[1]
-          .split('"')[0]
-          .split(",")
-          .map((n) => n.trim());
-
-        //extract the data
-        let data = arr
-          .slice(7)
-          .map((r) => r.split(",").map((str) => Number(str)));
-
-        let resultJSON = JSON.parse(JSON.stringify(plotlyTemplate, null, 2)); // clone of the template. The "null, 2" are optional arguments that increase human readability.
-
-        resultJSON.comments = comments;
-        resultJSON.datatype = data_type;
-        resultJSON.layout.title = { text: chart_label };
-        resultJSON.layout.xaxis.title = { text: x_label };
-        resultJSON.layout.yaxis.title = { text: y_label };
-
-        //Remove any series where the series name is blank.
-        function isNotBlank(value) {
-          return value != "";
-        }
-        series_names_array = series_names_array.filter(isNotBlank);
-
-        //We make a data set for each series_name, this way the blank series_name that have been removed will not be included.
-        let newData = [];
-        series_names_array.forEach((series_name, index) => {
-          let dataClone = JSON.parse(
-            JSON.stringify(plotlyTemplate.data[0]),
-            null,
-            2
-          ); // the ", null, 2" are optional arguments to increase human readability.
-          dataClone.name = series_name;
-          dataClone.x = data.map((r) => r[0]);
-          dataClone.y = data.map((r) => r[index + 1]);
-          dataClone.uid = dataClone.uid + String(index);
-          newData.push(dataClone);
-        });
-
-        resultJSON.data = newData;
-        return resultJSON;
-      }
-
-      // Gets the name of the uploaded file
-      function getFileName(fileName) {
-        let arrayName = fileName.split(".");
-        return arrayName[0];
-      }
-
-      // A function checks the extension of the file and calls the appropriate function to jsonfiy the file
-      function jsonifyData(filetype, dataLoaded) {
-        switch (filetype) {
-          case "csv": {
-            return jsonifyCSV(dataLoaded);
-          }
-          case "tsv": {
-            return jsonifyTSV(dataLoaded);
-          }
-          default: {
-            return JSON.parse(dataLoaded);
-          }
-        }
-      }
-
-      function isValidUrl(urlString) {
-        var urlPattern = new RegExp(
-          "^(https?:\\/\\/)?" + // validate protocol
-            "((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|" + // validate domain name
-            "((\\d{1,3}\\.){3}\\d{1,3}))" + // validate OR ip (v4) address
-            "(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*" + // validate port and path
-            "(\\?[;&a-z\\d%_.~+=-]*)?" + // validate query string
-            "(\\#[-a-z\\d_]*)?$",
-          "i"
-        ); // validate fragment locator
-        return !!urlPattern.test(urlString);
-      }
-      
       // function to extract from the datatype the location of the schema
       function getSchemaLocation(jsonified, template = false) {
         if (!jsonified.datatype) {
@@ -494,20 +357,6 @@
         });
       }
 
-      // Changes the Github link to a CDN link to avoid CORB issues
-      // TODO: currently we only support javascript from github. In the future, cross-domain / cross-origin simulate functions will be supported by SRI hash. https://www.w3schools.com/Tags/att_script_crossorigin.asp https://www.w3schools.com/Tags/att_script_integrity.asp with the SRI hash provided within the simulate object by a field in the JSON record named "SRI" or 'integrity"
-      function parseUrl(url) {
-        const urlArr = url.split("/");
-        if (urlArr[2] === "github.com") {
-          return url
-            .replace("github.com", "raw.githubusercontent.com")
-            .replace("/blob/", "/")
-            .replace("/tree/", "/")
-            .replace("www.", "");
-        } else {
-          return url;
-        }
-      }
 
       //  a function that gets the simulate script from an external file by url
       /**
@@ -757,72 +606,6 @@
         };
       }
 
-      // A function that will create a download link for the csv file
-      function createDownloadCSVLink(csv, filename) {
-        if (filename===null){filename="JSONGrapherRecord.csv";};
-        let csvFile;
-        let downloadLink;
-        // CSV file
-        csvFile = new Blob([csv], { type: "text/csv" });
-        // Download link
-        downloadLink = document.createElement("a");
-        // File name
-        downloadLink.download = filename;
-        // Create a link to the file
-        downloadLink.href = window.URL.createObjectURL(csvFile);
-        // Hide download link
-        downloadLink.style.display = "none";
-        return downloadLink;
-      }
-
-      // A function that will create a download link for the json file
-      function createDownloadJSONLink(json, filename) {
-        if (filename===null){filename="JSONGrapherRecord.json";};
-        let jsonFile;
-        let downloadLink;
-        // JSON file
-        jsonFile = new Blob([JSON.stringify(json)], {
-          type: "application/json",
-        });
-        // Download link
-        downloadLink = document.createElement("a");
-        // File name
-        downloadLink.download = filename;
-        // Create a link to the file
-        downloadLink.href = window.URL.createObjectURL(jsonFile);
-        // Hide download link
-        downloadLink.style.display = "none";
-        return downloadLink;
-      }
-
-      // A function that will create a bz2 and encoded URL for the final graph.
-      // This approach was abandoned because the URL strings were too long for both some browsers and some webservers limits.
-      function jsonToUrl(json) {
-          //For now, am hardcoding url, because otherwise the repository github pages url gets prefixed. The repository github pages url works, but does not look as nice.
-          const prefix = `http://www.jsongrapher.com?fromUrl=`;
-          //const url = window.location.href.split('?')[0]; // gets url from browser and removes query parameters
-          //const prefix = `${url}?fromUrl=`;
-          // Convert JSON to a string
-          let jsonString = JSON.stringify(json);         
-          // Concatenate with prefix and apply URL encoding, which is like the python urllib.parse.quote(json_string) and urllib.parse.unquote(encoded_string)
-          let urlString = prefix + encodeURIComponent(jsonString); 
-          // wanted to Compress using Bzip2, but didn't succeed in importing a JS version without problems.
-          //urlString = compressjs.Bzip2.compressFile(new TextEncoder().encode(urlString));
-          return urlString;
-      }
-
-      // A function that will create a URL string that allows graphing from a remote json.
-      function createCopyUrlLink(jsonURL) {
-          //For now, am hardcoding url, because otherwise the repository github pages url gets prefixed. The repository github pages url works, but does not look as nice.
-          const prefix = `http://www.jsongrapher.com?fromUrl=`;
-          //const url = window.location.href.split('?')[0]; // gets url from browser and removes query parameters
-          //const prefix = `${url}?fromUrl=`;
-          // Concatenate with prefix and apply URL encoding, which is like the python urllib.parse.quote(json_string) and urllib.parse.unquote(encoded_string)
-          let urlString = prefix + encodeURIComponent(jsonURL); 
-          // wanted to Compress using Bzip2, but didn't succeed in importing a JS version without problems.
-          //urlString = compressjs.Bzip2.compressFile(new TextEncoder().encode(urlString));
-          return urlString;
-      }
 
       function createCopyURLButton(jsonURL) {
           // Generate the URL
@@ -855,40 +638,37 @@
                   alert("URL copied to clipboard!\nNow you can paste it elsewhere!\n\n" + urlString);
               }
           });
-
           return copyButton;
       }
 
 
 
       // A function that will create a download button for the csv file
+      //As of 6/15/2025, this file only contains data from the most recently uploaded dataset.
       function createDownloadCSVButton(csv, filename) {
         // Creating a download link for the csv file
         const downloadLink = createDownloadCSVLink(csv.csv, filename);
         // Creating the button
-        const downloadButton = document.createElement("button");
+        let downloadButton = document.createElement("button");
         // Adding text to the button
         downloadButton.innerText = "CSV";
-        // Adding an event listener to the button
-        downloadButton.addEventListener("click", () => {
-          document.body.appendChild(downloadLink);
-          downloadLink.click();
-        });
+        downloadButton = addOpeningURLonButtonClick(downloadButton, downloadLink);
         return downloadButton;
       }
 
-      function createDownlodJSONButton(json, filename) {
-        // Creating a download link for the csv file
+      //A function that will create a download button for the JSON file
+      //As of 6/15/2025, this file only contains data from the most recently uploaded dataset.
+      // For the first argument, this takes in a json object (a "javascript object", not a string)
+      // For the second argument, the filename field is a string.
+      function createDownloadJSONButton(json, filename) {
+        // Creating a download link for the JSON file
         const downloadLink = createDownloadJSONLink(json, filename);
         // Creating the button
-        const downloadButton = document.createElement("button");
+        let downloadButton = document.createElement("button");
         // Adding text to the button
         downloadButton.innerText = "JSON";
         // Adding an event listener to the button
-        downloadButton.addEventListener("click", () => {
-          document.body.appendChild(downloadLink);
-          downloadLink.click();
-        });
+        downloadButton = addOpeningURLonButtonClick(downloadButton, downloadLink);
         return downloadButton;
       }
 
@@ -900,7 +680,7 @@
         // Create download csv button
         const downloadCSVButton = createDownloadCSVButton(csvContent, filename);
         // Create Download JSON button
-        const downloadJSONButton = createDownlodJSONButton(jsonified, filename);
+        const downloadJSONButton = createDownloadJSONButton(jsonified, filename);
         // Create Download URL button (technically a copy button)
         // Only show this button if someone has loaded from url.
         let downloadURLButton = null // initializing.
@@ -996,20 +776,6 @@
         return merged;
       }
 
-      // Helper function to read file as text using Promises, so we can use await.
-      async function readFileAsText(file) {
-        return new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.fileName = file.name;
-
-          reader.addEventListener("load", () => resolve(reader.result), { once: true });
-          reader.addEventListener("error", () => reject(new Error("File reading error")));
-
-          reader.readAsText(file);
-        });
-      }
-
-
       async function loadFromUrlParams(urlInput){
         if (isValidUrl(urlInput)){ 
           const url = parseUrl(urlInput);
@@ -1025,7 +791,8 @@
       // STEP 0: Prepare the 'universal' schemas occurs inside initializeJSONGrapher
       initializeJSONGrapher()
         .then((resp) => {
-          const toggleSection = document.getElementById("toggleSection"); //get toggle section so actions can hide it.
+          const toggleSection1 = document.getElementById("toggleSection1"); //get toggle section so actions can hide it.
+          const toggleSection2 = document.getElementById("toggleSection2"); //get toggle section so actions can hide it.         
           const toRevealSection = document.getElementById("toReveal"); //get toReveal section so actions can reveal
           // Assign variables to the two universal schemas.
           schema = resp[0];
@@ -1038,8 +805,17 @@
             const fileSelector = document.getElementById("file-selector");
             if (fileSelector) {
               fileSelector.addEventListener("change", (event) => {
-                toggleSection.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
-                toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
+                file = event.target.files[0];
+                fileName = file.name;
+                if (
+                  fileName !== "Example1_JSONGrapher.json" &&
+                  fileName !== "Example2_JSONGrapher.json" &&
+                  fileName !== "Example3_JSONGrapher.json"
+                ){
+                    toggleSection1.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
+                    toggleSection2.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
+                    toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
+                };
                 loadAndPlotData(event, "change");
               });
             }
@@ -1054,8 +830,17 @@
 
               dropArea.addEventListener("drop", (event) => {
                 event.preventDefault();
-                toggleSection.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
-                toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
+                file = event.dataTransfer.files[0];
+                fileName = file.name;
+                if (
+                  fileName !== "Example1_JSONGrapher.json" &&
+                  fileName !== "Example2_JSONGrapher.json" &&
+                  fileName !== "Example3_JSONGrapher.json"
+                ){
+                  toggleSection1.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
+                  toggleSection2.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
+                  toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
+                };
                 loadAndPlotData(event, "drop");
               });
             }
@@ -1069,7 +854,8 @@
               if (isValidUrl(urlInput)){ 
                 const url = parseUrl(urlInput);
                 urlReceived = url //This line is populating a global variable. 
-                toggleSection.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
+                toggleSection1.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
+                toggleSection2.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
                 toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
                 loadAndPlotData(url, "url");
               } else {
@@ -1120,9 +906,11 @@
         if (eventType === "url"){
           jsonified = await loadJsonFromUrl(event);//the event will have the url in it.
           filetype = "json";
-          const toggleSection = document.getElementById("toggleSection");
+          const toggleSection1 = document.getElementById("toggleSection2");
+          const toggleSection2 = document.getElementById("toggleSection2");
           const toRevealSection = document.getElementById("toReveal"); //get toReveal section so actions can reveal
-          toggleSection.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
+          toggleSection1.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
+          toggleSection2.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
           toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
         }
       
