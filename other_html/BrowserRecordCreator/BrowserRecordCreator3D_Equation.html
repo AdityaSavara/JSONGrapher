@@ -48,10 +48,15 @@
     <button class="active" onclick="location.href='BrowserRecordCreator3D_Equation.html'"><span>3D Equation</span></button>
   </div>
   <h1>Create JSONGrapher Record</h1>
+  <h2>Choose your desired record type (top of page menu buttons) before entering any information.</h2>
+  For an example 3D equation record, right click on <a href="./BrowserRecordCreator3D_Equation_scatter3d.json" download>scatter3d</a> or <a href="./BrowserRecordCreator3D_Equation_bubble.json" download>bubble</a> and choose 'Save Link As'.<br><br>
 
   <form id="jsonForm">
     <label for="datatype">Datatype such as experiment type:</label>
     <input type="text" id="datatype" name="datatype" required><br><br>
+
+    <label for="comments">Description and Comments (optional):</label><br>
+    <textarea id="comments" name="comments" rows="3" cols="50"></textarea><br><br>    
 
     <label for="plotTitle">Graph Title:</label>
     <input type="text" id="plotTitle" name="plotTitle" required><br><br>
@@ -104,6 +109,9 @@
     <label for="zUnit">Z-Axis Units (you may include multiplication "*", division "/" and as many parentheses "( )" as you want):</label>
     <input type="text" id="zUnit" name="zUnit" required><br><br>
 
+    <label>Select Verbosity (optional):</label><br>
+    <input type="radio" id="verbose" name="traceStyle" value="verbose">verbose<br>
+    <input type="radio" id="noVerbosity" name="traceStyle" value="">no selection<br><br>
 
     <label>Select Plot Type:</label><br>
     <input type="radio" id="scatter3d" name="traceStyle" value="scatter3d">scatter3d<br>
@@ -111,6 +119,8 @@
     <input type="radio" id="bubble" name="traceStyle" value="bubble">bubble<br>
     <input type="radio" id="noTraceStyle" name="traceStyle" value="">no selection<br><br>
 
+    <label for="filename">Filename (optional)</label><br>
+    <textarea id="filename" name="filename" rows="1" cols="50"></textarea><br><br>    
 
     <button type="button" onclick="createJSON()">Create JSONGrapher Record File</button>
   </form>
@@ -118,6 +128,7 @@
   <script>
     function createJSON() {
       const datatype = document.getElementById('datatype').value;
+      const comments = document.getElementById('comments').value;
       const plotTitle = document.getElementById('plotTitle').value;    
       const uid = document.getElementById('uid').value;
       const seriesName = document.getElementById('seriesName').value;
@@ -137,20 +148,34 @@
       const zLabel = document.getElementById('zLabel').value;
       const zUnit = document.getElementById('zUnit').value;
 
+      const verbosity = document.querySelector('input[name="verbosity"]:checked')?.value || ''; 
+      
       const traceStyle = document.querySelector('input[name="traceStyle"]:checked')?.value || '';
       const xRangeArray = xRange.replace(/[()]/g, '').split(',').map(v => parseFloat(v.trim()));
       const yRangeArray = yRange.replace(/[()]/g, '').split(',').map(v => parseFloat(v.trim()));
+
+      const filename = document.getElementById('filename').value;
+
+      let verbosityBoolean;
+      if (verbosity === "verbose") {
+          verbosityBoolean = true;
+      } else {
+          verbosityBoolean = false;
+      };
+
 
       let layoutStyle;
       if (traceStyle === "bubble") {
           layoutStyle = "default";
       } else {
           layoutStyle = "default3d";
-      };
+      };      
+
 
       const equation_dict = {
         equation_string: equationString,
         graphical_dimensionality: 3,
+        verbose: verbosityBoolean,
         x_variable: xVariable,
         y_variable: yVariable,
         z_variable: zVariable,
@@ -165,7 +190,7 @@
       };
 
       const jsonData = {
-        comments: "// The comments field can be used to put a description and metadata such as citations.",
+        comments: comments || "// The comments field can be used to put a description and metadata such as citations.",
         jsongrapher: "To plot this file, go to www.jsongrapher.com and drag this file into your browser, or use the python version of JSONGrapher. File created with Browser Record Creator Version 1.0",
         datatype: datatype,
         plot_style: {layout_style: layoutStyle},
@@ -205,7 +230,12 @@
       const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = 'JSONGrapherRecord.json';
+      if (!filename) { 
+          link.download = 'JSONGrapherRecord.json';
+      } else {
+          link.download = filename.toLowerCase().endsWith('.json') ? filename : filename + '.json';
+      }
+
       link.click();
     }
   </script>
