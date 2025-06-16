@@ -1,7 +1,7 @@
 # [JSONGrapher]()
 Imagine a world where a person can simply drag a data file into a graphing utility and a plot will be made -- including axes with the data's units. Imagine that data from data other sources (with other units) can then be dragged in for comparison, with all data plotted on an interactive graph. Imagine that the units of all of these datasets will be converted automatically, as needed, during the plotting.
 
-Online address for using the JSONGrapher: https://www.jsongrapher.com <br>
+Online address for using the JSONGrapher: http://www.jsongrapher.com <br>
 Python version of JSONgrapher: https://github.com/AdityaSavara/jsongrapher-py <br>
 
 JSON grapher allows drag-and-drop plotting of 2D, 3D, and 4D plots from JSON files containing x,y or x,y,z data.
