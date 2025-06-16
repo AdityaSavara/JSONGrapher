@@ -118,7 +118,7 @@
         function createJSON() {
             const datatype = document.getElementById('datatype').value;
             const plotTitle = document.getElementById('plotTitle').value;
-            const traceStyle = document.getElementById('traceStyle').value;
+            const traceStyle = document.querySelector('input[name="traceStyle"]:checked')?.value || '';
             const comments = document.getElementById('comments').value;
             const uid = document.getElementById('uid').value;
             const seriesName = document.getElementById('seriesName').value;
