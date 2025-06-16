@@ -128,9 +128,12 @@
             const xUnit = document.getElementById('xUnit').value;
             const yLabel = document.getElementById('yLabel').value;
             const yUnit = document.getElementById('yUnit').value;
+            const zLabel = document.getElementById('zLabel').value;
+            const zUnit = document.getElementById('zUnit').value;
 
             const xValues = parseValues(document.getElementById('xValues').value);
             const yValues = parseValues(document.getElementById('yValues').value);
+            const zValues = parseValues(document.getElementById('zValues').value);
             const filename = document.getElementById('filename').value;
             // Capture selected plot types
             //const plotType = document.querySelector('input[name="plotType"]:checked')?.value || '';
@@ -155,23 +158,29 @@
                         name: seriesName,
                         x: xValues,
                         y: yValues,
+                        z: yValues,
                     }
                 ],
                 layout: {
-                    title: {
-                        text: plotTitle
-                    },
-                    xaxis: {
                         title: {
+                            text: plotTitle
+                        },
+                        xaxis: {
+                            title: {
                             text: `${xLabel} (${xUnit})`
-                        }
-                    },
-                    yaxis: {
-                        title: {
+                            }
+                        },
+                        yaxis: {
+                            title: {
                             text: `${yLabel} (${yUnit})`
+                            }
+                        },
+                        zaxis: {
+                            title: {
+                            text: `${zLabel} (${zUnit})`
+                            }
                         }
-                    }
-                }
+                        }
             };
 
             const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
