@@ -104,6 +104,9 @@
     <label for="zUnit">Z-Axis Units (you may include multiplication "*", division "/" and as many parentheses "( )" as you want):</label>
     <input type="text" id="zUnit" name="zUnit" required><br><br>
 
+    <label>Select Verbosity (optional):</label><br>
+    <input type="radio" id="verbose" name="traceStyle" value="verbose">verbose<br>
+    <input type="radio" id="noVerbosity" name="traceStyle" value="">no selection<br><br>
 
     <label>Select Plot Type:</label><br>
     <input type="radio" id="scatter3d" name="traceStyle" value="scatter3d">scatter3d<br>
@@ -137,20 +140,32 @@
       const zLabel = document.getElementById('zLabel').value;
       const zUnit = document.getElementById('zUnit').value;
 
+      const verbosity = document.querySelector('input[name="verbosity"]:checked')?.value || ''; 
+      
       const traceStyle = document.querySelector('input[name="traceStyle"]:checked')?.value || '';
       const xRangeArray = xRange.replace(/[()]/g, '').split(',').map(v => parseFloat(v.trim()));
       const yRangeArray = yRange.replace(/[()]/g, '').split(',').map(v => parseFloat(v.trim()));
+
+      let verbosityBoolean;
+      if (verbosity === "verbose") {
+          verbosityBoolean = true;
+      } else {
+          verbosityBoolean = false;
+      };
+
 
       let layoutStyle;
       if (traceStyle === "bubble") {
           layoutStyle = "default";
       } else {
           layoutStyle = "default3d";
-      };
+      };      
+
 
       const equation_dict = {
         equation_string: equationString,
         graphical_dimensionality: 3,
+        verbose: verbosityBoolean,
         x_variable: xVariable,
         y_variable: yVariable,
         z_variable: zVariable,
