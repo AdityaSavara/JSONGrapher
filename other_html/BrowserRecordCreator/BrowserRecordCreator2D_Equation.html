@@ -49,10 +49,14 @@
   </div>
   <h1>Create JSONGrapher Record</h1>
   <h2>Choose your desired record type (top of page menu buttons) before entering any information.</h2>
+  For an example 2D equation record, right click <a href="./BrowserRecordCreator2D_Equation.json" download>here</a> and choose 'Save Link As'.<br><br>
 
   <form id="jsonForm">
     <label for="datatype">Datatype such as experiment type:</label>
     <input type="text" id="datatype" name="datatype" required><br><br>
+
+    <label for="comments">Description and Comments (optional):</label><br>
+    <textarea id="comments" name="comments" rows="3" cols="50"></textarea><br><br>
 
     <label for="plotTitle">Graph Title:</label>
     <input type="text" id="plotTitle" name="plotTitle" required><br><br>
@@ -62,7 +66,6 @@
 
     <label for="uid">Data Series Unique ID (optional):</label>
     <input type="text" id="uid" name="uid"><br><br>
-
 
     <label for="equationString">Equation String. Put powers in parentheses, <br> use a variable for any intercepts that have units, such as k = c*L^(2) + a :</label><br>
     <input type="text" id="equationString" name="equationString" size="50" required><br><br>
@@ -116,6 +119,7 @@
   <script>
     function createJSON() {
       const datatype = document.getElementById('datatype').value;
+      const comments = document.getElementById('comments').value;      
       const plotTitle = document.getElementById('plotTitle').value;    
       const uid = document.getElementById('uid').value;
       const seriesName = document.getElementById('seriesName').value;
@@ -162,7 +166,7 @@
       };
 
       const jsonData = {
-        comments: "// The comments field can be used to put a description and metadata such as citations.",
+        comments: comments || "// The comments field can be used to put a description and metadata such as citations.",
         jsongrapher: "To plot this file, go to www.jsongrapher.com and drag this file into your browser, or use the python version of JSONGrapher. File created with Browser Record Creator Version 1.0",
         datatype: datatype,
         plot_style: {layout_style: layoutStyle},
