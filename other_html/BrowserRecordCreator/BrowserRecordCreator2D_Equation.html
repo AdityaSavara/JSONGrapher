@@ -106,6 +106,8 @@
     <input type="radio" id="scatter_line" name="traceStyle" value="scatter_line">scatter_line<br>
     <input type="radio" id="noTraceStyle" name="traceStyle" value="">no selection<br><br>
 
+    <label for="filename">Filename (optional)</label><br>
+    <textarea id="filename" name="filename" rows="1" cols="50"></textarea><br><br>
 
     <button type="button" onclick="createJSON()">Create JSONGrapher Record File</button>
   </form>
@@ -131,6 +133,7 @@
       const verbosity = document.querySelector('input[name="verbosity"]:checked')?.value || ''; 
 
       const traceStyle = document.querySelector('input[name="traceStyle"]:checked')?.value || '';
+      const filename = document.getElementById('filename').value;
       const layoutStyle = "default";
       const xRangeArray = xRange.replace(/[()]/g, '').split(',').map(v => parseFloat(v.trim()));
 
@@ -193,7 +196,11 @@
       const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = 'JSONGrapherRecord.json';
+      if (!filename) { 
+          link.download = 'JSONGrapherRecord.json';
+      } else {
+          link.download = filename.toLowerCase().endsWith('.json') ? filename : filename + '.json';
+      }
       link.click();
     }
   </script>
