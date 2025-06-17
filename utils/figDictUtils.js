@@ -145,11 +145,10 @@ function convertTo3DLayout(layout) {
     let newLayout = JSON.parse(JSON.stringify(layout)); // Deep copy to avoid modifying original layout
 
     // Add the axis fields inside `scene`
-    newLayout.scene = {
-        xaxis: layout.xaxis || {},
-        yaxis: layout.yaxis || {},
-        zaxis: layout.zaxis || {}
-    };
+    newLayout.scene = newLayout.scene || {};
+    newLayout.scene.xaxis = layout.xaxis || {};
+    newLayout.scene.yaxis = layout.yaxis || {};
+    newLayout.scene.zaxis = layout.zaxis || {};
 
     // Remove the original axis fields from the top-level layout
     delete newLayout.xaxis;

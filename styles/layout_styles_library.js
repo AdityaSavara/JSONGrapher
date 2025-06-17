@@ -22,6 +22,7 @@ const layout_styles_library = {
     },
     default3d: {
         layout: {
+            scene: {aspectmode:"cube"},            
             title: { font: { size: 32 }, x: 0.5 },
             xaxis: { title: { font: { size: 12 } }, tickfont: { size: 12 } },
             yaxis: { title: { font: { size: 12 } }, tickfont: { size: 12 } },
