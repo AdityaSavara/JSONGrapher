@@ -170,17 +170,6 @@
         jsongrapher: "To plot this file, go to www.jsongrapher.com and drag this file into your browser, or use the python version of JSONGrapher. File created with Browser Record Creator Version 1.0",
         datatype: datatype,
         plot_style: {layout_style: layoutStyle},
-        data: [
-          {
-            trace_style: traceStyle,
-            uid: uid || "",
-            name: seriesName || "",
-            equation: equation_dict,
-            x: [],
-            y: [],
-            type: "scatter"
-          }
-        ],
         layout: {
           title: {
             text: plotTitle
@@ -195,7 +184,18 @@
               text: `${yLabel} (${yUnit})`
             }
           }
-        }
+        },
+        data: [
+          {
+            trace_style: traceStyle,
+            uid: uid || "",
+            name: seriesName || "",
+            equation: equation_dict,
+            x: [],
+            y: [],
+            type: "scatter"
+          }
+        ]
       };
 
       const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
