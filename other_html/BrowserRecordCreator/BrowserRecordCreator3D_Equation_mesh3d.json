@@ -5,6 +5,26 @@
   "plot_style": {
     "layout_style": "default3d"
   },
+  "layout": {
+    "title": {
+      "text": "Typical Temperature Behavior for a Rate Constant"
+    },
+    "xaxis": {
+      "title": {
+        "text": "Temperature (K)"
+      }
+    },
+    "yaxis": {
+      "title": {
+        "text": "Activation Energy (((J)*(mol^(-1))))"
+      }
+    },
+    "zaxis": {
+      "title": {
+        "text": "k (s^(-1))"
+      }
+    }
+  },  
   "data": [
     {
       "trace_style": "mesh3d",
@@ -39,25 +59,5 @@
       "y": [],
       "type": "scatter"
     }
-  ],
-  "layout": {
-    "title": {
-      "text": "Typical Temperature Behavior for a Rate Constant"
-    },
-    "xaxis": {
-      "title": {
-        "text": "Temperature (K)"
-      }
-    },
-    "yaxis": {
-      "title": {
-        "text": "Activation Energy (((J)*(mol^(-1))))"
-      }
-    },
-    "zaxis": {
-      "title": {
-        "text": "k (s^(-1))"
-      }
-    }
-  }
+  ]
 }

@@ -3,6 +3,21 @@
   "jsongrapher": "To plot this file, go to www.jsongrapher.com and drag this file into your browser, or use the python version of JSONGrapher. File created with Browser Record Creator Version 1.0",
   "datatype": "Arrhenius_2D_Plot",
   "trace_style": "",
+  "layout": {
+    "title": {
+      "text": "Arrhenius 2D"
+    },
+    "xaxis": {
+      "title": {
+        "text": "Temperature (K)"
+      }
+    },
+    "yaxis": {
+      "title": {
+        "text": "Rate Constant (s^(-1))"
+      }
+    }
+  },
   "data": [
     {
       "uid": "",
@@ -31,20 +46,5 @@
       "y": [],
       "type": "scatter"
     }
-  ],
-  "layout": {
-    "title": {
-      "text": "Arrhenius 2D"
-    },
-    "xaxis": {
-      "title": {
-        "text": "Temperature (K)"
-      }
-    },
-    "yaxis": {
-      "title": {
-        "text": "Rate Constant (s^(-1))"
-      }
-    }
-  }
+  ]
 }
