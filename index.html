@@ -794,7 +794,13 @@
         }
       };
       ///############################ BELOW IS THE MAIN BLOCK OF CODE FOR JSON GRAPHER ##################################
-      if (urlParamsString){ loadFromUrlParams(urlParamsString)};
+      if (urlParamsString) {
+        //This waiting of the DOM to be loaded line is because the "isValidURL" and other functions need to load from the modules.
+        //After the main block of code is also moved to a module, perhaps this could be changed.
+        document.addEventListener('DOMContentLoaded', () => {
+          loadFromUrlParams(urlParamsString);
+        });
+      };
       // STEP 0: Prepare the 'universal' schemas occurs inside initializeJSONGrapher
       initializeJSONGrapher()
         .then((resp) => {
