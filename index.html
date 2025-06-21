@@ -797,6 +797,8 @@
       if (urlParamsString) {
         //This waiting of the DOM to be loaded line is because the "isValidURL" and other functions need to load from the modules.
         //After the main block of code is also moved to a module, perhaps this could be changed.
+        //More likely, those functions should stay in this file, while the main function should be moved into a module.
+        //That way, an external json can be called and downloaded even before the DOM is finished loading.
         document.addEventListener('DOMContentLoaded', () => {
           loadFromUrlParams(urlParamsString);
         });
