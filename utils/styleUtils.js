@@ -370,12 +370,18 @@ function applyColorScale(dataSeries, colorscale, colorscaleStructure) {
 function prepareBubbleSizes(dataSeries) {
     // To make a bubble plot with Plotly, we use a 2D plot
     // and assign z values to marker sizes, scaling them to a max bubble size.
-    
     if (!dataSeries.marker) {
         dataSeries.marker = {};
     }
-
-    if (dataSeries.z_points) {
+    if (dataSeries.bubble_sizes !== undefined) {
+        if (typeof dataSeries.bubble_sizes === "string") {
+            // if bubble_sizes is a string, use it as a key to extract sizes
+            let bubbleSizesVariableName = dataSeries.bubble_sizes;
+            dataSeries.marker.size = dataSeries[bubbleSizesVariableName];
+        } else {
+            dataSeries.marker.size = dataSeries.bubble_sizes;
+        }
+    } else if (dataSeries.z_points) {
         dataSeries.marker.size = dataSeries.z_points;
     } else if (dataSeries.z) {
         dataSeries.marker.size = dataSeries.z;
