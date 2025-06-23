@@ -172,6 +172,14 @@ function removeBubbleFields(figDict) {
         const traceStyle = dataSeries.trace_style; // trace_style will be undefined if not present
         // Check if trace_style exists and is a string
         if (typeof traceStyle === "string") {
+            // If the style is just "bubble" (not explicitly 2D or 3D), default to bubble2d for backward compatibility
+            if (
+                traceStyle.includes("bubble") &&
+                !traceStyle.includes("bubble2d") &&
+                !traceStyle.includes("bubble3d")
+            ) {
+                traceStyle = traceStyle.replace("bubble", "bubble2d");
+            }
             // Determine if this trace is a bubble trace or uses max_bubble_size
             if (traceStyle.toLowerCase().includes("bubble") || "max_bubble_size" in dataSeries) {
                 bubbleFound = true;

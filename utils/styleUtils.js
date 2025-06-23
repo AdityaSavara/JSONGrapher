@@ -241,13 +241,24 @@ function applyTraceStyleToSingleDataSeries(dataSeries, traceStylesCollection = "
     // Check if traceStyle is a string and extract colorscale if applicable
     //This should be done before extracting the trace_style from the styles_available, because we need to split the string to break out the trace_style
     //Also should be initialized before determining the second half of colorscale_structure checks (which occurs after the trace_style application), since it affects that logic.
-    let colorscale = "" //intialize as empty string for default case.
-    let colorscaleStructure = "" //intialize as empty string for default case.
+    let colorscale = ""; // Initialize as empty string for default case
+    let colorscaleStructure = ""; // Initialize as empty string for default case
     if (typeof traceStyle === "string") {
+        // If traceStyle includes a double underscore, separate the style and the colorscale
         if (traceStyle.includes("__")) {
             [traceStyle, colorscale] = traceStyle.split("__");
         }
+        // If the style is just "bubble" (not explicitly 2D or 3D), default to bubble2d for backward compatibility
+        if (
+            traceStyle.includes("bubble") &&
+            !traceStyle.includes("bubble2d") &&
+            !traceStyle.includes("bubble3d")
+        ) {
+            traceStyle = traceStyle.replace("bubble", "bubble2d");
+        }
     }
+
+
 
     if (colorscale.endsWith("_r")) {
         console.warn("Warning: Colorscale reverse with _r is not currently supported by browser-based Plotly. Colorscale reversing has been removed.");
