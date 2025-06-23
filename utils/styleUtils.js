@@ -385,6 +385,8 @@ function prepareBubbleSizes(dataSeries) {
         dataSeries.marker.size = dataSeries.z_points;
     } else if (dataSeries.z) {
         dataSeries.marker.size = dataSeries.z;
+    } else if (dataSeries.y) {
+        dataSeries.marker.size = dataSeries.y;
     }
 
     // Function to normalize values to the max value in the list
