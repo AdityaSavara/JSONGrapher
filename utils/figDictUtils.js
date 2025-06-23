@@ -169,7 +169,7 @@ function removeBubbleFields(figDict) {
      */
     let bubbleFound = false; // Initialize with false case
     figDict.data.forEach(dataSeries => {
-        const traceStyle = dataSeries.trace_style; // trace_style will be undefined if not present
+        let traceStyle = dataSeries.trace_style; // trace_style will be undefined if not present
         // Check if trace_style exists and is a string
         if (typeof traceStyle === "string") {
             // If the style is just "bubble" (not explicitly 2D or 3D), default to bubble2d for backward compatibility
