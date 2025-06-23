@@ -185,9 +185,12 @@ function removeBubbleFields(figDict) {
                 bubbleFound = true;
             }
             if (bubbleFound) {
+                // If trace is bubble2d, remove z and z_points
+                if (traceStyle.toLowerCase().includes("bubble2d")) {
+                    if ("z" in dataSeries) { delete dataSeries.z; }
+                    if ("z_points" in dataSeries) { delete dataSeries.z_points; }
+                }
                 // Remove sizing fields related to bubbles
-                delete dataSeries.z;
-                delete dataSeries.z_points;
                 delete dataSeries.max_bubble_size;
                 // Handle bubble_sizes cleanup
                 if ("bubble_sizes" in dataSeries) {
