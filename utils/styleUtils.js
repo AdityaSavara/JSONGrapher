@@ -261,7 +261,8 @@ function applyTraceStyleToSingleDataSeries(dataSeries, traceStylesCollection = "
     }
 
 
-    
+    //The below function call does not just determine colorScaleStructure, it also calls the prepareBubbleSizes function as needed
+    //for bubble2d and bubble3d plots.
     ({ dataSeries, colorscaleStructure} = determineColorScaleStructureFirstHalf(dataSeries, traceStyle, colorscale));  
     
     if (traceStyle in stylesCollectionDict) {
@@ -295,18 +296,22 @@ function applyTraceStyleToSingleDataSeries(dataSeries, traceStylesCollection = "
 
 function determineColorScaleStructureFirstHalf(dataSeries, traceStyle, colorscale) {
     let colorscaleStructure = ""; // Initialize variable for later use
-
-    // 3D and bubble plots have a colorscale by default
-    if (traceStyle === "bubble") {
-        dataSeries = prepareBubbleSizes(dataSeries);
-        colorscaleStructure = "bubble";
-    } else if (traceStyle === "mesh3d") {
-        colorscaleStructure = "mesh3d";
-    } else if (traceStyle === "scatter3d") {
-        colorscaleStructure = "scatter3d";
+    // Ensure traceStyle is a string
+    if (typeof traceStyle === "string") {
+        // 3D and bubble plots have a colorscale by default
+        if (traceStyle.toLowerCase().includes("bubble")) {
+            // For bubble trace styles (both 2D and 3D), prepare bubble sizes first
+            dataSeries = prepareBubbleSizes(dataSeries);
+            colorscaleStructure = "bubble";
+        } else if (traceStyle.toLowerCase().includes("mesh3d")) {
+            colorscaleStructure = "mesh3d";
+        } else if (traceStyle.toLowerCase().includes("scatter3d")) {
+            colorscaleStructure = "scatter3d";
+        }
     }
-    return { dataSeries, colorscaleStructure};
+    return { dataSeries, colorscaleStructure };
 }
+
 
 function determineColorScaleStructureSecondHalf(dataSeries, traceStyle, colorscale) {
     let colorscaleStructure = ''; //Ok to assign as new, because this function is only entered if it is already an empty string.
