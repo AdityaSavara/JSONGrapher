@@ -160,34 +160,55 @@ function convertTo3DLayout(layout) {
 
 function removeBubbleFields(figDict) {
     /**
-     * Removes `z`, `z_points`, and `max_bubble_size` from bubble plots
-     * since they are used for size calculations.
+     * Removes bubble-related fields (`z`, `z_points`, `max_bubble_size`, `bubble_sizes`)
+     * and deletes any dynamic sizing variables referenced by `bubble_sizes` if needed.
+     * Also removes `layout.zaxis` for bubble2d plots.
      *
      * @param {Object} figDict - Plotly figure dictionary containing `data` field.
      * @returns {Object} Updated figure dictionary with bubble-related fields removed.
      */
-    let bubbleFound = false;
-
+    let bubbleFound = false; // Initialize with false case
     figDict.data.forEach(dataSeries => {
-        if (
-            typeof dataSeries.trace_style === "string" &&
-            dataSeries.trace_style.toLowerCase().includes("bubble") ||
-            "max_bubble_size" in dataSeries
-        ) {
-            bubbleFound = true;
-
-            delete dataSeries.z;
-            delete dataSeries.z_points;
-            delete dataSeries.max_bubble_size;
+        const traceStyle = dataSeries.trace_style; // trace_style will be undefined if not present
+        // Check if trace_style exists and is a string
+        if (typeof traceStyle === "string") {
+            // Determine if this trace is a bubble trace or uses max_bubble_size
+            if (traceStyle.toLowerCase().includes("bubble") || "max_bubble_size" in dataSeries) {
+                bubbleFound = true;
+            }
+            if (bubbleFound) {
+                // Remove sizing fields related to bubbles
+                delete dataSeries.z;
+                delete dataSeries.z_points;
+                delete dataSeries.max_bubble_size;
+                // Handle bubble_sizes cleanup
+                if ("bubble_sizes" in dataSeries) {
+                    const bubbleSizesVar = dataSeries.bubble_sizes;
+                    // If it's a string, and not a standard axis variable, remove the referenced field
+                    if (typeof bubbleSizesVar === "string") {
+                        // For bubble2d, remove if not "x" or "y"
+                        if (traceStyle.toLowerCase().includes("bubble2d") && !["x", "y"].includes(bubbleSizesVar)) {
+                            delete dataSeries[bubbleSizesVar];
+                        }
+                        // For bubble3d, remove if not "x", "y", or "z"
+                        if (traceStyle.toLowerCase().includes("bubble3d") && !["x", "y", "z"].includes(bubbleSizesVar)) {
+                            delete dataSeries[bubbleSizesVar];
+                        }
+                    }
+                    // Finally, remove bubble_sizes itself
+                    delete dataSeries.bubble_sizes;
+                }
+                // If trace is bubble2d, remove zaxis from layout
+                if (traceStyle.toLowerCase().includes("bubble2d") && figDict.layout?.zaxis) {
+                    delete figDict.layout.zaxis;
+                }
+            }
         }
     });
-
-    if (bubbleFound && figDict.layout?.zaxis) {
-        delete figDict.layout.zaxis;
-    }
-
     return figDict;
 }
+
+
 
 function update3DAxes(figDict) {
     /**
