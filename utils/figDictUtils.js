@@ -160,7 +160,8 @@ function convertTo3DLayout(layout) {
 
 function removeBubbleFields(figDict) {
     /**
-     * Removes `z` and `z_points` from bubble plots since they are used for size calculations.
+     * Removes `z`, `z_points`, and `max_bubble_size` from bubble plots
+     * since they are used for size calculations.
      *
      * @param {Object} figDict - Plotly figure dictionary containing `data` field.
      * @returns {Object} Updated figure dictionary with bubble-related fields removed.
@@ -168,7 +169,11 @@ function removeBubbleFields(figDict) {
     let bubbleFound = false;
 
     figDict.data.forEach(dataSeries => {
-        if (dataSeries.trace_style === "bubble" || "max_bubble_size" in dataSeries) {
+        if (
+            typeof dataSeries.trace_style === "string" &&
+            dataSeries.trace_style.toLowerCase().includes("bubble") ||
+            "max_bubble_size" in dataSeries
+        ) {
             bubbleFound = true;
 
             delete dataSeries.z;
@@ -177,7 +182,7 @@ function removeBubbleFields(figDict) {
         }
     });
 
-    if (bubbleFound && figDict.layout.zaxis) {
+    if (bubbleFound && figDict.layout?.zaxis) {
         delete figDict.layout.zaxis;
     }
 
