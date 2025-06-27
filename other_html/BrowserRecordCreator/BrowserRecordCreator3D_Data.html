@@ -96,7 +96,8 @@
         <label>Select Trace Style:</label><br>
         <input type="radio" id="scatter3d" name="traceStyle" value="scatter3d">scatter3d<br>
         <input type="radio" id="mesh3d" name="traceStyle" value="mesh3d">mesh3d<br>
-        <input type="radio" id="bubble" name="traceStyle" value="bubble">bubble<br>
+        <input type="radio" id="bubble2d" name="traceStyle" value="bubble2d">bubble2d<br>
+        <input type="radio" id="bubble3d" name="traceStyle" value="bubble3d">bubble3d<br>        
         <input type="radio" id="noTraceStyle" name="traceStyle" value="">no selection<br><br>
 
         
@@ -139,7 +140,7 @@
             //const plotType = document.querySelector('input[name="plotType"]:checked')?.value || '';
 
             let layoutStyle;
-            if (traceStyle === "bubble") {
+            if (traceStyle === "bubble2d") {
                 layoutStyle = "default";
             } else {
                 layoutStyle = "default3d";
