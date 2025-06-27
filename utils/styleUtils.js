@@ -241,13 +241,24 @@ function applyTraceStyleToSingleDataSeries(dataSeries, traceStylesCollection = "
     // Check if traceStyle is a string and extract colorscale if applicable
     //This should be done before extracting the trace_style from the styles_available, because we need to split the string to break out the trace_style
     //Also should be initialized before determining the second half of colorscale_structure checks (which occurs after the trace_style application), since it affects that logic.
-    let colorscale = "" //intialize as empty string for default case.
-    let colorscaleStructure = "" //intialize as empty string for default case.
+    let colorscale = ""; // Initialize as empty string for default case
+    let colorscaleStructure = ""; // Initialize as empty string for default case
     if (typeof traceStyle === "string") {
+        // If traceStyle includes a double underscore, separate the style and the colorscale
         if (traceStyle.includes("__")) {
             [traceStyle, colorscale] = traceStyle.split("__");
         }
+        // If the style is just "bubble" (not explicitly 2D or 3D), default to bubble2d for backward compatibility
+        if (
+            traceStyle.includes("bubble") &&
+            !traceStyle.includes("bubble2d") &&
+            !traceStyle.includes("bubble3d")
+        ) {
+            traceStyle = traceStyle.replace("bubble", "bubble2d");
+        }
     }
+
+
 
     if (colorscale.endsWith("_r")) {
         console.warn("Warning: Colorscale reverse with _r is not currently supported by browser-based Plotly. Colorscale reversing has been removed.");
@@ -261,7 +272,8 @@ function applyTraceStyleToSingleDataSeries(dataSeries, traceStylesCollection = "
     }
 
 
-    
+    //The below function call does not just determine colorScaleStructure, it also calls the prepareBubbleSizes function as needed
+    //for bubble2d and bubble3d plots.
     ({ dataSeries, colorscaleStructure} = determineColorScaleStructureFirstHalf(dataSeries, traceStyle, colorscale));  
     
     if (traceStyle in stylesCollectionDict) {
@@ -295,18 +307,22 @@ function applyTraceStyleToSingleDataSeries(dataSeries, traceStylesCollection = "
 
 function determineColorScaleStructureFirstHalf(dataSeries, traceStyle, colorscale) {
     let colorscaleStructure = ""; // Initialize variable for later use
-
-    // 3D and bubble plots have a colorscale by default
-    if (traceStyle === "bubble") {
-        dataSeries = prepareBubbleSizes(dataSeries);
-        colorscaleStructure = "bubble";
-    } else if (traceStyle === "mesh3d") {
-        colorscaleStructure = "mesh3d";
-    } else if (traceStyle === "scatter3d") {
-        colorscaleStructure = "scatter3d";
+    // Ensure traceStyle is a string
+    if (typeof traceStyle === "string") {
+        // 3D and bubble plots have a colorscale by default
+        if (traceStyle.toLowerCase().includes("bubble")) {
+            // For bubble trace styles (both 2D and 3D), prepare bubble sizes first
+            dataSeries = prepareBubbleSizes(dataSeries);
+            colorscaleStructure = "bubble";
+        } else if (traceStyle.toLowerCase().includes("mesh3d")) {
+            colorscaleStructure = "mesh3d";
+        } else if (traceStyle.toLowerCase().includes("scatter3d")) {
+            colorscaleStructure = "scatter3d";
+        }
     }
-    return { dataSeries, colorscaleStructure};
+    return { dataSeries, colorscaleStructure };
 }
+
 
 function determineColorScaleStructureSecondHalf(dataSeries, traceStyle, colorscale) {
     let colorscaleStructure = ''; //Ok to assign as new, because this function is only entered if it is already an empty string.
@@ -370,15 +386,23 @@ function applyColorScale(dataSeries, colorscale, colorscaleStructure) {
 function prepareBubbleSizes(dataSeries) {
     // To make a bubble plot with Plotly, we use a 2D plot
     // and assign z values to marker sizes, scaling them to a max bubble size.
-    
     if (!dataSeries.marker) {
         dataSeries.marker = {};
     }
-
-    if (dataSeries.z_points) {
+    if (dataSeries.bubble_sizes !== undefined) {
+        if (typeof dataSeries.bubble_sizes === "string") {
+            // if bubble_sizes is a string, use it as a key to extract sizes
+            let bubbleSizesVariableName = dataSeries.bubble_sizes;
+            dataSeries.marker.size = dataSeries[bubbleSizesVariableName];
+        } else {
+            dataSeries.marker.size = dataSeries.bubble_sizes;
+        }
+    } else if (dataSeries.z_points) {
         dataSeries.marker.size = dataSeries.z_points;
     } else if (dataSeries.z) {
         dataSeries.marker.size = dataSeries.z;
+    } else if (dataSeries.y) {
+        dataSeries.marker.size = dataSeries.y;
     }
 
     // Function to normalize values to the max value in the list

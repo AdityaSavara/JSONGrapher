@@ -44,6 +44,15 @@ const trace_styles_collection_library = {
                 showscale: true
             }
         },
+        bubble2d: {
+            type: "scatter",
+            mode: "markers",
+            marker: {
+                color: "auto",
+                colorscale: "Jet",
+                showscale: true
+            }
+        },        
         spline: {
             type: "scatter",
             mode: "lines",
@@ -68,6 +77,11 @@ const trace_styles_collection_library = {
             intensity: [],
             colorscale: "Jet",
             showscale: true
+        },
+        bubble3d: {
+            mode: "markers",
+            type: "scatter3d",
+            marker: { color: "", colorscale: "Jet", showscale: true }
         },
         heatmap: {
             type: "heatmap",
