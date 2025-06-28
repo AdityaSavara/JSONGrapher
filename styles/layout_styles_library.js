@@ -20,6 +20,21 @@ const layout_styles_library = {
             }
         }
     },
+    offset2d: {
+        layout: {
+            paper_bgcolor:'rgba(0,0,0,0)',
+            plot_bgcolor:'rgba(0,0,0,0)',
+            title: { font: { size: 18 }, x: 0.5 },
+            xaxis: { showgrid: true, gridcolor: "#ddd", gridwidth: 1,
+                title: { font: { size: 18 } }, tickfont: { size: 18 } },
+            yaxis: { showgrid: true, gridcolor: "#ddd", gridwidth: 1,
+                 title: { font: { size: 18 } }, tickfont: { size: 18 } },
+            legend: {
+                title: { font: { size: 10 } },
+                font: { size: 10 }
+            }
+        }
+    },
     default3d: {
         layout: {
             scene: {aspectmode:"cube"},            

@@ -527,7 +527,9 @@
 
 
           let copyForPlotly = JSON.parse(JSON.stringify(figDict)); // Plotly mutates the input
-          copyForPlotly = cleanJsonFigDict(copyForPlotly, ["simulate", "custom_units_chevrons", "equation", "trace_style", "3d_axes", "bubble", "superscripts"]);          
+          copyForPlotly = cleanJsonFigDict(copyForPlotly, ['simulate', 'custom_units_chevrons', 'equation', 'trace_style', '3d_axes', 'bubble', 'superscripts', 'nested_comments', 'extraInformation']);          
+          //offset2D must be executed after making the copy, if requested. The other implicit functions have already been called.
+          copyForPlotly = executeImplicitDataSeriesOperations(copyForPlotly, false, false, false, true);
           // Replace superscripts in some fields for Plotly
           if (copyForPlotly.layout.scene) {
             copyForPlotly.layout.scene.yaxis.title.text = replaceSuperscripts(copyForPlotly.layout.scene.yaxis.title?.text ?? "");
