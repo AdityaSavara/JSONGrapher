@@ -511,7 +511,7 @@ export function updateImplicitDataSeriesData(target_fig_dict, source_fig_dict, p
  * back to figDict without copying ranges.
  * - Uses deepcopy to avoid modifying the original input dictionary.
  */
-export function executeImplicitDataSeriesOperations(figDict, simulateAllSeries = true, evaluateAllEquations = true, adjustImplicitDataRanges = true) {
+export function executeImplicitDataSeriesOperations(figDict, simulateAllSeries = true, evaluateAllEquations = true, adjustImplicitDataRanges = true, adjustOffset2d = false) {
     // Create a deep copy for processing implicit series separately
     let figDictForImplicit = JSON.parse(JSON.stringify(figDict));
 
@@ -530,7 +530,7 @@ export function executeImplicitDataSeriesOperations(figDict, simulateAllSeries =
             const [figDictRanges] = getFigDictRanges(figDict, true, true); // No need for dataSeriesRanges here.
 
             // Apply the extracted ranges to implicit data series before simulation or equation evaluation.
-            figDictForImplicit = updateImplicitDataSeriesXRanges(figDictForImplicit, figDictRanges);
+            figDictForImplicit = updateImplicitDataSeriesXRanges(figDict, figDictRanges);
         }
 
         // 6/4/25 Currently, for JSONGrapher web version, simulations are only performed in index.html
@@ -549,7 +549,124 @@ export function executeImplicitDataSeriesOperations(figDict, simulateAllSeries =
             figDict = updateImplicitDataSeriesData(figDict, figDictForImplicit, true, true);
         }
     }
+
+    if (adjustOffset2d) {
+        // This should occur after simulations and evaluations because it could rely on them.
+        const layoutStyle = figDict?.plot_style?.layout_style || "";
+        if (layoutStyle.includes("offset2d")) {
+            // This case is different from others -- we will not modify target directly because we are not doing a merge.
+            figDict = extractAndImplementOffsets(figDictForImplicit, false);
+        }
+    }
+
     return figDict;
 }
+
+
+
+// Determines if a value can be interpreted as a float scalar
+function isFloatScalar(value) {
+    return typeof value === 'number' || (!isNaN(parseFloat(value)) && isFinite(value));
+}
+
+// Applies vertical offsets if defined in figDict.layout, otherwise computes them
+function extractAndImplementOffsets(figDict, modifyTargetDirectly = false, graphicalDimensionality = 2) {
+    const figDictWithOffsets = modifyTargetDirectly ? figDict : structuredClone(figDict);
+    let offsetVariableName = "";
+    if ("offset" in figDict.layout) {
+        let offset = figDict.layout.offset;
+        if (isFloatScalar(offset)) {
+            // scalar, nothing to parse
+        } else if (typeof offset === 'string') {
+            offsetVariableName = offset;
+        } else {
+            offset = offset.map(val => parseFloat(val));
+        }
+        if (graphicalDimensionality === 2) {
+            let currentSeriesOffset = 0;
+            for (let i = 0; i < figDict.data.length; i++) {
+                const yVals = figDict.data[i].y.map(Number);
+
+                if (i === 0) {
+                    figDictWithOffsets.data[i].y = [...yVals];
+                } else {
+                    let incrementalOffset;
+                    if (offsetVariableName) {
+                        incrementalOffset = figDict.data[i][offsetVariableName].map(Number);
+                    } else {
+                        incrementalOffset = Array.isArray(offset) ? offset.map(Number) : new Array(yVals.length).fill(Number(offset));
+                    }
+
+                    currentSeriesOffset = currentSeriesOffset === 0
+                        ? [...incrementalOffset]
+                        : currentSeriesOffset.map((v, j) => v + incrementalOffset[j]);
+
+                    figDictWithOffsets.data[i].y = yVals.map((y, j) => y + currentSeriesOffset[j]);
+                }
+            }
+        }
+    } else {
+        if (graphicalDimensionality === 2) {
+            return determineAndApplyOffset2dForFigDict(figDict, modifyTargetDirectly);
+        }
+    }
+
+    return figDictWithOffsets;
+}
+
+// Handles the full logic for offsetting 2D plots when no offsets are specified
+function determineAndApplyOffset2dForFigDict(figDict, modifyTargetDirectly = false) {
+    const fig = modifyTargetDirectly ? figDict : structuredClone(figDict);
+    const allSeriesArray = extractAllXYSeriesDataFromFigDict(fig);
+    const offsetDataArray = applyVerticalOffset2dForArrayList(allSeriesArray);
+    return injectXYSeriesDataIntoFigDict(fig, offsetDataArray);
+}
+
+// Extracts all x/y coordinates from a fig dict into a list of [[x,y],...]
+function extractAllXYSeriesDataFromFigDict(figDict) {
+    const seriesList = [];
+    for (const dataSeries of figDict.data || []) {
+        const xVals = dataSeries.x || [];
+        const yVals = dataSeries.y || [];
+        if (xVals.length === yVals.length) {
+            const combined = xVals.map((x, i) => [Number(x), Number(yVals[i])]);
+            seriesList.push(combined);
+        }
+    }
+    return seriesList;
+}
+
+// Applies a vertical offset to each series in a list of 2D series [[x,y],...]
+function applyVerticalOffset2dForArrayList(dataList, offsetMultiplier = 1.2) {
+    const spans = dataList.map(series => {
+        if (!series.length) return 0;
+        const yVals = series.map(([_, y]) => y);
+        return Math.max(...yVals) - Math.min(...yVals);
+    });
+
+    const baseOffset = spans.length ? Math.max(...spans) * offsetMultiplier : 0;
+
+    return dataList.map((series, index) => {
+        if (!series.length) return [];
+        return series.map(([x, y]) => [x, y + index * baseOffset]);
+    });
+}
+
+// Injects modified [x,y] lists back into figDict's data traces
+function injectXYSeriesDataIntoFigDict(figDict, dataList) {
+    const nTraces = figDict.data.length;
+    if (dataList.length !== nTraces) {
+        throw new Error("Mismatch between number of traces and number of data series.");
+    }
+
+    for (let i = 0; i < nTraces; i++) {
+        const series = dataList[i];
+        figDict.data[i].x = series.map(point => point[0]);
+        figDict.data[i].y = series.map(point => point[1]);
+    }
+
+    return figDict;
+}
+
 
 window.executeImplicitDataSeriesOperations = executeImplicitDataSeriesOperations; //line needed for index.html to see the function after importing.
