@@ -3,6 +3,11 @@ import { Equation } from './equation_creator.js'; // Adjust the path as needed
 import {getUnitsScalingRatio} from '../unitScaling.js'; 
 import {scaleDataseriesDict} from '../unitScaling.js'; 
 
+//Utility function for during debugging.
+function copyJson(obj) {
+    return JSON.parse(JSON.stringify(obj));
+}
+
 /**
  * Updates the `x_range_default` values for all simulate and equation data series
  * in a given figure dictionary using the provided range dictionary.
@@ -511,7 +516,7 @@ export function updateImplicitDataSeriesData(target_fig_dict, source_fig_dict, p
  * back to figDict without copying ranges.
  * - Uses deepcopy to avoid modifying the original input dictionary.
  */
-export function executeImplicitDataSeriesOperations(figDict, simulateAllSeries = true, evaluateAllEquations = true, adjustImplicitDataRanges = true, adjustOffset2d = false) {
+export function executeImplicitDataSeriesOperations(figDict, simulateAllSeries = true, evaluateAllEquations = true, adjustImplicitDataRanges = true, adjustOffset2d = false, adjustArrange2dTo3d = false) {
     // Create a deep copy for processing implicit series separately
     let figDictForImplicit = JSON.parse(JSON.stringify(figDict));
 
@@ -556,6 +561,15 @@ export function executeImplicitDataSeriesOperations(figDict, simulateAllSeries =
         if (layoutStyle.includes("offset2d")) {
             // This case is different from others -- we will not modify target directly because we are not doing a merge.
             figDict = extractAndImplementOffsets(figDictForImplicit, false);
+        }
+    }
+
+    if (adjustArrange2dTo3d) {
+        // This should occur after simulations and evaluations because it could rely on them.
+        const layoutStyle = figDict?.plot_style?.layout_style || "";
+        if (layoutStyle.includes("arrange2dTo3d")) {
+            // This case is different from others -- we will not modify target directly because we are not doing a merge.
+            figDict = implementArrange2dTo3d(figDictForImplicit, false);
         }
     }
 
@@ -666,6 +680,74 @@ function injectXYSeriesDataIntoFigDict(figDict, dataList) {
     }
 
     return figDict;
+}
+
+
+function implementArrange2dTo3d(figDict, modifyTargetDirectly = false) {
+    // Deep copy the input figure dictionary to avoid modifying the original
+    const scratchFigDict = JSON.parse(JSON.stringify(figDict));
+    const modifiedFigDict = JSON.parse(JSON.stringify(figDict));
+
+    // Extract axis variables from layout or assign default fallbacks
+    let verticalAxisVariable = figDict.layout.vertical_axis_variable || {};
+    if (Object.keys(verticalAxisVariable).length === 0) {
+        // Default to 'y' if vertical axis not provided
+        verticalAxisVariable = 'y';
+    }
+
+    let leftAxisVariable = figDict.layout.left_axis_variable || {};
+    if (Object.keys(leftAxisVariable).length === 0) {
+        // Default to 'x' if left axis not provided
+        leftAxisVariable = 'x';
+    }
+
+    let rightAxisVariable = figDict.layout.right_axis_variable || {};
+    if (Object.keys(rightAxisVariable).length === 0) {
+        // Default to ascending sequence for right axis
+        rightAxisVariable = 'data_series_index_vector';
+
+        for (let dataSeriesIndex = 0; dataSeriesIndex < figDict.data.length; dataSeriesIndex++) {
+            const lengthNeeded = figDict.data[dataSeriesIndex].x.length;
+            const dataSeriesIndexVector = Array(lengthNeeded).fill(dataSeriesIndex);
+            scratchFigDict.data[dataSeriesIndex].data_series_index_vector = dataSeriesIndexVector;
+        }
+    }
+
+    // Ensure xaxis, yaxis, and zaxis have proper nested structure for titles
+    ['xaxis', 'yaxis', 'zaxis'].forEach(axis => {
+        modifiedFigDict.layout[axis] = modifiedFigDict.layout[axis] || {};
+        modifiedFigDict.layout[axis].title = modifiedFigDict.layout[axis].title || {};
+        modifiedFigDict.layout[axis].title.text = "";
+    });
+    // Assign axis labels from the scratch copy
+    modifiedFigDict.layout.yaxis.title.text =
+        scratchFigDict.layout[`${leftAxisVariable}axis`].title.text;
+
+    if (rightAxisVariable !== 'data_series_index_vector') {
+        modifiedFigDict.layout.xaxis.title.text =
+            scratchFigDict.layout[`${rightAxisVariable}axis`].title.text;
+    } else {
+        modifiedFigDict.layout.xaxis.title.text = "Data Set";
+    }
+
+    modifiedFigDict.layout.zaxis.title.text =
+        scratchFigDict.layout[`${verticalAxisVariable}axis`].title.text;
+
+    // Reassign axes for each data series and update trace style
+    for (let dataSeriesIndex = 0; dataSeriesIndex < figDict.data.length; dataSeriesIndex++) {
+        const modifiedSeries = modifiedFigDict.data[dataSeriesIndex];
+        const scratchSeries = scratchFigDict.data[dataSeriesIndex];
+        //trace_styles are scatter3d or curve3d. Choose curve3d for anything not scatter.
+        //In future, could consider adding in bar/column chart.
+        modifiedSeries.trace_style = modifiedSeries.trace_style.includes("scatter")
+            ? "scatter3d"
+            : "curve3d";
+
+        modifiedSeries.y = scratchSeries[leftAxisVariable];
+        modifiedSeries.x = scratchSeries[rightAxisVariable];
+        modifiedSeries.z = scratchSeries[verticalAxisVariable];
+    }
+    return modifiedFigDict;
 }
 
 

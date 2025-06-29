@@ -1,4 +1,4 @@
-//The below two lines allow us to use syntax more like in python:
+//The below two lines allow us to use syntax more like in python, but were not used in the end.
 // layout_styles.styles_library.default
 // trace_styles_collection.styles_library.default
 
@@ -237,7 +237,6 @@ function applyTraceStyleToSingleDataSeries(dataSeries, traceStylesCollection = "
     if (traceStyle === "") {
         traceStyle = Object.keys(stylesCollectionDict)[0]; // Take the first traceStyle name in the styleDict
     }
-
     // Check if traceStyle is a string and extract colorscale if applicable
     //This should be done before extracting the trace_style from the styles_available, because we need to split the string to break out the trace_style
     //Also should be initialized before determining the second half of colorscale_structure checks (which occurs after the trace_style application), since it affects that logic.
@@ -283,7 +282,6 @@ function applyTraceStyleToSingleDataSeries(dataSeries, traceStylesCollection = "
         traceStyle = Object.keys(stylesCollectionDict)[0]; // Take the first traceStyle name in the styleDict
         traceStyle = stylesCollectionDict[traceStyle];
     }
-
     // Apply type and other predefined settings
     dataSeries.type = traceStyle?.type;
     for (const [key, value] of Object.entries(traceStyle)) {
@@ -445,7 +443,6 @@ function applyLayoutStyleToPlotlyDict(figDict, layoutStyleToApply = "default") {
      */
 
     let layoutStyleToApplyName;
-
     if (typeof layoutStyleToApply === "string") {
         layoutStyleToApplyName = layoutStyleToApply;
     } else {
@@ -479,7 +476,6 @@ function applyLayoutStyleToPlotlyDict(figDict, layoutStyleToApply = "default") {
         console.warn(`Style named '${layoutStyleToApply}' not found with explicit layout dictionary. Using 'default' layout style.`);
         styleDict = stylesAvailable["default"] || {};
     }
-
     // Ensure layout exists in the figure
     figDict.layout = figDict.layout || {};
 
