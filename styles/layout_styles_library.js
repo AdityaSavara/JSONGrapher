@@ -1,6 +1,9 @@
 // This file stores the automatically loaded trace_styles_collection for JSONGrapher.
 // It is not recommended to overwrite this file.
 //
+// Any styles upgrades made to this file should be made to both the javascript and the python version.
+// The python version is at: https://github.com/AdityaSavara/jsongrapher-py/tree/main/JSONGrapher/styles
+//
 // Each object below, like "default" or "Nature," represents a 'layout_style'.
 // Style names are currently case-sensitive, but this may change in the future.
 
@@ -36,6 +39,19 @@ const layout_styles_library = {
         }
     },
     default3d: {
+        layout: {
+            scene: {aspectmode:"cube"},            
+            title: { font: { size: 32 }, x: 0.5 },
+            xaxis: { title: { font: { size: 12 } }, tickfont: { size: 12 } },
+            yaxis: { title: { font: { size: 12 } }, tickfont: { size: 12 } },
+            zaxis: { title: { font: { size: 12 } }, tickfont: { size: 12 } },
+            legend: {
+                title: { font: { size: 10 } },
+                font: { size: 10 }
+            }
+        }
+    },
+    arrange2dTo3d: {
         layout: {
             scene: {aspectmode:"cube"},            
             title: { font: { size: 32 }, x: 0.5 },
@@ -85,4 +101,3 @@ const layout_styles_library = {
         }
     }
 };
-

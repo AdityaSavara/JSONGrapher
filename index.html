@@ -519,17 +519,17 @@
               plotStyle = figDict.plot_style ?? { layout_style: "", trace_styles_collection: "" };
           }
 
+          let copyForPlotly = JSON.parse(JSON.stringify(figDict)); // Plotly mutates the input, and we also do when applying plot style.      
+          //offset2D and arrange2dTo3d must be executed after making the copy, if requested. The other implicit functions have already been called.
+          copyForPlotly = executeImplicitDataSeriesOperations(copyForPlotly, false, false, false, true, true);
           // Parse the plot style
           plotStyle = parsePlotStyle(plotStyle);
           // Apply the plot style
-          figDict = applyPlotStyleToPlotlyDict(figDict, plotStyle);
-          // Clean out the fields and make a Plotly object
+          copyForPlotly = applyPlotStyleToPlotlyDict(copyForPlotly, plotStyle);
 
-
-          let copyForPlotly = JSON.parse(JSON.stringify(figDict)); // Plotly mutates the input
+          // Clean out the fields to make a Plotly figDict
           copyForPlotly = cleanJsonFigDict(copyForPlotly, ['simulate', 'custom_units_chevrons', 'equation', 'trace_style', '3d_axes', 'bubble', 'superscripts', 'nested_comments', 'extraInformation']);          
-          //offset2D must be executed after making the copy, if requested. The other implicit functions have already been called.
-          copyForPlotly = executeImplicitDataSeriesOperations(copyForPlotly, false, false, false, true);
+
           // Replace superscripts in some fields for Plotly
           if (copyForPlotly.layout.scene) {
             copyForPlotly.layout.scene.yaxis.title.text = replaceSuperscripts(copyForPlotly.layout.scene.yaxis.title?.text ?? "");
