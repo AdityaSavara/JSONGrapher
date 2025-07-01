@@ -1,3 +1,6 @@
+
+//START OF BLOCK OF CODE REQUIRED FOR UNITSCALING FOR JSON_EQUATIONER
+
 /**
  * This is a replacement for `add_custom_unit_to_unitpy`.
  *
@@ -267,3 +270,5 @@ export function scaleFigDictValues(figDict, numToScaleXValuesBy = 1, numToScaleY
     }
     return scaledFigDict;
 }
+
+//END OF BLOCK OF CODE REQUIRED FOR UNITSCALING FOR JSON_EQUATIONER
