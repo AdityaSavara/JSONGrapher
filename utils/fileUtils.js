@@ -1,11 +1,11 @@
 // A function checks the extension of the file and calls the appropriate function to jsonify the file
-export function jsonifyData(filetype, dataLoaded) {
+export function jsonifyData(filetype, dataLoaded, plotlyTemplate) {
     switch (filetype) {
         case "csv": {
-            return jsonifyCSV(dataLoaded);
+            return jsonifyCSV(dataLoaded, plotlyTemplate);
         }
         case "tsv": {
-            return jsonifyTSV(dataLoaded);
+            return jsonifyTSV(dataLoaded, plotlyTemplate);
         }
         default: {
             return JSON.parse(dataLoaded);
@@ -30,7 +30,7 @@ export function findFileType(fileName) {
 
 
 // A function that jsonifies a TSV file
-export function jsonifyTSV(fileContent) {
+export function jsonifyTSV(fileContent, plotlyTemplate) {
     // Separate rows
     let arr = fileContent.split("\n");
     // If last row is empty, remove it
@@ -79,7 +79,7 @@ export function jsonifyTSV(fileContent) {
 }
 
 // A function that jsonifies a CSV file
-export function jsonifyCSV(fileContent) {
+export function jsonifyCSV(fileContent, plotlyTemplate) {
     // Separate rows
     let arr = fileContent.split("\n");
     // If last row is empty, remove it

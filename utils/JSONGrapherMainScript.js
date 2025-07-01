@@ -1,3 +1,8 @@
+      import { jsonifyData, findFileType, jsonifyTSV, jsonifyCSV, getFileName, readFileAsText } from './fileUtils.js'; 
+
+      function copyJson(obj) { //for debugging.
+        return JSON.parse(JSON.stringify(obj));
+      }
       //JSONGrapher has the following steps, which will be commented in the MAIN BLOCK OF CODE of JSONGrapher:
       // STEP 0: Prepare the 'universal' schemas
       // STEP 1: User selects a file from computer or drops a file on the browser
@@ -748,13 +753,12 @@
           toggleSection1.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
           toggleSection2.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
           toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
-        }
-      
+        }  
         // STEP 2 (VARIATION A): If the file is a .csv or .tsv file it is converted to a .json file
         if (eventType === "change" || eventType === "drop") {
           try {
             // try to parse the file as json
-            jsonified = jsonifyData(fileType, dataLoaded);
+            jsonified = jsonifyData(fileType, dataLoaded, plotlyTemplate);
           } catch (e) {
             errorDiv.innerText += `Error: Data record could not be converted to JSON. If it is in a zipfile, unzip before uploading. Error Details: ${e.message} \n`;
           }
