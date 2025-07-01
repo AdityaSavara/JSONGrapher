@@ -1,7 +1,7 @@
 // Import equation class from equation_creator.js
 import { Equation } from './equation_creator.js'; // Adjust the path as needed
-import {getUnitsScalingRatio} from '../unitScaling.js'; 
-import {scaleDataseriesDict} from '../unitScaling.js'; 
+import {getUnitsScalingRatio} from '../unitUtils.js'; 
+import {scaleDataseriesDict} from '../unitUtils.js'; 
 
 //Utility function for during debugging.
 function copyJson(obj) {
