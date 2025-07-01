@@ -1,4 +1,6 @@
-      import { jsonifyData, findFileType, jsonifyTSV, jsonifyCSV, getFileName, readFileAsText } from './fileUtils.js'; 
+      import { jsonifyData, findFileType, createCSV, getFileName, readFileAsText } from './fileUtils.js'; 
+      import {initializeUniversalSchemas, getSchemaType, mergeFigDictWithTemplate, getSchemaLocation} from './schemaUtils.js'
+      import {getUnitFromLabel, removeUnitFromLabel, replaceSuperscripts} from './unitUtils.js'
 
       function copyJson(obj) { //for debugging.
         return JSON.parse(JSON.stringify(obj));
@@ -19,8 +21,6 @@
       let plotlyTemplate = null;
       let schema = null;
       let recentFileName = null;
-      let schemaURL = "";
-      let schemaTemplateURL = "";
       let url = window.location.href; // Get the current page URL         
       let params = new URLSearchParams(new URL(url).search);
       let urlParamsString = params.get("fromUrl"); //default ends up as null.
@@ -54,118 +54,6 @@
         Plotly.purge("plotlyDiv");
       }
 
-      // function to extract from the datatype the location of the schema
-      function getSchemaLocation(jsonified, template = false) {
-        if (!jsonified.datatype) {
-          errorDiv.innerText += "Warning: The datatype field was not found in the record provided. Accordingly, a schema check will not be performed and the record will not be fully validated. \n";
-          jsonified.datatype = ""; // Populate with an empty string
-        }
-
-        if (isValidUrl(jsonified.datatype)) {
-          const template_suffix = jsonified.datatype.replace(
-            ".schema.json",
-            ".schema.template.json"
-          );
-          return !template ? jsonified.datatype : template_suffix;
-        } else if (jsonified.datatype.endsWith("schema.json")) {
-          if (template) {
-            const template_suffix = jsonified.datatype.replace(
-              ".schema.json",
-              ".schema.template.json"
-            );
-            return "./utils/schema/" + template_suffix;
-          } else {
-            return "./utils/schema/" + jsonified.datatype;
-          }
-        } else {
-          if (template) {
-            return "./utils/schema/" + jsonified.datatype + ".schema.template.json";
-          } else {
-            return "./utils/schema/" + jsonified.datatype + ".schema.json";
-          }
-        }
-      }
-
-      // function to extract from the datatype the json schema
-      async function getSchemaType(jsonified) {
-        let schema2body;
-        const schema_location = getSchemaLocation(jsonified);
-        const schema_template_location = getSchemaLocation(jsonified, true);
-        try {
-          const schema1 = await fetch(schema_location);
-          const schema2 = await fetch(schema_template_location);
-          const schema1body = await schema1.text();
-          if (schema2.status == 404) {
-            schema2body = "{}";
-          } else {
-            schema2body = await schema2.text();
-          }
-          const schema1json = JSON.parse(schema1body);
-          const schema2json = JSON.parse(schema2body);
-          return [schema1json, schema2json];
-        } catch (err) {
-          // TODO: !! error catching to be made informative.
-          //errorDiv.innerText += "undocumented error in getSchemaType\n";
-
-          try {
-            const schema1 = await fetch("./utils/schema/0_PlotlyTemplate.json");
-            const schema1body = await schema1.text();
-            const schema1json = JSON.parse(schema1body);
-            return [schema1json, {}];
-          } catch (err2) {
-            return [{}, {}];
-          }
-        }
-      }
-
-      // A function that prepares the plotly schema and the template for the jsonification
-      async function prepareUniversalSchemas() {
-        const schema1 = await fetch("./utils/schema/plot-schema.json");
-        const schema1body = await schema1.text();
-        const schema1json = JSON.parse(schema1body);
-        const schema2 = await fetch("./utils/schema/0_PlotlyTemplate.json");
-        const schema2body = await schema2.text();
-        const schema2json = await JSON.parse(schema2body);
-        return [schema1json, schema2json];
-      }
-
-      // A function that gets the unit from the label with regex
-      function getUnitFromLabel(label) {
-        if (!label) {
-          console.warn("Label is undefined or null");
-          return "";
-        }
-        let unit = label.match(/\((.*)\)/);
-        if (unit) {
-          return unit[1].replace(/\*\*/g, "^");//The replace in here replaces ** with ^, to replace python style "raise to the power of" with the conventional symbol.
-        }
-        return "";
-      }
-
-      //This is a helper function to create superscript tags for plotly right before plotting.
-      function replaceSuperscripts(inputString) {
-        // Step 1: Wrap superscript expressions in <sup> tags
-        let outputString = inputString.replace(/\^\((.*?)\)|\*\*\((.*?)\)/g, 
-          (match, p1, p2) => `<sup>${p1 || p2}</sup>`);
-
-        // Step 2: Remove parentheses if the content is only digits
-        outputString = outputString.replace(/<sup>\((\d+)\)<\/sup>/g, '<sup>$1</sup>');
-
-        // Step 3: Remove parentheses if the content is a negative number (- followed by digits)
-        outputString = outputString.replace(/<sup>\(-(\d+)\)<\/sup>/g, '<sup>-$1</sup>');
-
-        // Step 4: Remove parentheses if the superscript is a single letter
-        outputString = outputString.replace(/<sup>\((\w)\)<\/sup>/g, '<sup>$1</sup>');
-
-        return outputString;
-      }
-
-      // A function that removes the unit from the label
-      function removeUnitFromLabel(label) {
-        const unit = getUnitFromLabel(label);
-        return label.replace(/\*\*/g, "^").replace(unit, "").replace("()", ""); //need to first replace ** with ^ to be prepared for that part of getUnitFromLabel's processing.
-      }
-
       // Checking if the dataSet has simulation
       function checkSimulate(dataSet) {
         if (dataSet.simulate) {
@@ -186,7 +74,6 @@
           }
         });
       }
-
 
       //  a function that gets the simulate script from an external file by url
       /**
@@ -369,76 +256,6 @@
           }
       }
 
-      // A function that will create a csv string from the jsonified data
-      // Returns Error: "The CSV could not be created: currently the CSV export only supports creating CSV files for XYYY data and not for cases that require XYXY."
-      function createCSV(jsonified) {
-        // Defining the variables
-        let csv = "";
-        let bulkValues = "";
-        let errors = false;
-        const csvHeadersArray = [];
-        const csvValuesArray = [];
-        const xLabel = jsonified.layout.xaxis.title.text;
-        const yLabel = jsonified.layout.yaxis.title.text;
-        const comments = jsonified.comments;
-        const dataType = jsonified.datatype;
-        const chartLabel = jsonified.layout.title.text;
-        const dataSets = jsonified.data;
-        const dataSetIndex = jsonified.data.length - 1;
-        const dataSet = jsonified.data[dataSetIndex];
-        let seriesName = "";
-
-        // Adding the name of each dataset separated by comma
-        dataSets.forEach((dataSet) => {
-          const last =
-            dataSets.indexOf(dataSet) === dataSets.length - 1 ? true : false;
-          const suffix = !last ? "," : "";
-          seriesName += dataSet.name + suffix;
-        });
-
-        // Concatenating the values into the string
-        csv += "comments: " + comments + "\r\n";
-        csv += "DataType: " + dataType + "\r\n";
-        csv += "Chart_label: " + chartLabel + "\r\n";
-        csv += "x_label: " + xLabel + "\r\n";
-        csv += "y_label: " + yLabel + "\r\n";
-        csv += "series_names: " + seriesName + "\r\n";
-
-        csv += "x_values";
-
-        // Iterating through the data sets and adding the x and y headers to the csv string and checking if all x arrays are equal
-        dataSets.forEach((dataSet, index) => {
-          const idx = `_${index + 1}`;
-          const suffix = index === dataSets.length - 1 ? "\r\n" : "";
-          csv += ",y" + idx + suffix;
-        });
-        dataSets[0].x = dataSets[0].x || []; //create the x array if it does not exist (for equation dataseries etc.)
-        dataSets[0].y = dataSets[0].y || []; //create the y array if it does not exist (for equation dataseries etc.)
-        dataSets[0].x.forEach((x, _index) => {
-          let extraYValues = "";
-          for (let i = 0; i < dataSets.length; i++) {
-            extraYValues += "," + dataSets[i].y[_index];
-          }
-          csv += x + extraYValues + "\r\n";
-        });
-
-        for (const dataSet of dataSets) {
-          const first_X_array = dataSets[0].x;
-          // Checking if all the x arrays are equal
-          if (dataSet.x.toString() !== first_X_array.toString()) {
-            errors = true;
-            csv =
-              "Error: The CSV could not be created: currently the CSV export only supports creating CSV files for XYYY data and not for cases that require XYXY.";
-          }
-        }
-
-        return {
-          csv: csv,
-          filename: chartLabel + ".csv",
-        };
-      }
-
-
       function createCopyURLButton(jsonURL) {
           // Generate the URL
           const urlString = createCopyUrlLink(jsonURL);
@@ -472,8 +289,6 @@
           });
           return copyButton;
       }
-
-
 
       // A function that will create a download button for the csv file
       //As of 6/15/2025, this file only contains data from the most recently uploaded dataset.
@@ -585,29 +400,6 @@
         });
       }
 
-      async function initializeJSONGrapher() {
-        try {
-          const universalSchemas = await prepareUniversalSchemas();
-          const schema1json = universalSchemas[0];
-          const schema2json = universalSchemas[1];
-          return [schema1json, schema2json];
-        } catch (err) {
-          console.log("Error from initializeJSONGrapher: ", err);
-        }
-      }
-
-      // a function that merges jsonified with the template
-      function mergeObjects(jsonified, schema_template) {
-        const merged = JSON.parse(JSON.stringify(jsonified));
-
-        merged.data.forEach((dataSet) => {
-          dataSet.mode = schema_template.data[0].mode;
-          dataSet.line = schema_template.data[0].mode;
-        });
-
-        return merged;
-      }
-
       async function loadFromUrlParams(urlInput){
         if (isValidUrl(urlInput)){ 
           const url = parseUrl(urlInput);
@@ -629,7 +421,7 @@
         });
       };
       // STEP 0: Prepare the 'universal' schemas occurs inside initializeJSONGrapher
-      initializeJSONGrapher()
+      initializeUniversalSchemas()
         .then((resp) => {
           const toggleSection1 = document.getElementById("toggleSection1"); //get toggle section so actions can hide it.
           const toggleSection2 = document.getElementById("toggleSection2"); //get toggle section so actions can hide it.         
@@ -790,7 +582,7 @@
         } else {
           let _jsonified = jsonified;
           if (Object.keys(schema_template).length !== 0) {
-            _jsonified = mergeObjects(jsonified, schema_template);
+            _jsonified = mergeFigDictWithTemplate(jsonified, schema_template);
           }
           // If the data is valid against the schema, then we can proceed to the next step
           // if necessary create download button with json

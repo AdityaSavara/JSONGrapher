@@ -1,4 +1,42 @@
 
+      // A function that gets the unit from the label with regex
+      export function getUnitFromLabel(label) {
+        if (!label) {
+          console.warn("Label is undefined or null");
+          return "";
+        }
+        let unit = label.match(/\((.*)\)/);
+        if (unit) {
+          return unit[1].replace(/\*\*/g, "^");//The replace in here replaces ** with ^, to replace python style "raise to the power of" with the conventional symbol.
+        }
+        return "";
+      }
+
+      //This is a helper function to create superscript tags for plotly right before plotting.
+      export function replaceSuperscripts(inputString) {
+        // Step 1: Wrap superscript expressions in <sup> tags
+        let outputString = inputString.replace(/\^\((.*?)\)|\*\*\((.*?)\)/g, 
+          (match, p1, p2) => `<sup>${p1 || p2}</sup>`);
+
+        // Step 2: Remove parentheses if the content is only digits
+        outputString = outputString.replace(/<sup>\((\d+)\)<\/sup>/g, '<sup>$1</sup>');
+
+        // Step 3: Remove parentheses if the content is a negative number (- followed by digits)
+        outputString = outputString.replace(/<sup>\(-(\d+)\)<\/sup>/g, '<sup>-$1</sup>');
+
+        // Step 4: Remove parentheses if the superscript is a single letter
+        outputString = outputString.replace(/<sup>\((\w)\)<\/sup>/g, '<sup>$1</sup>');
+
+        return outputString;
+      }
+
+      // A function that removes the unit from the label
+      export function removeUnitFromLabel(label) {
+        const unit = getUnitFromLabel(label);
+        return label.replace(/\*\*/g, "^").replace(unit, "").replace("()", ""); //need to first replace ** with ^ to be prepared for that part of getUnitFromLabel's processing.
+      }
+
+
 //START OF BLOCK OF CODE REQUIRED FOR UNITSCALING FOR JSON_EQUATIONER
 
 /**

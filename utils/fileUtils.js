@@ -133,6 +133,76 @@ export function jsonifyCSV(fileContent, plotlyTemplate) {
     return resultJSON;
 }
 
+
+      // A function that will create a csv string from the jsonified data
+      // Returns Error: "The CSV could not be created: currently the CSV export only supports creating CSV files for XYYY data and not for cases that require XYXY."
+      export function createCSV(jsonified) {
+        // Defining the variables
+        let csv = "";
+        let bulkValues = "";
+        let errors = false;
+        const csvHeadersArray = [];
+        const csvValuesArray = [];
+        const xLabel = jsonified.layout.xaxis.title.text;
+        const yLabel = jsonified.layout.yaxis.title.text;
+        const comments = jsonified.comments;
+        const dataType = jsonified.datatype;
+        const chartLabel = jsonified.layout.title.text;
+        const dataSets = jsonified.data;
+        const dataSetIndex = jsonified.data.length - 1;
+        const dataSet = jsonified.data[dataSetIndex];
+        let seriesName = "";
+
+        // Adding the name of each dataset separated by comma
+        dataSets.forEach((dataSet) => {
+          const last =
+            dataSets.indexOf(dataSet) === dataSets.length - 1 ? true : false;
+          const suffix = !last ? "," : "";
+          seriesName += dataSet.name + suffix;
+        });
+
+        // Concatenating the values into the string
+        csv += "comments: " + comments + "\r\n";
+        csv += "DataType: " + dataType + "\r\n";
+        csv += "Chart_label: " + chartLabel + "\r\n";
+        csv += "x_label: " + xLabel + "\r\n";
+        csv += "y_label: " + yLabel + "\r\n";
+        csv += "series_names: " + seriesName + "\r\n";
+
+        csv += "x_values";
+
+        // Iterating through the data sets and adding the x and y headers to the csv string and checking if all x arrays are equal
+        dataSets.forEach((dataSet, index) => {
+          const idx = `_${index + 1}`;
+          const suffix = index === dataSets.length - 1 ? "\r\n" : "";
+          csv += ",y" + idx + suffix;
+        });
+        dataSets[0].x = dataSets[0].x || []; //create the x array if it does not exist (for equation dataseries etc.)
+        dataSets[0].y = dataSets[0].y || []; //create the y array if it does not exist (for equation dataseries etc.)
+        dataSets[0].x.forEach((x, _index) => {
+          let extraYValues = "";
+          for (let i = 0; i < dataSets.length; i++) {
+            extraYValues += "," + dataSets[i].y[_index];
+          }
+          csv += x + extraYValues + "\r\n";
+        });
+
+        for (const dataSet of dataSets) {
+          const first_X_array = dataSets[0].x;
+          // Checking if all the x arrays are equal
+          if (dataSet.x.toString() !== first_X_array.toString()) {
+            errors = true;
+            csv =
+              "Error: The CSV could not be created: currently the CSV export only supports creating CSV files for XYYY data and not for cases that require XYXY.";
+          }
+        }
+
+        return {
+          csv: csv,
+          filename: chartLabel + ".csv",
+        };
+      }
+
 // Gets the name of the uploaded file
 export function getFileName(fileName) {
     let arrayName = fileName.split(".");
