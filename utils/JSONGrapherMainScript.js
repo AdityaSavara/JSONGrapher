@@ -30,7 +30,7 @@
       const convert = new Convert();
 
       // A function that clears the data from global variables and removes the error text and plotly chart
-      function clearData() {
+      export function clearData() {
         globalData = null;
         urlParamsString = null; //empty this global variable.
         urlReceived = null; //empty this global variable.
@@ -84,7 +84,7 @@
       // function to extract from the datatype the json schema
       async function getSchemaType(jsonified) {
         let schema2body;
-        schema_location = getSchemaLocation(jsonified);
+        const schema_location = getSchemaLocation(jsonified);
         const schema_template_location = getSchemaLocation(jsonified, true);
         try {
           const schema1 = await fetch(schema_location);
@@ -110,7 +110,6 @@
           } catch (err2) {
             return [{}, {}];
           }
-          return [{}, {}];
         }
       }
 
@@ -584,8 +583,8 @@
       async function initializeJSONGrapher() {
         try {
           const universalSchemas = await prepareUniversalSchemas();
-          schema1json = universalSchemas[0];
-          schema2json = universalSchemas[1];
+          const schema1json = universalSchemas[0];
+          const schema2json = universalSchemas[1];
           return [schema1json, schema2json];
         } catch (err) {
           console.log("Error from initializeJSONGrapher: ", err);
@@ -641,8 +640,8 @@
             const fileSelector = document.getElementById("file-selector");
             if (fileSelector) {
               fileSelector.addEventListener("change", (event) => {
-                file = event.target.files[0];
-                fileName = file.name;
+                const file = event.target.files[0]; //this is a local temporary variable.
+                const fileName = file.name; //this is a local temporary variable
                 if (
                   fileName !== "Example1_JSONGrapher.json" &&
                   fileName !== "Example2_JSONGrapher.json" &&
@@ -666,8 +665,8 @@
 
               dropArea.addEventListener("drop", (event) => {
                 event.preventDefault();
-                file = event.dataTransfer.files[0];
-                fileName = file.name;
+                const file = event.dataTransfer.files[0]; //this is a local temporary variable
+                const fileName = file.name; //this is a local temporary variable
                 if (
                   fileName !== "Example1_JSONGrapher.json" &&
                   fileName !== "Example2_JSONGrapher.json" &&
@@ -713,6 +712,7 @@
         errorDiv.innerText += loadingMessage; //We want to use a variable so we can remove the loading message, later.
         let fileType; //Initializing filetype.
         let jsonified; // initializing
+        let dataLoaded // initializing
         // Checks if the file is dropped and if it is uploaded via the input button and gets the file
         // STEP 1 (Variation A): User selects a file from computer or drops a file on the browser
         //TODO: Variation A should probably be functionalized to take event, eventType and return jsonified
@@ -741,7 +741,7 @@
         //Should actually also also csv, probably.
         if (eventType === "url"){
           jsonified = await loadJsonFromUrl(event);//the event will have the url in it.
-          filetype = "json";
+          fileType = "json";
           const toggleSection1 = document.getElementById("toggleSection2");
           const toggleSection2 = document.getElementById("toggleSection2");
           const toRevealSection = document.getElementById("toReveal"); //get toReveal section so actions can reveal
@@ -761,7 +761,7 @@
         }
         // Checking if the uploaded data is valid against the schema
         // STEP 3: Check if the jsonified object is a valid JSON file against the schema
-        const [schema_type, schema_template] = await getSchemaType(jsonified);
+        let [schema_type, schema_template] = await getSchemaType(jsonified);
 
         if (Object.keys(schema_type).length === 0) {
           errorDiv.innerText +=
@@ -791,7 +791,7 @@
           // If the data is valid against the schema, then we can proceed to the next step
           // if necessary create download button with json
           // STEP 4 and STEP 5 is done in the prepareForPlotting function
-          const res = await prepareForPlotting(_jsonified, recentFileName);
+          const res = await prepareForPlotting(_jsonified, recentFileName); //recentFileName is a global variable. 
           // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
           appendDownloadButtons(res.downloadData, res.fileName);
           // STEP 7: The create a plotly JSON, clean it, and render it on the browser
@@ -814,6 +814,7 @@
             if (!globalData) {
               let _jsonified = JSON.parse(JSON.stringify(jsonified)); //make a local copy
               globalData = copyJson(_jsonified); //populate global figDict since this is the first record received.            
+              let simulatedJsonified; //just initializing
               // Get the unit from the label
               const xUnit = getUnitFromLabel(_jsonified.layout.xaxis.title.text);
               const yUnit = getUnitFromLabel(_jsonified.layout.yaxis.title.text);
@@ -835,7 +836,7 @@
                 const hasSimulate = checkSimulate(dataSet);
                 if (hasSimulate) {
                   //Below, the "result" has named fields inside, which we will extract.
-                  result = await simulateByIndexAndPopulateFigDict(_jsonified, index);
+                  const result = await simulateByIndexAndPopulateFigDict(_jsonified, index);
                   simulatedJsonified = result.simulatedJsonified
                   _jsonified = result._jsonified;
 
@@ -848,11 +849,11 @@
               resolve({
                 data: globalData,
                 downloadData: _jsonified,
-                fileName: recentFileName,
+                fileName: recentFileName, //recentFileName is a global variable.
               });
             } else {
               // If the Jsonified is not the first file uploaded, then we can proceed to the next step
-              fieldsMatch=true; //initialize this variable as true, and set it to false if any fields that need to match do not.
+              let fieldsMatch=true; //initialize this variable as true, and set it to false if any fields that need to match do not.
               //Check if the datatype fields match. Should actually be doing the hierarchical check with the underscores.
               if (globalData.datatype !== jsonified.datatype){
                 fieldsMatch=false;
@@ -889,7 +890,7 @@
                   const hasSimulate = checkSimulate(dataSet);
                   if (hasSimulate) {
                     //Below, the "result" has named fields inside, which we will extract.
-                    result = await simulateByIndexAndPopulateFigDict(_jsonified, index);
+                    const result = await simulateByIndexAndPopulateFigDict(_jsonified, index);
                     simulatedJsonified = result.simulatedJsonified
                     _jsonified = result._jsonified;                
                     } 
@@ -920,3 +921,5 @@
           }
         });
       }
+
+window.clearData = clearData;

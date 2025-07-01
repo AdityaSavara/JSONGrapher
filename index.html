@@ -30,6 +30,7 @@
       import {executeImplicitDataSeriesOperations} from './utils/json_equationer/implicitUtils.js'
       import { jsonifyData, findFileType, jsonifyTSV, jsonifyCSV, getFileName, readFileAsText } from './utils/fileUtils.js'; 
       import { loadJsonFromUrl, isValidUrl, createDownloadJSONLink, createDownloadCSVLink, jsonToUrl, createCopyUrlLink, addOpeningURLonButtonClick, addDownloadingLinkToButton, parseUrl } from './utils/linkUtils.js'; 
+      import { clearData } from './utils/JSONGrapherMainScript.js'; 
     </script>  
     <style>
       .file-actions {
@@ -178,7 +179,7 @@
         <a href="https://raw.githubusercontent.com/AdityaSavara/JSONGrapher-py/main/examples/example_1_drag_and_drop/images/SrTiO3_rainbow_image.gif" target="_blank"><img src="https://raw.githubusercontent.com/AdityaSavara/JSONGrapher-py/main/examples/example_1_drag_and_drop/images/SrTiO3_rainbow_image.gif" width="30%"></a>
       </div>
     </div>
-    <script src="./utils/JSONGrapherMainScript.js"></script>
+    <script type="module" src="./utils/JSONGrapherMainScript.js"></script>
   </body>
   <footer>
     <center>
