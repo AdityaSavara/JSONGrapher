@@ -3,7 +3,10 @@
       import {getUnitFromLabel, removeUnitFromLabel, replaceSuperscripts} from './unitUtils.js'
       import {checkSimulate, getRawContent, getAndRunSimulateScript, maybeConvertSimulatedDataUnits, mergeSimulationData, simulateByIndexAndPopulateFigDict} from './simulateUtils.js'
       import {convertUnits} from './figDictUtils.js'
-      
+      import {executeImplicitDataSeriesOperations} from './json_equationer/implicitUtils.js'
+      import { parsePlotStyle, applyPlotStyleToPlotlyDict } from './styleUtils.js';
+      import { cleanJsonFigDict } from './figDictUtils.js'; 
+
       function copyJson(obj) { //for debugging.
         return JSON.parse(JSON.stringify(obj));
       }
