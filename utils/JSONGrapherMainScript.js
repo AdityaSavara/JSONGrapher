@@ -2,7 +2,8 @@
       import {initializeUniversalSchemas, getSchemaType, mergeFigDictWithTemplate, getSchemaLocation} from './schemaUtils.js'
       import {getUnitFromLabel, removeUnitFromLabel, replaceSuperscripts} from './unitUtils.js'
       import {checkSimulate, getRawContent, getAndRunSimulateScript, maybeConvertSimulatedDataUnits, mergeSimulationData, simulateByIndexAndPopulateFigDict} from './simulateUtils.js'
-
+      import {convertUnits} from './figDictUtils.js'
+      
       function copyJson(obj) { //for debugging.
         return JSON.parse(JSON.stringify(obj));
       }
@@ -188,51 +189,6 @@
         }
       }
 
-      // Convert the received dataset units to the first dataset units
-      function convertUnits(jsonified, globalData) {
-        return new Promise((resolve, reject) => {
-          try {
-            jsonified.data.forEach((dataSet) => {
-              const newXUnit = getUnitFromLabel(jsonified.layout.xaxis.title.text);
-              const newYUnit = getUnitFromLabel(jsonified.layout.yaxis.title.text);
-              if (globalData.unit.x !== newXUnit) {
-                const xConvertFactor = convert.fullConversion(
-                  newXUnit,
-                  globalData.unit.x
-                );
-                dataSet.x = dataSet.x.map((x) => {
-                  if (xConvertFactor.status == 0) {
-                    return parseFloat(x) * xConvertFactor.output.num;
-                  } else {
-                    xConvertFactor.messages.forEach((message) => {
-                      errorDiv.innerText += message.message + "\n";
-                    });
-                  }
-                });
-              }
-
-              if (globalData.unit.y !== newYUnit) {
-                const yConvertFactor = convert.fullConversion(
-                  newYUnit,
-                  globalData.unit.y
-                );
-                dataSet.y = dataSet.y.map((y) => {
-                  if (yConvertFactor.status == 0) {
-                    return parseFloat(y) * yConvertFactor.output.num;
-                  } else {
-                    yConvertFactor.messages.forEach((message) => {
-                      errorDiv.innerText += message.message + "\n";
-                    });
-                  }
-                });
-              }
-            });
-            resolve(jsonified);
-          } catch (err) {
-            reject(err);
-          }
-        });
-      }
 
       async function loadFromUrlParams(urlInput){
         if (isValidUrl(urlInput)){ 

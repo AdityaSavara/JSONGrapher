@@ -1,3 +1,58 @@
+import {getUnitFromLabel, removeUnitFromLabel} from './unitUtils.js'
+//TODO: There are two replaceSuperscripts functions. One in here, one in ./unitUtils.js . These should be compared to see if only one should be retained.
+
+      // Convert the received dataset units to the first dataset units
+      // The argument names should probably be changed. They are from an early version of JSONGrapher.
+      // From the logic, it seems the arguments can probably be figDict1 and figDict2
+      // With the function possibly better named convertFigDictUnitsForFigDictMerging or similar.
+      export function convertUnits(jsonified, globalData) {
+        return new Promise((resolve, reject) => {
+          try {
+            jsonified.data.forEach((dataSet) => {
+              const newXUnit = getUnitFromLabel(jsonified.layout.xaxis.title.text);
+              const newYUnit = getUnitFromLabel(jsonified.layout.yaxis.title.text);
+              if (globalData.unit.x !== newXUnit) {
+                const xConvertFactor = convert.fullConversion(
+                  newXUnit,
+                  globalData.unit.x
+                );
+                dataSet.x = dataSet.x.map((x) => {
+                  if (xConvertFactor.status == 0) {
+                    return parseFloat(x) * xConvertFactor.output.num;
+                  } else {
+                    xConvertFactor.messages.forEach((message) => {
+                      errorDiv.innerText += message.message + "\n";
+                    });
+                  }
+                });
+              }
+
+              if (globalData.unit.y !== newYUnit) {
+                const yConvertFactor = convert.fullConversion(
+                  newYUnit,
+                  globalData.unit.y
+                );
+                dataSet.y = dataSet.y.map((y) => {
+                  if (yConvertFactor.status == 0) {
+                    return parseFloat(y) * yConvertFactor.output.num;
+                  } else {
+                    yConvertFactor.messages.forEach((message) => {
+                      errorDiv.innerText += message.message + "\n";
+                    });
+                  }
+                });
+              }
+            });
+            resolve(jsonified);
+          } catch (err) {
+            reject(err);
+          }
+        });
+      }
+
+
+
+
 // Start section of code with functions for cleaning figDicts for Plotly compatibility
 
 
