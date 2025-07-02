@@ -1,7 +1,8 @@
 // Import equation class from equation_creator.js
 import { Equation } from './equation_creator.js'; // Adjust the path as needed
-import {getUnitsScalingRatio} from '../unitScaling.js'; 
-import {scaleDataseriesDict} from '../unitScaling.js'; 
+import {getUnitsScalingRatio} from '../unitUtils.js'; 
+import {scaleDataseriesDict} from '../unitUtils.js'; 
+import {checkSimulate, simulateByIndexAndPopulateFigDict} from '../simulateUtils.js';
 
 //Utility function for during debugging.
 function copyJson(obj) {
@@ -281,12 +282,24 @@ export function separateLabelTextFromUnits(labelWithUnits) {
 /**
   * Placeholder for `simulate_as_needed_in_fig_dict`.
  * This function should perform simulations for applicable series.
- * To implement such a function, we may want to pull logic out of index.html
- *
- * @param {object} figDict - The figure dictionary containing data series.
+  *
+ * @param {object} _jsonified - The figure dictionary containing data series.
  * @returns {object} The figure dictionary with simulated data.
  */
-// function simulateAsNeededInFigDict(figDict) 
+    export async function simulateAsNeededInFigDict(_jsonified) {
+        //This loop iterates across data_series dictionary objects objects to see if any require simulation.
+                for (const dataSet of _jsonified.data) {
+                  const index = _jsonified.data.indexOf(dataSet);
+                  const hasSimulate = checkSimulate(dataSet);
+                  if (hasSimulate) {
+                    //Below, the "result" has named fields inside, which we will extract.
+                    const result = await simulateByIndexAndPopulateFigDict(_jsonified, index);
+                    const simulatedJsonified = result.simulatedJsonified
+                    _jsonified = result._jsonified;                
+                  } 
+                }
+        return _jsonified
+      }
 
 
 /**
@@ -516,7 +529,7 @@ export function updateImplicitDataSeriesData(target_fig_dict, source_fig_dict, p
  * back to figDict without copying ranges.
  * - Uses deepcopy to avoid modifying the original input dictionary.
  */
-export function executeImplicitDataSeriesOperations(figDict, simulateAllSeries = true, evaluateAllEquations = true, adjustImplicitDataRanges = true, adjustOffset2d = false, adjustArrange2dTo3d = false) {
+export async function executeImplicitDataSeriesOperations(figDict, simulateAllSeries = true, evaluateAllEquations = true, adjustImplicitDataRanges = true, adjustOffset2d = false, adjustArrange2dTo3d = false) {
     // Create a deep copy for processing implicit series separately
     let figDictForImplicit = JSON.parse(JSON.stringify(figDict));
 
@@ -538,14 +551,13 @@ export function executeImplicitDataSeriesOperations(figDict, simulateAllSeries =
             figDictForImplicit = updateImplicitDataSeriesXRanges(figDict, figDictRanges);
         }
 
-        // 6/4/25 Currently, for JSONGrapher web version, simulations are only performed in index.html
-        // It may be a good idea to refactor, eventually, to put the simulation call here, like in the python version of JSONGrapher.
-        // if (simulateAllSeries) {
-        //     // Perform simulations for applicable series
-        //     figDictForImplicit = simulateAsNeededInFigDict(figDictForImplicit); // Calls your simulateAsNeededInFigDict_PYTHON
-        //     // Copy data back to figDict, ensuring ranges remain unchanged
-        //     figDict = updateImplicitDataSeriesData(figDict, figDictForImplicit, true, true);
-        // }
+
+        if (simulateAllSeries) {
+            // Perform simulations for applicable series
+            figDictForImplicit = await simulateAsNeededInFigDict(figDictForImplicit);
+            // Copy data back to figDict, ensuring ranges remain unchanged
+            figDict = updateImplicitDataSeriesData(figDict, figDictForImplicit, true, true);
+        }
 
         if (evaluateAllEquations) {
             // Evaluate equations that require computation

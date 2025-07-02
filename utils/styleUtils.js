@@ -4,10 +4,6 @@
 
 ///// start of parse plot style and applying plot style functions ////
 
-function copyJson(obj) {
-    return JSON.parse(JSON.stringify(obj));
-}
-
 function parsePlotStyle(plotStyle) {
     /**
      * Parses the given plot style and returns a structured object with layout and data series styles.
@@ -535,8 +531,6 @@ function applyLayoutStyleToPlotlyDict(figDict, layoutStyleToApply = "default") {
 
 export {parsePlotStyle};
 export {applyPlotStyleToPlotlyDict};
-export {copyJson};
 
 window.parsePlotStyle = parsePlotStyle;
 window.applyPlotStyleToPlotlyDict = applyPlotStyleToPlotlyDict;
-window.copyJson = copyJson;

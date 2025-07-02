@@ -6,7 +6,7 @@
     <title>Unit Scaling Ratio Test</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.1/math.min.js"></script>
     <script type="module">
-        import { getUnitsScalingRatio } from './unitScaling.js';
+        import { getUnitsScalingRatio } from './unitUtils.js';
 
         // Example test input
         const unit1 = "m";  // Meter
@@ -30,6 +30,7 @@
 </head>
 <body>
     <h1>Unit Scaling Ratio Tester</h1>
+    Requires python -m http.server 8000 or similar.<br><br>
     <label for="unit1">Enter Unit 1:</label>
     <input type="text" id="unit1" placeholder="e.g., m">
     <br>
