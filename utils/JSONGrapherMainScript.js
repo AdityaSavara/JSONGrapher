@@ -394,6 +394,21 @@
         errorDiv.innerText = errorDiv.innerText.replace(loadingMessage,"");
       }
 
+      async function simulateAsNeeded(_jsonified) {
+        //This loop iterates across data_series dictionary objects objects to see if any require simulation.
+                for (const dataSet of _jsonified.data) {
+                  const index = _jsonified.data.indexOf(dataSet);
+                  const hasSimulate = checkSimulate(dataSet);
+                  if (hasSimulate) {
+                    //Below, the "result" has named fields inside, which we will extract.
+                    const result = await simulateByIndexAndPopulateFigDict(_jsonified, index);
+                    const simulatedJsonified = result.simulatedJsonified
+                    _jsonified = result._jsonified;                
+                  } 
+                }
+        return _jsonified
+      }
+
       // This a function that plots the data on the graph
       //the input, jsonified, is the new figDict. globalData is the 'global' figDict.
       async function prepareForPlotting(jsonified, filename) {
@@ -418,19 +433,9 @@
               // On 6/4/25, a call to the function executeImplicitDataSeriesOperations was added here to evaluate equations.
               // In the longterm, the simulation logic should be moved into executeImplicitDataSeriesOperations
               _jsonified = executeImplicitDataSeriesOperations(_jsonified); //_jsonified is a figDict.
-              //This loop iterates across data_series dictionary objects objects to see if any require simulation.
-              //TODO: this loop's commands should be moved into executeImplicitDataSeriesOperations. There are two loops like this in index.html
-              for (const dataSet of _jsonified.data) { 
-                const index = _jsonified.data.indexOf(dataSet);
-                const hasSimulate = checkSimulate(dataSet);
-                if (hasSimulate) {
-                  //Below, the "result" has named fields inside, which we will extract.
-                  const result = await simulateByIndexAndPopulateFigDict(_jsonified, index);
-                  simulatedJsonified = result.simulatedJsonified
-                  _jsonified = result._jsonified;
+              
+              _jsonified = await simulateAsNeeded(_jsonified) 
 
-                }
-              }
               // There is  no STEP 5 for first record, because first record provided by the user is used to define the units of GlobalData.
               //After going through all datasets for implicit dataseries updates, we set globalData equal to the updated _jsonified, since this is the first record.
               globalData = _jsonified
@@ -472,18 +477,9 @@
                 // On 6/4/25, a call to the function executeImplicitDataSeriesOperations was added here to evaluate equations.
                 // In the longterm, the simulation logic should be moved into executeImplicitDataSeriesOperations
                 _jsonified = executeImplicitDataSeriesOperations(_jsonified); //globalData is a figDict.
-                //This loop iterates across data_series dictionary objects objects to see if any require simulation.
-                //TODO: this loop's commands should be moved into executeImplicitDataSeriesOperations. There are two loops like this in index.html
-                for (const dataSet of _jsonified.data) {
-                  const index = _jsonified.data.indexOf(dataSet);
-                  const hasSimulate = checkSimulate(dataSet);
-                  if (hasSimulate) {
-                    //Below, the "result" has named fields inside, which we will extract.
-                    const result = await simulateByIndexAndPopulateFigDict(_jsonified, index);
-                    simulatedJsonified = result.simulatedJsonified
-                    _jsonified = result._jsonified;                
-                    } 
-                  }
+                
+                _jsonified = await simulateAsNeeded(_jsonified) 
+
                 // STEP 5: Check if the units in the _jsonified are the same as the units in the overall record and convert them if needed.
                 _jsonified = await convertUnits( _jsonified, globalData);
 
