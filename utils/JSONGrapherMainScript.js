@@ -6,7 +6,6 @@
       import {executeImplicitDataSeriesOperations} from './json_equationer/implicitUtils.js'
       import { parsePlotStyle, applyPlotStyleToPlotlyDict } from './styleUtils.js';
       import { cleanJsonFigDict } from './figDictUtils.js'; 
-      import {simulateAsNeeded} from './json_equationer/implicitUtils.js'
 
       function copyJson(obj) { //for debugging.
         return JSON.parse(JSON.stringify(obj));
@@ -421,8 +420,6 @@
               // In the longterm, the simulation logic should be moved into executeImplicitDataSeriesOperations
               _jsonified = await executeImplicitDataSeriesOperations(_jsonified); //_jsonified is a figDict.
               
-              _jsonified = await simulateAsNeeded(_jsonified) 
-
               // There is  no STEP 5 for first record, because first record provided by the user is used to define the units of GlobalData.
               //After going through all datasets for implicit dataseries updates, we set globalData equal to the updated _jsonified, since this is the first record.
               globalData = _jsonified
@@ -465,8 +462,6 @@
                 // In the longterm, the simulation logic should be moved into executeImplicitDataSeriesOperations
                 _jsonified = await executeImplicitDataSeriesOperations(_jsonified); //globalData is a figDict.
                 
-                _jsonified = await simulateAsNeeded(_jsonified) 
-
                 // STEP 5: Check if the units in the _jsonified are the same as the units in the overall record and convert them if needed.
                 _jsonified = await convertUnits( _jsonified, globalData);
 

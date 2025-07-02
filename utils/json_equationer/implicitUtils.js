@@ -286,8 +286,7 @@ export function separateLabelTextFromUnits(labelWithUnits) {
  * @param {object} _jsonified - The figure dictionary containing data series.
  * @returns {object} The figure dictionary with simulated data.
  */
-// function simulateAsNeededInFigDict(figDict) 
-    export async function simulateAsNeeded(_jsonified) {
+    export async function simulateAsNeededInFigDict(_jsonified) {
         //This loop iterates across data_series dictionary objects objects to see if any require simulation.
                 for (const dataSet of _jsonified.data) {
                   const index = _jsonified.data.indexOf(dataSet);
@@ -552,14 +551,13 @@ export async function executeImplicitDataSeriesOperations(figDict, simulateAllSe
             figDictForImplicit = updateImplicitDataSeriesXRanges(figDict, figDictRanges);
         }
 
-        // 6/4/25 Currently, for JSONGrapher web version, simulations are only performed in index.html
-        // It may be a good idea to refactor, eventually, to put the simulation call here, like in the python version of JSONGrapher.
-        // if (simulateAllSeries) {
-        //     // Perform simulations for applicable series
-        //     figDictForImplicit = simulateAsNeededInFigDict(figDictForImplicit); // Calls your simulateAsNeededInFigDict_PYTHON
-        //     // Copy data back to figDict, ensuring ranges remain unchanged
-        //     figDict = updateImplicitDataSeriesData(figDict, figDictForImplicit, true, true);
-        // }
+
+        if (simulateAllSeries) {
+            // Perform simulations for applicable series
+            figDictForImplicit = await simulateAsNeededInFigDict(figDictForImplicit);
+            // Copy data back to figDict, ensuring ranges remain unchanged
+            figDict = updateImplicitDataSeriesData(figDict, figDictForImplicit, true, true);
+        }
 
         if (evaluateAllEquations) {
             // Evaluate equations that require computation
