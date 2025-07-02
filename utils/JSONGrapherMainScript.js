@@ -6,6 +6,7 @@
       import {executeImplicitDataSeriesOperations} from './json_equationer/implicitUtils.js'
       import { parsePlotStyle, applyPlotStyleToPlotlyDict } from './styleUtils.js';
       import { cleanJsonFigDict } from './figDictUtils.js'; 
+      import {simulateAsNeeded} from './json_equationer/implicitUtils.js'
 
       function copyJson(obj) { //for debugging.
         return JSON.parse(JSON.stringify(obj));
@@ -394,20 +395,6 @@
         errorDiv.innerText = errorDiv.innerText.replace(loadingMessage,"");
       }
 
-      async function simulateAsNeeded(_jsonified) {
-        //This loop iterates across data_series dictionary objects objects to see if any require simulation.
-                for (const dataSet of _jsonified.data) {
-                  const index = _jsonified.data.indexOf(dataSet);
-                  const hasSimulate = checkSimulate(dataSet);
-                  if (hasSimulate) {
-                    //Below, the "result" has named fields inside, which we will extract.
-                    const result = await simulateByIndexAndPopulateFigDict(_jsonified, index);
-                    const simulatedJsonified = result.simulatedJsonified
-                    _jsonified = result._jsonified;                
-                  } 
-                }
-        return _jsonified
-      }
 
       // This a function that plots the data on the graph
       //the input, jsonified, is the new figDict. globalData is the 'global' figDict.
