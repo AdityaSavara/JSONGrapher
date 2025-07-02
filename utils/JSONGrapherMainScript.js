@@ -62,7 +62,7 @@
       }
 
       // A function that visualizes the data with plotly
-      function plot_with_plotly(figDict) {
+      async function plot_with_plotly(figDict) {
         let plotStyle = { layout_style: "", trace_styles_collection: "" };
           if (JSON.stringify(plotStyle) === JSON.stringify({ layout_style: "", trace_styles_collection: "" })) {
               plotStyle = figDict.plot_style ?? { layout_style: "", trace_styles_collection: "" };
@@ -70,7 +70,7 @@
 
           let copyForPlotly = JSON.parse(JSON.stringify(figDict)); // Plotly mutates the input, and we also do when applying plot style.      
           //offset2D and arrange2dTo3d must be executed after making the copy, if requested. The other implicit functions have already been called.
-          copyForPlotly = executeImplicitDataSeriesOperations(copyForPlotly, false, false, false, true, true);
+          copyForPlotly = await executeImplicitDataSeriesOperations(copyForPlotly, false, false, false, true, true);
           // Parse the plot style
           plotStyle = parsePlotStyle(plotStyle);
           // Apply the plot style
@@ -89,7 +89,7 @@
           }
           // Ensure Plotly is available before calling newPlot
           if (typeof Plotly !== "undefined") {
-              Plotly.newPlot("plotlyDiv", copyForPlotly.data, copyForPlotly.layout);
+              await Plotly.newPlot("plotlyDiv", copyForPlotly.data, copyForPlotly.layout);
           } else {
               console.error("Plotly is not loaded.");
           }
@@ -419,7 +419,7 @@
               // Iterate through the dataset and check if there is a simulation to run for each dataset
               // On 6/4/25, a call to the function executeImplicitDataSeriesOperations was added here to evaluate equations.
               // In the longterm, the simulation logic should be moved into executeImplicitDataSeriesOperations
-              _jsonified = executeImplicitDataSeriesOperations(_jsonified); //_jsonified is a figDict.
+              _jsonified = await executeImplicitDataSeriesOperations(_jsonified); //_jsonified is a figDict.
               
               _jsonified = await simulateAsNeeded(_jsonified) 
 
@@ -463,7 +463,7 @@
                 // Iterate through the dataset and check if there is a simulation to run for each dataset
                 // On 6/4/25, a call to the function executeImplicitDataSeriesOperations was added here to evaluate equations.
                 // In the longterm, the simulation logic should be moved into executeImplicitDataSeriesOperations
-                _jsonified = executeImplicitDataSeriesOperations(_jsonified); //globalData is a figDict.
+                _jsonified = await executeImplicitDataSeriesOperations(_jsonified); //globalData is a figDict.
                 
                 _jsonified = await simulateAsNeeded(_jsonified) 
 

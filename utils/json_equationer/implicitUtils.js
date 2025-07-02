@@ -530,7 +530,7 @@ export function updateImplicitDataSeriesData(target_fig_dict, source_fig_dict, p
  * back to figDict without copying ranges.
  * - Uses deepcopy to avoid modifying the original input dictionary.
  */
-export function executeImplicitDataSeriesOperations(figDict, simulateAllSeries = true, evaluateAllEquations = true, adjustImplicitDataRanges = true, adjustOffset2d = false, adjustArrange2dTo3d = false) {
+export async function executeImplicitDataSeriesOperations(figDict, simulateAllSeries = true, evaluateAllEquations = true, adjustImplicitDataRanges = true, adjustOffset2d = false, adjustArrange2dTo3d = false) {
     // Create a deep copy for processing implicit series separately
     let figDictForImplicit = JSON.parse(JSON.stringify(figDict));
 
