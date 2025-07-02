@@ -1,7 +1,6 @@
       import { jsonifyData, findFileType, createCSV, getFileName, readFileAsText } from './fileUtils.js'; 
       import {initializeUniversalSchemas, getSchemaType, mergeFigDictWithTemplate, getSchemaLocation} from './schemaUtils.js'
       import {getUnitFromLabel, removeUnitFromLabel, replaceSuperscripts} from './unitUtils.js'
-      import {checkSimulate, getRawContent, getAndRunSimulateScript, maybeConvertSimulatedDataUnits, mergeSimulationData, simulateByIndexAndPopulateFigDict} from './simulateUtils.js'
       import {convertUnits} from './figDictUtils.js'
       import {executeImplicitDataSeriesOperations} from './json_equationer/implicitUtils.js'
       import { parsePlotStyle, applyPlotStyleToPlotlyDict } from './styleUtils.js';
@@ -404,7 +403,7 @@
             if (!globalData) {
               let _jsonified = JSON.parse(JSON.stringify(jsonified)); //make a local copy
               globalData = copyJson(_jsonified); //populate global figDict since this is the first record received.            
-              let simulatedJsonified; //just initializing
+
               // Get the unit from the label
               const xUnit = getUnitFromLabel(_jsonified.layout.xaxis.title.text);
               const yUnit = getUnitFromLabel(_jsonified.layout.yaxis.title.text);
@@ -416,8 +415,6 @@
               };
               // STEP 4: Check if the object has a dataSet that has a simulate key in it, and runs the simulate function based on the value provided in the key model
               // Iterate through the dataset and check if there is a simulation to run for each dataset
-              // On 6/4/25, a call to the function executeImplicitDataSeriesOperations was added here to evaluate equations.
-              // In the longterm, the simulation logic should be moved into executeImplicitDataSeriesOperations
               _jsonified = await executeImplicitDataSeriesOperations(_jsonified); //_jsonified is a figDict.
               
               // There is  no STEP 5 for first record, because first record provided by the user is used to define the units of GlobalData.
@@ -453,13 +450,8 @@
               {
                 // create a deep copy of jsonified to avoid mutating the original jsonified
                 let _jsonified = JSON.parse(JSON.stringify(jsonified));
-                let simulatedJsonified; //just initializing
-                let convertedJsonified; //just initializing
-
                 // STEP 4: Check if the object has a dataSet that has a simulate key in it, and runs the simulate function based on the value provided in the key model
                 // Iterate through the dataset and check if there is a simulation to run for each dataset
-                // On 6/4/25, a call to the function executeImplicitDataSeriesOperations was added here to evaluate equations.
-                // In the longterm, the simulation logic should be moved into executeImplicitDataSeriesOperations
                 _jsonified = await executeImplicitDataSeriesOperations(_jsonified); //globalData is a figDict.
                 
                 // STEP 5: Check if the units in the _jsonified are the same as the units in the overall record and convert them if needed.
