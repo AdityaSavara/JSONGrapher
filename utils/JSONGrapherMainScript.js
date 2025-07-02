@@ -376,14 +376,22 @@
           if (Object.keys(schema_template).length !== 0) {
             _jsonified = mergeFigDictWithTemplate(jsonified, schema_template);
           }
+
           // If the data is valid against the schema, then we can proceed to the next step
           // if necessary create download button with json
           // STEP 4 and STEP 5 is done in the prepareForPlotting function
-          const res = await prepareForPlotting(_jsonified, recentFileName); //recentFileName is a global variable. 
-          // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
-          appendDownloadButtons(res.downloadData, res.fileName);
-          // STEP 7: The create a plotly JSON, clean it, and render it on the browser
-          plot_with_plotly(res.data);
+          const { mergedFigDict, fileName, newestFigDict } = await prepareForPlotting(_jsonified, recentFileName); // recentFileName is a global variable.
+          if (mergedFigDict) {
+            // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
+            appendDownloadButtons(mergedFigDict, fileName);
+
+            // STEP 7: Then create a plotly JSON, clean it, and render it on the browser
+            plot_with_plotly(mergedFigDict);
+          } else {
+            console.log("Plotting skipped: incompatible data or merge failure.");
+          }
+
+
           //Replace existing "Data Plotted" message if it is already there, to avoid duplicating it.
           if (!messagesToUserDiv.innerText){ //Currently, we assume the below message is present or not present. If we later put additional messagesToUser, we may need to add more logic.
             const dataPlottedMessage = "\u2003\u2003\u2003\u2003\u2003\u2003 Data plotted! Add more data or click 'Clear Data' to start a new graph! \u2003\u2003\u2003\u2003\u2003\u2003"
@@ -395,90 +403,86 @@
 
 
       // This a function that plots the data on the graph
-      //the input, jsonified, is the new figDict. globalData is the 'global' figDict.
+      // the input, jsonified, is the new figDict. globalData is the 'global' figDict.
       async function prepareForPlotting(jsonified, filename) {
-        return new Promise(async (resolve, reject) => {
-          try {
-            // Checks if the Jsonified is the first file uploaded
-            if (!globalData) {
-              let _jsonified = JSON.parse(JSON.stringify(jsonified)); //make a local copy
-              globalData = copyJson(_jsonified); //populate global figDict since this is the first record received.            
+        try {
+          // Checks if the Jsonified is the first file uploaded
+          if (!globalData) {
+            let _jsonified = JSON.parse(JSON.stringify(jsonified)); // make a local copy
+            globalData = copyJson(_jsonified); // populate global figDict since this is the first record received.            
 
-              // Get the unit from the label
-              const xUnit = getUnitFromLabel(_jsonified.layout.xaxis.title.text);
-              const yUnit = getUnitFromLabel(_jsonified.layout.yaxis.title.text);
+            // Get the unit from the label
+            const xUnit = getUnitFromLabel(_jsonified.layout.xaxis.title.text);
+            const yUnit = getUnitFromLabel(_jsonified.layout.yaxis.title.text);
 
-              // Adding the extracted units to _jsonified
-              _jsonified.unit = {
-                x: xUnit,
-                y: yUnit,
-              };
-              // STEP 4: Check if the object has a dataSet that has a simulate key in it, and runs the simulate function based on the value provided in the key model
-              // Iterate through the dataset and check if there is a simulation to run for each dataset
-              _jsonified = await executeImplicitDataSeriesOperations(_jsonified); //_jsonified is a figDict.
-              
-              // There is  no STEP 5 for first record, because first record provided by the user is used to define the units of GlobalData.
-              //After going through all datasets for implicit dataseries updates, we set globalData equal to the updated _jsonified, since this is the first record.
-              globalData = _jsonified
-              //Finally, return the objects that have been prepared for plotting and downloading.
-              resolve({
-                data: globalData,
-                downloadData: _jsonified,
-                fileName: recentFileName, //recentFileName is a global variable.
-              });
-            } else {
-              // If the Jsonified is not the first file uploaded, then we can proceed to the next step
-              let fieldsMatch=true; //initialize this variable as true, and set it to false if any fields that need to match do not.
-              //Check if the datatype fields match. Should actually be doing the hierarchical check with the underscores.
-              if (globalData.datatype !== jsonified.datatype){
-                fieldsMatch=false;
-                errorDiv.innerText += "The added record's datatype is different. Stopping merging. The two values are: " + String(globalData.datatype) + " " + +String(jsonified.datatype) +   "\n";
-              }
-              //Check if the xaxis titles are the same after removing the units area. Ideally, should check if the units are convertable.
-              if (removeUnitFromLabel(globalData.layout.xaxis.title.text) !==
-                  removeUnitFromLabel(jsonified.layout.xaxis.title.text)){
-                fieldsMatch=false;
-                errorDiv.innerText += "The added record's xaxis label text is different. Stopping merging. The two values are: " + removeUnitFromLabel(globalData.layout.xaxis.title.text) + " " +removeUnitFromLabel(jsonified.layout.xaxis.title.text) +   "\n";
-              }
-              //Check if the yaxis titles are the same after removing the units area. Ideally, should check if the units are convertable.
-              if (removeUnitFromLabel(globalData.layout.yaxis.title.text) !==
-                  removeUnitFromLabel(jsonified.layout.yaxis.title.text)){
-                fieldsMatch=false;
-                errorDiv.innerText += "The added record's yaxis label text is different. Stopping merging. The two values are: " + removeUnitFromLabel(globalData.layout.yaxis.title.text) + " " +removeUnitFromLabel(jsonified.layout.yaxis.title.text) +   "\n";
-              }
-              if(fieldsMatch)
-              {
-                // create a deep copy of jsonified to avoid mutating the original jsonified
-                let _jsonified = JSON.parse(JSON.stringify(jsonified));
-                // STEP 4: Check if the object has a dataSet that has a simulate key in it, and runs the simulate function based on the value provided in the key model
-                // Iterate through the dataset and check if there is a simulation to run for each dataset
-                _jsonified = await executeImplicitDataSeriesOperations(_jsonified); //globalData is a figDict.
-                
-                // STEP 5: Check if the units in the _jsonified are the same as the units in the overall record and convert them if needed.
-                _jsonified = await convertUnits( _jsonified, globalData);
+            // Adding the extracted units to _jsonified
+            _jsonified.unit = {
+              x: xUnit,
+              y: yUnit,
+            };
 
-                // merge the new data with the globalData so everything can be plotted together.
-                globalData.data = [
-                  ...globalData.data,
-                  ..._jsonified.data,
-                ];
-                //Finally, return the objects that have been prepared for plotting an downloading.
-                resolve({
-                  data: globalData,
-                  downloadData: _jsonified,
-                  fileName: recentFileName,
-                });
-              } else {
-                //clearData(); //Should not clear data when chart or axis titles do not match, just should not plot the new data.
-                errorDiv.innerText += `Added data not plotted. The records were not compatible for merging. You may continue trying to add data sets, or may click "Clear Data" to start a new graph. These error messages will be automatically cleared after 10 seconds. \n`;
-                setTimeout(() => { errorDiv.innerText = '';  }, 10000); // Clears the text after 10 seconds
-              }
+            // STEP 4: Check if the object has a dataSet that has a simulate key in it, and runs the simulate function based on the value provided in the key model
+            _jsonified = await executeImplicitDataSeriesOperations(_jsonified); // _jsonified is a figDict.
+
+            // No STEP 5 for first record; it defines the units of globalData.
+            globalData = _jsonified;
+
+            // Return the objects that have been prepared for plotting and downloading.
+            return {
+              mergedFigDict: globalData,
+              newestFigDict: _jsonified,
+              fileName: recentFileName,
+            };
+          } else {
+            let fieldsMatch = true;
+
+            if (globalData.datatype !== jsonified.datatype) {
+              fieldsMatch = false;
+              errorDiv.innerText += "The added record's datatype is different. Stopping merging. The two values are: " +
+                String(globalData.datatype) + " " + String(jsonified.datatype) + "\n";
             }
-          } catch (err) {
-            reject(err);
-            console.log("Error from plotData: ", err);
+
+            if (removeUnitFromLabel(globalData.layout.xaxis.title.text) !==
+                removeUnitFromLabel(jsonified.layout.xaxis.title.text)) {
+              fieldsMatch = false;
+              errorDiv.innerText += "The added record's xaxis label text is different. Stopping merging. The two values are: " +
+                removeUnitFromLabel(globalData.layout.xaxis.title.text) + " " +
+                removeUnitFromLabel(jsonified.layout.xaxis.title.text) + "\n";
+            }
+
+            if (removeUnitFromLabel(globalData.layout.yaxis.title.text) !==
+                removeUnitFromLabel(jsonified.layout.yaxis.title.text)) {
+              fieldsMatch = false;
+              errorDiv.innerText += "The added record's yaxis label text is different. Stopping merging. The two values are: " +
+                removeUnitFromLabel(globalData.layout.yaxis.title.text) + " " +
+                removeUnitFromLabel(jsonified.layout.yaxis.title.text) + "\n";
+            }
+
+            if (fieldsMatch) {
+              let _jsonified = JSON.parse(JSON.stringify(jsonified));
+              _jsonified = await executeImplicitDataSeriesOperations(_jsonified);
+              _jsonified = await convertUnits(_jsonified, globalData);
+
+              globalData.data = [
+                ...globalData.data,
+                ..._jsonified.data,
+              ];
+
+              return {
+                mergedFigDict: globalData,
+                newestFigDict: _jsonified,
+                fileName: recentFileName,
+              };
+            } else {
+              errorDiv.innerText += `Added data not plotted. The records were not compatible for merging. You may continue trying to add data sets, or may click "Clear Data" to start a new graph. These error messages will be automatically cleared after 10 seconds. \n`;
+              setTimeout(() => { errorDiv.innerText = ''; }, 10000);
+              return null;
+            }
           }
-        });
+        } catch (err) {
+          console.log("Error from plotData: ", err);
+          throw err;
+        }
       }
 
 window.clearData = clearData;
