@@ -312,7 +312,7 @@
         const _jsonified = await validateData(jsonified, errorDiv); // STEP 3
         if (!_jsonified) return;
 
-        await plotData(_jsonified, recentFileName, errorDiv); // STEP 4–7
+        globalData = await plotData(globalData, _jsonified, recentFileName, errorDiv); // STEP 4–7
 
         errorDiv.innerText = errorDiv.innerText.replace(loadingMessage, "");
       }
@@ -377,9 +377,9 @@
 
       // If the data is valid against the schema, then we can proceed to the next step
       // if necessary create download button with json
-      async function plotData(_jsonified, recentFileName, errorDiv) {
+      async function plotData(globalData, _jsonified, recentFileName, errorDiv) {
         // STEP 4 and STEP 5 is done in the prepareForPlotting function
-        const { mergedFigDict, fileName, newestFigDict } = await prepareForPlotting(_jsonified, recentFileName, errorDiv); // recentFileName is a global variable.
+        const { mergedFigDict, fileName, newestFigDict } = await prepareForPlotting(globalData, _jsonified, recentFileName, errorDiv); // recentFileName is a global variable.
         if (mergedFigDict) {
           // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
           //should  make an if statement here to give newestFigDict with filename if only one record has been uploaded
@@ -388,6 +388,7 @@
 
           // STEP 7: Then create a plotly JSON, clean it, and render it on the browser
           plot_with_plotly(mergedFigDict);
+          return mergedFigDict //This returns the mergedFigDict to use as globalData.
         } else {
           console.log("Plotting skipped: incompatible data or merge failure.");
           return;
@@ -402,7 +403,7 @@
 
       // This a function that plots the data on the graph
       // the input, jsonified, is the new figDict. globalData is the 'global' figDict.
-      async function prepareForPlotting(jsonified, recentFileName, errorDiv) {
+      async function prepareForPlotting(globalData, jsonified, recentFileName, errorDiv) {
         try {
           // Checks if the Jsonified is the first file uploaded
           if (!globalData) {
