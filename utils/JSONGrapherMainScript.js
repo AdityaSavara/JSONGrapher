@@ -1,5 +1,5 @@
       import { jsonifyData, findFileType, createCSV, getFileName, readFileAsText } from './fileUtils.js'; 
-      import {initializeUniversalSchemas, getSchemaType, mergeFigDictWithTemplate, getSchemaLocation} from './schemaUtils.js'
+      import {initializeUniversalSchemas, getSchemaType, mergeFigDictWithTemplate, getSchemaLocation, validateData} from './schemaUtils.js'
       import {getUnitFromLabel, removeUnitFromLabel, replaceSuperscripts} from './unitUtils.js'
       import {convertUnits} from './figDictUtils.js'
       import {executeImplicitDataSeriesOperations} from './json_equationer/implicitUtils.js'
@@ -30,9 +30,6 @@
       let urlParamsString = params.get("fromUrl"); //default ends up as null.
       let urlReceived = "" //Start as an empty string. Will populate this later from the user's input or from the urlParamsString
 
-
-      // Initializing the AJV validator
-      const ajv = new Ajv();
       const errorDiv = document.getElementById("errorDiv");
       const messagesToUserDiv = document.getElementById("messagesToUserDiv");
       // Initiating the UUC converter
@@ -374,38 +371,6 @@
         return { jsonified, fileType };
       }
 
-
-
-      async function validateData(jsonified) {
-        // STEP 3: Check if the jsonified object is a valid JSON file against the schema
-        let [schema_type, schema_template] = await getSchemaType(jsonified);
-
-        if (Object.keys(schema_type).length === 0) {
-          errorDiv.innerText +=
-            "Schema check: There was no Schema specific to this DataType, or the schema was not compatible. The default scatter plot schema was used.\n";
-          schema_type = schema;
-        }
-
-        // validate the json
-        const validate = ajv.compile(schema_type);
-        const valid = validate(jsonified);
-
-        if (!valid) {
-          // Console log an error if the data is not valid against the schema
-          console.log("validate errors: ", JSON.stringify(validate.errors));
-          // Display an error message if the data is not valid against the schema
-          errorDiv.innerText += `Json file does not match the schema. ${JSON.stringify(validate.errors)}\n`;
-          errorDiv.innerText += `Json file does not match the schema. ${JSON.stringify(validate.errors)}\n`;
-          return null;
-        }
-
-        let _jsonified = jsonified;
-        if (Object.keys(schema_template).length !== 0) {
-          _jsonified = mergeFigDictWithTemplate(jsonified, schema_template);
-        }
-
-        return _jsonified;
-      }
 
       // If the data is valid against the schema, then we can proceed to the next step
       // if necessary create download button with json
