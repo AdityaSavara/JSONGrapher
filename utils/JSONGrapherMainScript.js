@@ -18,7 +18,7 @@
 
 
       // Global Variables
-      let globalData = null;
+      let globalFigDict = null;
       let url = window.location.href; // Get the current page URL         
       let params = new URLSearchParams(new URL(url).search);
       let urlParamsString = params.get("fromUrl"); //default ends up as null.
@@ -31,7 +31,7 @@
 
       // A function that clears the data from global variables and removes the error text and plotly chart
       export function clearData() {
-        globalData = null;
+        globalFigDict = null;
         urlParamsString = null; //empty this global variable.
         document.getElementById("errorDiv").innerHTML = "";
         document.getElementById("messagesToUserDiv").innerHTML = "";
@@ -269,12 +269,12 @@
         if (!jsonified) return;
         const _jsonified = await validateData(jsonified, errorDiv); // STEP 3
         if (!_jsonified) return;
-        globalData = await plotData(globalData, _jsonified, recentFileName, messagesToUserDiv, errorDiv); // STEP 4–7
+        globalFigDict = await plotData(globalFigDict, _jsonified, recentFileName, messagesToUserDiv, errorDiv); // STEP 4–7
           // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
           //should  make an if statement here to give newestFigDict with filename if only one record has been uploaded
           // and to otherwise give the full data with name like "mergedGraphRecord.json" for the filename.
           // urlRceived will be a blank string, "", or a null object, if the record is not from url.
-        if (globalData){appendDownloadButtons(globalData, "mergedGraphRecord.json", urlReceived);}
+        if (globalFigDict){appendDownloadButtons(globalFigDict, "mergedGraphRecord.json", urlReceived);}
         errorDiv.innerText = errorDiv.innerText.replace(loadingMessage, "");
       }
 
