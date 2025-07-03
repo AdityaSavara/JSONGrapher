@@ -169,7 +169,7 @@
         });
       };
       // STEP 0: Prepare the 'universal' schemas occurs inside initializeUniversalSchemas
-      async function setupJsonGrapherAndListen() {
+      async function connectToJSONGrapherWebGUIAndListen() {
         try {
           const toggleSection1 = document.getElementById("toggleSection1"); //get toggle section so actions can hide it.
           const toggleSection2 = document.getElementById("toggleSection2"); //get toggle section so actions can hide it.         
@@ -249,7 +249,7 @@
       }
 
       // Call the async setup function
-      await setupJsonGrapherAndListen();
+      await connectToJSONGrapherWebGUIAndListen();
 
       // This function is called when the user drops a file or uploads it via the input button or drag and drop
       // This function is also called when a url is provided, in which case the event is the url string and the eventType is "url".
