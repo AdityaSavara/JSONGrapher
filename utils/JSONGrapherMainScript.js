@@ -164,6 +164,13 @@
         //That way, an external json can be called and downloaded even before the DOM is finished loading.
         document.addEventListener('DOMContentLoaded', () => {
           loadFromUrlParams(urlParamsString, errorDiv);
+          //This function needs to toggle the reveal/hide blocks directly, since it is like an independent event listener.
+          const toggleSection1 = document.getElementById("toggleSection2");
+          const toggleSection2 = document.getElementById("toggleSection2");
+          const toRevealSection = document.getElementById("toReveal"); //get toReveal section so actions can reveal
+          toggleSection1.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
+          toggleSection2.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
+          toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
         });
       };
       
@@ -308,16 +315,9 @@
         }
 
         // STEP 1 (Variation B): User Providees a URL.
-        //Should update to support csv in future.
         if (eventType === "url") {
+          fileType = "json"; //Should update to support csv in future.
           jsonified = await loadJsonFromUrl(event); //the event will have the url in it.
-          fileType = "json";
-          const toggleSection1 = document.getElementById("toggleSection2");
-          const toggleSection2 = document.getElementById("toggleSection2");
-          const toRevealSection = document.getElementById("toReveal"); //get toReveal section so actions can reveal
-          toggleSection1.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
-          toggleSection2.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
-          toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
         }
 
         // STEP 2 (If needed): If the file is a .csv or .tsv file it is converted to a .json file
