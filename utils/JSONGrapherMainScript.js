@@ -22,7 +22,6 @@
       let url = window.location.href; // Get the current page URL         
       let params = new URLSearchParams(new URL(url).search);
       let urlParamsString = params.get("fromUrl"); //default ends up as null.
-      let urlReceived = "" //Start as an empty string. Will populate this later from the user's input or from the urlParamsString
 
       const errorDiv = document.getElementById("errorDiv");
       const messagesToUserDiv = document.getElementById("messagesToUserDiv");
@@ -34,7 +33,6 @@
       export function clearData() {
         globalData = null;
         urlParamsString = null; //empty this global variable.
-        urlReceived = null; //empty this global variable.
         document.getElementById("errorDiv").innerHTML = "";
         document.getElementById("messagesToUserDiv").innerHTML = "";
         document.getElementById("downloadButtonsContainer").innerHTML = "";
@@ -115,7 +113,7 @@
 
       // A function that will append a download button to the page
       // The button will be appended after the element with the id beforeElId
-      function appendDownloadButtons(jsonified, filename) {
+      function appendDownloadButtons(jsonified, filename, urlReceived) {
         // Parse csv from jsonified
         const csvContent = createCSV(jsonified);
         // Create download csv button
@@ -143,7 +141,7 @@
         // Add download CSV button
         buttonsContainer.appendChild(downloadCSVButton);
         // Add download URL button, but only if load from url was used.
-        if (urlReceived){  //use "if urlReceived" because it can be null or "" and this will catch both cases.
+        if (urlReceived){  //use "if urlReceived" because it can be null or "" and this will catch both cases.Could also be undefined.
           buttonsContainer.appendChild(downloadURLButton);
         }
       }
@@ -152,7 +150,7 @@
       async function loadFromUrlParams(urlInput, errorDiv){
         if (isValidUrl(urlInput)){ 
           const url = parseUrl(urlInput);
-          urlReceived = url //This line is populating a global variable. 
+          const urlReceived = url
           // STEP 0: Prepare the 'universal' schemas occurs inside initializeUniversalSchemas
           loadAndPlotData(url, "url", errorDiv);
         } else {
@@ -234,7 +232,6 @@
               const urlInput = window.prompt("Enter the URL with a desired .json File:");
               if (isValidUrl(urlInput)){ 
                 const url = parseUrl(urlInput);
-                urlReceived = url //This line is populating a global variable. 
                 toggleSection1.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
                 toggleSection2.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
                 toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
@@ -255,7 +252,10 @@
       await setupJsonGrapherAndListen();
 
       // This function is called when the user drops a file or uploads it via the input button or drag and drop
+      // This function is also called when a url is provided, in which case the event is the url string and the eventType is "url".
       async function loadAndPlotData(event, eventType, errorDiv) {
+        let urlReceived = null; //initialize.
+        if (eventType==="url"){urlReceived=event};//the "event" variable holds the url when a url is received.
         // STEP 0: Prepare the 'universal' schemas occurs inside initializeUniversalSchemas
         const [schema1json, schema2json] = await initializeUniversalSchemas();
         const schema = schema1json; //unused
@@ -274,7 +274,8 @@
           // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
           //should  make an if statement here to give newestFigDict with filename if only one record has been uploaded
           // and to otherwise give the full data with name like "mergedGraphRecord.json" for the filename.
-        if (globalData){appendDownloadButtons(globalData, "mergedGraphRecord.json");}
+          // urlRceived will be a blank string, "", or a null object, if the record is not from url.
+        if (globalData){appendDownloadButtons(globalData, "mergedGraphRecord.json", urlReceived);}
         errorDiv.innerText = errorDiv.innerText.replace(loadingMessage, "");
       }
 
