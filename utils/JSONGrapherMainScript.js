@@ -154,10 +154,7 @@
           const url = parseUrl(urlInput);
           urlReceived = url //This line is populating a global variable. 
           // STEP 0: Prepare the 'universal' schemas occurs inside initializeUniversalSchemas
-          const [schema1json, schema2json] = await initializeUniversalSchemas();
-          const schema = schema1json; //unused
-          const plotlyTemplate = schema2json;
-          loadAndPlotData(url, "url", plotlyTemplate, errorDiv);
+          loadAndPlotData(url, "url", errorDiv);
         } else {
           console.error("No URL entered.");
           errorDiv.innerText += "Error: Please enter a valid URL.\n";
@@ -176,11 +173,6 @@
       // STEP 0: Prepare the 'universal' schemas occurs inside initializeUniversalSchemas
       async function setupJsonGrapherAndListen() {
         try {
-          // STEP 0: Prepare the 'universal' schemas occurs inside initializeUniversalSchemas
-          const [schema1json, schema2json] = await initializeUniversalSchemas();
-          const schema = schema1json; //unused
-          const plotlyTemplate = schema2json;
-
           const toggleSection1 = document.getElementById("toggleSection1"); //get toggle section so actions can hide it.
           const toggleSection2 = document.getElementById("toggleSection2"); //get toggle section so actions can hide it.         
           const toRevealSection = document.getElementById("toReveal"); //get toReveal section so actions can reveal
@@ -204,7 +196,7 @@
                     toggleSection2.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
                     toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
                 };
-                loadAndPlotData(event, "change", plotlyTemplate, errorDiv);
+                loadAndPlotData(event, "change", errorDiv);
               });
             }
 
@@ -230,7 +222,7 @@
                   toggleSection2.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
                   toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
                 };
-                loadAndPlotData(event, "drop", plotlyTemplate, errorDiv);
+                loadAndPlotData(event, "drop", errorDiv);
               });
             }
           }
@@ -246,7 +238,7 @@
                 toggleSection1.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
                 toggleSection2.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
                 toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
-                loadAndPlotData(url, "url", plotlyTemplate, errorDiv);
+                loadAndPlotData(url, "url", errorDiv);
               } else {
                 console.error("No URL entered.");
                 errorDiv.innerText += "Error: Please enter a valid URL.\n";
@@ -263,7 +255,12 @@
       await setupJsonGrapherAndListen();
 
       // This function is called when the user drops a file or uploads it via the input button or drag and drop
-      async function loadAndPlotData(event, eventType, plotlyTemplate, errorDiv) {
+      async function loadAndPlotData(event, eventType, errorDiv) {
+        // STEP 0: Prepare the 'universal' schemas occurs inside initializeUniversalSchemas
+        const [schema1json, schema2json] = await initializeUniversalSchemas();
+        const schema = schema1json; //unused
+        const plotlyTemplate = schema2json;
+
         let loadingMessage = "Loading and plotting data, including evaluating any equations and running any simulations.";
         errorDiv.innerText += loadingMessage; //We want to use a variable so we can remove the loading message, later.
 
