@@ -27,9 +27,37 @@ export function isValidUrl(urlString) {
 }
 
 
+/**
+ * Enforces a specific file extension on a given filename.
+ *
+ * @param {string} fileName - The name of the file. Can include or exclude an existing extension.
+ * @param {string} desiredExtension - The target extension to enforce (e.g. ".csv", ".json", with a leading dot).
+ * @returns {string} - The filename with the enforced extension.
+ */
+export function enforceSpecificExtension(fileName, desiredExtension) {
+  // Normalize the desired extension by removing leading dot if present
+  if (desiredExtension.charAt(0) === ".") {
+    desiredExtension = desiredExtension.slice(1);
+  }
+
+  // Remove the existing extension from the filename if present
+  let baseFileName;
+  if (fileName.includes(".")) {
+    baseFileName = fileName.substring(0, fileName.lastIndexOf("."));
+  } else {
+    baseFileName = fileName;
+  }
+
+  // Return the filename with the enforced extension
+  return baseFileName + "." + desiredExtension;
+}
+
+
+
 // A function that will create a download link for the csv file
 export function createDownloadCSVLink(csv, filename) {
   if (filename===null){filename="JSONGrapherRecord.csv";};
+  filename = enforceSpecificExtension(filename, "csv");
   let csvFile;
   let downloadLink;
   // CSV file
@@ -53,6 +81,7 @@ export function createDownloadJSONLink(json, filename) {
     if (filename === null) {
         filename = "JSONGrapherRecord.json";
     }
+    filename = enforceSpecificExtension(filename, "json");
     let jsonFile;
     let downloadLink;
     // JSON file

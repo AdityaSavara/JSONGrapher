@@ -1,4 +1,4 @@
-      import { jsonifyData, findFileType, createCSV, getFileName, readFileAsText } from './fileUtils.js'; 
+      import { jsonifyData, findFileType, createCSV, getBaseFileName, readFileAsText } from './fileUtils.js'; 
       import {initializeUniversalSchemas, getSchemaType, mergeFigDictWithTemplate, getSchemaLocation, validateData} from './schemaUtils.js'
       import { loadJsonFromUrl, isValidUrl, parseUrl } from './linkUtils.js'; 
       import {plotData, prepareForPlotting} from './plottingUtils.js'
@@ -274,7 +274,7 @@
           //should  make an if statement here to give newestFigDict with filename if only one record has been uploaded
           // and to otherwise give the full data with name like "mergedGraphRecord.json" for the filename.
           // urlRceived will be a blank string, "", or a null object, if the record is not from url.
-        if (globalFigDict){appendDownloadButtons(globalFigDict, "mergedGraphRecord.json", urlReceived);}
+        if (globalFigDict){appendDownloadButtons(globalFigDict, "mergedJSONGrapherRecord.json", urlReceived);}
         errorDiv.innerText = errorDiv.innerText.replace(loadingMessage, "");
       }
 
@@ -307,7 +307,7 @@
           }
           document.getElementById("file-selector").value = ""; // resetting to blank.
           fileType = findFileType(file.name); //initialized near beginning of loadAndPlotData
-          recentFileName = getFileName(file.name);//This is a global variable.
+          recentFileName = getBaseFileName(file.name);//This is a global variable.
         }
 
         // STEP 1 (Variation B): User Providees a URL.

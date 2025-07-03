@@ -202,8 +202,8 @@ export function jsonifyCSV(fileContent, plotlyTemplate) {
         };
       }
 
-// Gets the name of the uploaded file
-export function getFileName(fileName) {
+// Gets the name of the uploaded file with the extension removed.
+export function getBaseFileName(fileName) {
     let arrayName = fileName.split(".");
     return arrayName[0];
 }
@@ -225,5 +225,5 @@ window.jsonifyData = jsonifyData; //line needed for index.html to see the functi
 window.findFileType = findFileType; //line needed for index.html to see the function after importing.
 window.jsonifyTSV = jsonifyTSV; //line needed for index.html to see the function after importing.
 window.jsonifyCSV = jsonifyCSV; //line needed for index.html to see the function after importing.
-window.getFileName = getFileName; //line needed for index.html to see the function after importing.
+window.getBaseFileName = getBaseFileName; //line needed for index.html to see the function after importing.
 window.readFileAsText = readFileAsText; //line needed for index.html to see the function after importing.
