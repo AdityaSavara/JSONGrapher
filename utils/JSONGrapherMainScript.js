@@ -187,11 +187,15 @@
       }
 
 
-      async function loadFromUrlParams(urlInput){
+      async function loadFromUrlParams(urlInput, errorDiv){
         if (isValidUrl(urlInput)){ 
           const url = parseUrl(urlInput);
           urlReceived = url //This line is populating a global variable. 
-          loadAndPlotData(url, "url");
+          // STEP 0: Prepare the 'universal' schemas occurs inside initializeUniversalSchemas
+          const [schema1json, schema2json] = await initializeUniversalSchemas();
+          const schema = schema1json; //unused
+          const plotlyTemplate = schema2json;
+          loadAndPlotData(url, "url", plotlyTemplate, errorDiv);
         } else {
           console.error("No URL entered.");
           errorDiv.innerText += "Error: Please enter a valid URL.\n";
@@ -204,7 +208,7 @@
         //More likely, those functions should stay in this file, while the main function should be moved into a module.
         //That way, an external json can be called and downloaded even before the DOM is finished loading.
         document.addEventListener('DOMContentLoaded', () => {
-          loadFromUrlParams(urlParamsString);
+          loadFromUrlParams(urlParamsString, errorDiv);
         });
       };
       // STEP 0: Prepare the 'universal' schemas occurs inside initializeUniversalSchemas
