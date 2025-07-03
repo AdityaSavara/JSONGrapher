@@ -19,7 +19,6 @@
 
       // Global Variables
       let globalData = null;
-      let recentFileName = null; //TODO: change this so it is not a global.
       let url = window.location.href; // Get the current page URL         
       let params = new URLSearchParams(new URL(url).search);
       let urlParamsString = params.get("fromUrl"); //default ends up as null.
@@ -268,7 +267,7 @@
         let loadingMessage = "Loading and plotting data, including evaluating any equations and running any simulations.";
         errorDiv.innerText += loadingMessage; //We want to use a variable so we can remove the loading message, later.
 
-        const { jsonified, fileType } = await loadData(event, eventType, plotlyTemplate, errorDiv); // STEP 1-2
+        const { jsonified, recentFileName, fileType } = await loadData(event, eventType, plotlyTemplate, errorDiv); // STEP 1-2
         if (!jsonified) return;
 
         const _jsonified = await validateData(jsonified, errorDiv); // STEP 3
@@ -286,6 +285,7 @@
         let fileType; //Initializing filetype.
         let jsonified; // initializing
         let dataLoaded // initializing
+        let recentFileName = null; 
 
         // STEP 1 (Variation A): User selects a file from computer or drops a file on the browser
         //TODO: Variation A should probably be functionalized to take event, eventType and return jsonified
@@ -336,7 +336,7 @@
           }
         }
 
-        return { jsonified, fileType };
+        return { jsonified, recentFileName, fileType };
       }
 
 
