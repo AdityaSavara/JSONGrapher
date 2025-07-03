@@ -213,7 +213,7 @@
         });
       };
       // STEP 0: Prepare the 'universal' schemas occurs inside initializeUniversalSchemas
-      async function setupJsonGrapher() {
+      async function setupJsonGrapherAndListen() {
         try {
           // STEP 0: Prepare the 'universal' schemas occurs inside initializeUniversalSchemas
           const [schema1json, schema2json] = await initializeUniversalSchemas();
@@ -299,7 +299,7 @@
       }
 
       // Call the async setup function
-      setupJsonGrapher();
+      await setupJsonGrapherAndListen();
 
       // This function is called when the user drops a file or uploads it via the input button or drag and drop
       async function loadAndPlotData(event, eventType) {
