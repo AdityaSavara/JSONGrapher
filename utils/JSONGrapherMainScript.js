@@ -312,7 +312,7 @@
         const _jsonified = await validateData(jsonified, errorDiv); // STEP 3
         if (!_jsonified) return;
 
-        globalData = await plotData(globalData, _jsonified, recentFileName, errorDiv); // STEP 4–7
+        globalData = await plotData(globalData, _jsonified, recentFileName, messagesToUserDiv, errorDiv); // STEP 4–7
 
         errorDiv.innerText = errorDiv.innerText.replace(loadingMessage, "");
       }
@@ -377,7 +377,7 @@
 
       // If the data is valid against the schema, then we can proceed to the next step
       // if necessary create download button with json
-      async function plotData(globalData, _jsonified, recentFileName, errorDiv) {
+      async function plotData(globalData, _jsonified, recentFileName, messagesToUserDiv, errorDiv) {
         // STEP 4 and STEP 5 is done in the prepareForPlotting function
         const { mergedFigDict, fileName, newestFigDict } = await prepareForPlotting(globalData, _jsonified, recentFileName, errorDiv); // recentFileName is a global variable.
         if (mergedFigDict) {
@@ -388,16 +388,15 @@
 
           // STEP 7: Then create a plotly JSON, clean it, and render it on the browser
           plot_with_plotly(mergedFigDict);
+          //Replace existing "Data Plotted" message if it is already there, to avoid duplicating it.
+          if (!messagesToUserDiv.innerText) { //Currently, we assume the below message is present or not present. If we later put additional messagesToUser, we may need to add more logic.
+            const dataPlottedMessage = "\u2003\u2003\u2003\u2003\u2003\u2003 Data plotted! Add more data or click 'Clear Data' to start a new graph! \u2003\u2003\u2003\u2003\u2003\u2003"
+            messagesToUserDiv.innerText += dataPlottedMessage;
+          }
           return mergedFigDict //This returns the mergedFigDict to use as globalData.
         } else {
           console.log("Plotting skipped: incompatible data or merge failure.");
           return;
-        }
-
-        //Replace existing "Data Plotted" message if it is already there, to avoid duplicating it.
-        if (!messagesToUserDiv.innerText) { //Currently, we assume the below message is present or not present. If we later put additional messagesToUser, we may need to add more logic.
-          const dataPlottedMessage = "\u2003\u2003\u2003\u2003\u2003\u2003 Data plotted! Add more data or click 'Clear Data' to start a new graph! \u2003\u2003\u2003\u2003\u2003\u2003"
-          messagesToUserDiv.innerText += dataPlottedMessage;
         }
       }
 
