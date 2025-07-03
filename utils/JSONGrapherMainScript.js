@@ -150,8 +150,7 @@
       async function loadFromUrlParams(urlInput, errorDiv){
         if (isValidUrl(urlInput)){ 
           const url = parseUrl(urlInput);
-          const urlReceived = url
-          // STEP 0: Prepare the 'universal' schemas occurs inside initializeUniversalSchemas
+          // STEP 0: Prepare the 'universal' schemas occurs inside loadAndPlotData
           loadAndPlotData(url, "url", errorDiv);
         } else {
           console.error("No URL entered.");
@@ -168,8 +167,8 @@
           loadFromUrlParams(urlParamsString, errorDiv);
         });
       };
-      // STEP 0: Prepare the 'universal' schemas occurs inside initializeUniversalSchemas
-      async function connectToJSONGrapherWebGUIAndListen() {
+      
+      async function startJSONGrapherWebGUIListenersWithCallBack(callback, errorDiv) {
         try {
           const toggleSection1 = document.getElementById("toggleSection1"); //get toggle section so actions can hide it.
           const toggleSection2 = document.getElementById("toggleSection2"); //get toggle section so actions can hide it.         
@@ -194,7 +193,7 @@
                     toggleSection2.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
                     toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
                 };
-                loadAndPlotData(event, "change", errorDiv);
+                callback(event, "change", errorDiv);
               });
             }
 
@@ -220,7 +219,7 @@
                   toggleSection2.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
                   toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
                 };
-                loadAndPlotData(event, "drop", errorDiv);
+                callback(event, "drop", errorDiv);
               });
             }
           }
@@ -235,7 +234,7 @@
                 toggleSection1.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
                 toggleSection2.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
                 toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
-                loadAndPlotData(url, "url", errorDiv);
+                callback(url, "url", errorDiv);
               } else {
                 console.error("No URL entered.");
                 errorDiv.innerText += "Error: Please enter a valid URL.\n";
@@ -248,28 +247,28 @@
         }
       }
 
-      // Call the async setup function
-      await connectToJSONGrapherWebGUIAndListen();
+      // Start the JSONGrapherWebGUI listeners and give them the loadAndPlotData function to use when they receive something.
+      // STEP 0: Prepare the 'universal' schemas occurs inside loadAndPlotData
+      await startJSONGrapherWebGUIListenersWithCallBack(loadAndPlotData, errorDiv);
 
       // This function is called when the user drops a file or uploads it via the input button or drag and drop
       // This function is also called when a url is provided, in which case the event is the url string and the eventType is "url".
       async function loadAndPlotData(event, eventType, errorDiv) {
         let loadingMessage = "Loading and plotting data, including evaluating any equations and running any simulations.";
         errorDiv.innerText += loadingMessage; //We want to use a variable so we can remove the loading message, later.
+        //loadData Block
         let urlReceived = null; //initialize.
         //the "event" variable holds the url when a url is received.
-        if (eventType==="url"){
-          urlReceived=event
-        };
+        if (eventType==="url"){urlReceived=event};
         // STEP 0: Prepare the 'universal' schemas occurs inside initializeUniversalSchemas
         const [schema1json, schema2json] = await initializeUniversalSchemas();
         const schema = schema1json; //unused
         const plotlyTemplate = schema2json;
         const { jsonified, recentFileName, fileType } = await loadData(event, eventType, plotlyTemplate, errorDiv); // STEP 1-2
-        if (!jsonified) return;
+        //validateData Block
         const _jsonified = await validateData(jsonified, errorDiv); // STEP 3
-        if (!_jsonified) return;
-        globalFigDict = await plotData(globalFigDict, _jsonified, recentFileName, messagesToUserDiv, errorDiv); // STEP 4–7
+        //plotData Block
+        globalFigDict = await plotData(globalFigDict, _jsonified, recentFileName, messagesToUserDiv, errorDiv); // STEP 4-7
           // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
           //should  make an if statement here to give newestFigDict with filename if only one record has been uploaded
           // and to otherwise give the full data with name like "mergedGraphRecord.json" for the filename.
