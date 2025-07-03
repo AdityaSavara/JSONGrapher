@@ -295,134 +295,134 @@
         });
 
 
-        // This function is called when the user drops a file or uploads it via the input button or drag and drop
-        async function loadAndPlotData(event, eventType) {
-          let loadingMessage = "Loading and plotting data, including evaluating any equations and running any simulations.";
-          errorDiv.innerText += loadingMessage; //We want to use a variable so we can remove the loading message, later.
+      // This function is called when the user drops a file or uploads it via the input button or drag and drop
+      async function loadAndPlotData(event, eventType) {
+        let loadingMessage = "Loading and plotting data, including evaluating any equations and running any simulations.";
+        errorDiv.innerText += loadingMessage; //We want to use a variable so we can remove the loading message, later.
 
-          const { jsonified, fileType } = await loadData(event, eventType); // STEP 1-2
-          if (!jsonified) return;
+        const { jsonified, fileType } = await loadData(event, eventType); // STEP 1-2
+        if (!jsonified) return;
 
-          const _jsonified = await validateData(jsonified); // STEP 3
-          if (!_jsonified) return;
+        const _jsonified = await validateData(jsonified); // STEP 3
+        if (!_jsonified) return;
 
-          await plotData(_jsonified); // STEP 4–7
+        await plotData(_jsonified); // STEP 4–7
 
-          errorDiv.innerText = errorDiv.innerText.replace(loadingMessage, "");
+        errorDiv.innerText = errorDiv.innerText.replace(loadingMessage, "");
+      }
+
+      async function loadData(event, eventType) {
+        let fileType; //Initializing filetype.
+        let jsonified; // initializing
+        let dataLoaded // initializing
+
+        // STEP 1 (Variation A): User selects a file from computer or drops a file on the browser
+        //TODO: Variation A should probably be functionalized to take event, eventType and return jsonified
+        if (eventType === "change" || eventType === "drop") {
+          let file;
+          if (eventType === "change") {
+            file = event.target.files[0];
+          } else if (eventType === "drop") {
+            file = event.dataTransfer.files[0];
+          }
+
+          // Initialize the reader
+          const reader = new FileReader();
+          reader.fileName = file.name;
+
+          // Read file contents asynchronously
+          try {
+            dataLoaded = await readFileAsText(file);
+          } catch (error) {
+            errorDiv.innerText += `Error: Failed to read file. ${error.message} \n`;
+            return {};
+          }
+          document.getElementById("file-selector").value = ""; // resetting to blank.
+          fileType = findFileType(file.name); //initialized near beginning of loadAndPlotData
+          recentFileName = getFileName(file.name);//This is a global variable.
         }
 
-        async function loadData(event, eventType) {
-          let fileType; //Initializing filetype.
-          let jsonified; // initializing
-          let dataLoaded // initializing
-
-          // STEP 1 (Variation A): User selects a file from computer or drops a file on the browser
-          //TODO: Variation A should probably be functionalized to take event, eventType and return jsonified
-          if (eventType === "change" || eventType === "drop") {
-            let file;
-            if (eventType === "change") {
-              file = event.target.files[0];
-            } else if (eventType === "drop") {
-              file = event.dataTransfer.files[0];
-            }
-
-            // Initialize the reader
-            const reader = new FileReader();
-            reader.fileName = file.name;
-
-            // Read file contents asynchronously
-            try {
-              dataLoaded = await readFileAsText(file);
-            } catch (error) {
-              errorDiv.innerText += `Error: Failed to read file. ${error.message} \n`;
-              return {};
-            }
-            document.getElementById("file-selector").value = ""; // resetting to blank.
-            fileType = findFileType(file.name); //initialized near beginning of loadAndPlotData
-            recentFileName = getFileName(file.name);//This is a global variable.
-          }
-
-          // STEP 1 (Variation B): User Providees a URL.
-          //Should actually also also csv, probably.
-          if (eventType === "url") {
-            jsonified = await loadJsonFromUrl(event); //the event will have the url in it.
-            fileType = "json";
-            const toggleSection1 = document.getElementById("toggleSection2");
-            const toggleSection2 = document.getElementById("toggleSection2");
-            const toRevealSection = document.getElementById("toReveal"); //get toReveal section so actions can reveal
-            toggleSection1.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
-            toggleSection2.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
-            toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
-          }
-
-          // STEP 2 (VARIATION A): If the file is a .csv or .tsv file it is converted to a .json file
-          if (eventType === "change" || eventType === "drop") {
-            try {
-              // try to parse the file as json
-              jsonified = jsonifyData(fileType, dataLoaded, plotlyTemplate);
-            } catch (e) {
-              errorDiv.innerText += `Error: Data record could not be converted to JSON. If it is in a zipfile, unzip before uploading. Error Details: ${e.message} \n`;
-            }
-          }
-
-          return { jsonified, fileType };
+        // STEP 1 (Variation B): User Providees a URL.
+        //Should actually also also csv, probably.
+        if (eventType === "url") {
+          jsonified = await loadJsonFromUrl(event); //the event will have the url in it.
+          fileType = "json";
+          const toggleSection1 = document.getElementById("toggleSection2");
+          const toggleSection2 = document.getElementById("toggleSection2");
+          const toRevealSection = document.getElementById("toReveal"); //get toReveal section so actions can reveal
+          toggleSection1.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
+          toggleSection2.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
+          toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
         }
 
-
-
-        async function validateData(jsonified) {
-          // STEP 3: Check if the jsonified object is a valid JSON file against the schema
-          let [schema_type, schema_template] = await getSchemaType(jsonified);
-
-          if (Object.keys(schema_type).length === 0) {
-            errorDiv.innerText +=
-              "Schema check: There was no Schema specific to this DataType, or the schema was not compatible. The default scatter plot schema was used.\n";
-            schema_type = schema;
-          }
-
-          // validate the json
-          const validate = ajv.compile(schema_type);
-          const valid = validate(jsonified);
-
-          if (!valid) {
-            // Console log an error if the data is not valid against the schema
-            console.log("validate errors: ", JSON.stringify(validate.errors));
-            // Display an error message if the data is not valid against the schema
-            errorDiv.innerText += `Json file does not match the schema. ${JSON.stringify(validate.errors)}\n`;
-            errorDiv.innerText += `Json file does not match the schema. ${JSON.stringify(validate.errors)}\n`;
-            return null;
-          }
-
-          let _jsonified = jsonified;
-          if (Object.keys(schema_template).length !== 0) {
-            _jsonified = mergeFigDictWithTemplate(jsonified, schema_template);
-          }
-
-          return _jsonified;
-        }
-
-          // If the data is valid against the schema, then we can proceed to the next step
-          // if necessary create download button with json
-        async function plotData(_jsonified) {
-          // STEP 4 and STEP 5 is done in the prepareForPlotting function
-          const { mergedFigDict, fileName, newestFigDict } = await prepareForPlotting(_jsonified, recentFileName); // recentFileName is a global variable.
-          if (mergedFigDict) {
-            // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
-            appendDownloadButtons(mergedFigDict, fileName);
-
-            // STEP 7: Then create a plotly JSON, clean it, and render it on the browser
-            plot_with_plotly(mergedFigDict);
-          } else {
-            console.log("Plotting skipped: incompatible data or merge failure.");
-            return;
-          }
-
-          //Replace existing "Data Plotted" message if it is already there, to avoid duplicating it.
-          if (!messagesToUserDiv.innerText) { //Currently, we assume the below message is present or not present. If we later put additional messagesToUser, we may need to add more logic.
-            const dataPlottedMessage = "\u2003\u2003\u2003\u2003\u2003\u2003 Data plotted! Add more data or click 'Clear Data' to start a new graph! \u2003\u2003\u2003\u2003\u2003\u2003"
-            messagesToUserDiv.innerText += dataPlottedMessage;
+        // STEP 2 (VARIATION A): If the file is a .csv or .tsv file it is converted to a .json file
+        if (eventType === "change" || eventType === "drop") {
+          try {
+            // try to parse the file as json
+            jsonified = jsonifyData(fileType, dataLoaded, plotlyTemplate);
+          } catch (e) {
+            errorDiv.innerText += `Error: Data record could not be converted to JSON. If it is in a zipfile, unzip before uploading. Error Details: ${e.message} \n`;
           }
         }
+
+        return { jsonified, fileType };
+      }
+
+
+
+      async function validateData(jsonified) {
+        // STEP 3: Check if the jsonified object is a valid JSON file against the schema
+        let [schema_type, schema_template] = await getSchemaType(jsonified);
+
+        if (Object.keys(schema_type).length === 0) {
+          errorDiv.innerText +=
+            "Schema check: There was no Schema specific to this DataType, or the schema was not compatible. The default scatter plot schema was used.\n";
+          schema_type = schema;
+        }
+
+        // validate the json
+        const validate = ajv.compile(schema_type);
+        const valid = validate(jsonified);
+
+        if (!valid) {
+          // Console log an error if the data is not valid against the schema
+          console.log("validate errors: ", JSON.stringify(validate.errors));
+          // Display an error message if the data is not valid against the schema
+          errorDiv.innerText += `Json file does not match the schema. ${JSON.stringify(validate.errors)}\n`;
+          errorDiv.innerText += `Json file does not match the schema. ${JSON.stringify(validate.errors)}\n`;
+          return null;
+        }
+
+        let _jsonified = jsonified;
+        if (Object.keys(schema_template).length !== 0) {
+          _jsonified = mergeFigDictWithTemplate(jsonified, schema_template);
+        }
+
+        return _jsonified;
+      }
+
+      // If the data is valid against the schema, then we can proceed to the next step
+      // if necessary create download button with json
+      async function plotData(_jsonified) {
+        // STEP 4 and STEP 5 is done in the prepareForPlotting function
+        const { mergedFigDict, fileName, newestFigDict } = await prepareForPlotting(_jsonified, recentFileName); // recentFileName is a global variable.
+        if (mergedFigDict) {
+          // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
+          appendDownloadButtons(mergedFigDict, fileName);
+
+          // STEP 7: Then create a plotly JSON, clean it, and render it on the browser
+          plot_with_plotly(mergedFigDict);
+        } else {
+          console.log("Plotting skipped: incompatible data or merge failure.");
+          return;
+        }
+
+        //Replace existing "Data Plotted" message if it is already there, to avoid duplicating it.
+        if (!messagesToUserDiv.innerText) { //Currently, we assume the below message is present or not present. If we later put additional messagesToUser, we may need to add more logic.
+          const dataPlottedMessage = "\u2003\u2003\u2003\u2003\u2003\u2003 Data plotted! Add more data or click 'Clear Data' to start a new graph! \u2003\u2003\u2003\u2003\u2003\u2003"
+          messagesToUserDiv.innerText += dataPlottedMessage;
+        }
+      }
 
       // This a function that plots the data on the graph
       // the input, jsonified, is the new figDict. globalData is the 'global' figDict.
