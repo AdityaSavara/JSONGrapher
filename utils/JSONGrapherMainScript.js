@@ -311,7 +311,7 @@
         const _jsonified = await validateData(jsonified, errorDiv); // STEP 3
         if (!_jsonified) return;
 
-        await plotData(_jsonified); // STEP 4–7
+        await plotData(_jsonified, errorDiv); // STEP 4–7
 
         errorDiv.innerText = errorDiv.innerText.replace(loadingMessage, "");
       }
@@ -376,9 +376,9 @@
 
       // If the data is valid against the schema, then we can proceed to the next step
       // if necessary create download button with json
-      async function plotData(_jsonified) {
+      async function plotData(_jsonified, errorDiv) {
         // STEP 4 and STEP 5 is done in the prepareForPlotting function
-        const { mergedFigDict, fileName, newestFigDict } = await prepareForPlotting(_jsonified, recentFileName); // recentFileName is a global variable.
+        const { mergedFigDict, fileName, newestFigDict } = await prepareForPlotting(_jsonified, recentFileName, errorDiv); // recentFileName is a global variable.
         if (mergedFigDict) {
           // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
           appendDownloadButtons(mergedFigDict, fileName);
@@ -399,7 +399,7 @@
 
       // This a function that plots the data on the graph
       // the input, jsonified, is the new figDict. globalData is the 'global' figDict.
-      async function prepareForPlotting(jsonified, filename) {
+      async function prepareForPlotting(jsonified, filename, errorDiv) {
         try {
           // Checks if the Jsonified is the first file uploaded
           if (!globalData) {

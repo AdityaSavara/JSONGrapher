@@ -52,7 +52,7 @@
           return [schema1json, schema2json];
         } catch (err) {
           // TODO: !! error catching to be made informative.
-          errorDiv.innerText += "undocumented error in getSchemaType\n";
+          //errorDiv.innerText += "undocumented error in getSchemaType\n";
 
           try {
             const schema1 = await fetch("./utils/schema/0_PlotlyTemplate.json");
