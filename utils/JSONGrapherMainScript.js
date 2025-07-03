@@ -5,6 +5,7 @@
       import {executeImplicitDataSeriesOperations} from './json_equationer/implicitUtils.js'
       import { parsePlotStyle, applyPlotStyleToPlotlyDict } from './styleUtils.js';
       import { cleanJsonFigDict } from './figDictUtils.js'; 
+      import { loadJsonFromUrl, isValidUrl, parseUrl } from './linkUtils.js'; 
 
       function copyJson(obj) { //for debugging.
         return JSON.parse(JSON.stringify(obj));
@@ -311,7 +312,7 @@
         const _jsonified = await validateData(jsonified, errorDiv); // STEP 3
         if (!_jsonified) return;
 
-        await plotData(_jsonified, errorDiv); // STEP 4–7
+        await plotData(_jsonified, recentFileName, errorDiv); // STEP 4–7
 
         errorDiv.innerText = errorDiv.innerText.replace(loadingMessage, "");
       }
@@ -348,7 +349,7 @@
         }
 
         // STEP 1 (Variation B): User Providees a URL.
-        //Should actually also also csv, probably.
+        //Should update to support csv in future.
         if (eventType === "url") {
           jsonified = await loadJsonFromUrl(event); //the event will have the url in it.
           fileType = "json";
@@ -376,12 +377,14 @@
 
       // If the data is valid against the schema, then we can proceed to the next step
       // if necessary create download button with json
-      async function plotData(_jsonified, errorDiv) {
+      async function plotData(_jsonified, recentFileName, errorDiv) {
         // STEP 4 and STEP 5 is done in the prepareForPlotting function
         const { mergedFigDict, fileName, newestFigDict } = await prepareForPlotting(_jsonified, recentFileName, errorDiv); // recentFileName is a global variable.
         if (mergedFigDict) {
           // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
-          appendDownloadButtons(mergedFigDict, fileName);
+          //should  make an if statement here to give newestFigDict with filename if only one record has been uploaded
+          // and to otherwise give the full data with name like "mergedGraphRecord.json" for the filename.
+          appendDownloadButtons(newestFigDict, fileName);
 
           // STEP 7: Then create a plotly JSON, clean it, and render it on the browser
           plot_with_plotly(mergedFigDict);
@@ -399,7 +402,7 @@
 
       // This a function that plots the data on the graph
       // the input, jsonified, is the new figDict. globalData is the 'global' figDict.
-      async function prepareForPlotting(jsonified, filename, errorDiv) {
+      async function prepareForPlotting(jsonified, recentFileName, errorDiv) {
         try {
           // Checks if the Jsonified is the first file uploaded
           if (!globalData) {
