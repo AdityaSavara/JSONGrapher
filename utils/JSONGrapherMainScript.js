@@ -22,9 +22,8 @@
 
       // Global Variables
       let globalData = null;
-      let plotlyTemplate = null;
-      let schema = null;
-      let recentFileName = null;
+      let plotlyTemplate = null; //TODO: change this so it is not a global.
+      let recentFileName = null; //TODO: change this so it is not a global.
       let url = window.location.href; // Get the current page URL         
       let params = new URLSearchParams(new URL(url).search);
       let urlParamsString = params.get("fromUrl"); //default ends up as null.
