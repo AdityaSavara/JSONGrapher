@@ -212,18 +212,21 @@
           loadFromUrlParams(urlParamsString);
         });
       };
-      // STEP 0: Prepare the 'universal' schemas occurs inside initializeJSONGrapher
-      initializeUniversalSchemas()
-        .then((resp) => {
+      // STEP 0: Prepare the 'universal' schemas occurs inside initializeUniversalSchemas
+      async function setupJsonGrapher() {
+        try {
+          // STEP 0: Prepare the 'universal' schemas occurs inside initializeUniversalSchemas
+          const [schema1json, schema2json] = await initializeUniversalSchemas();
+          schema = schema1json;
+          plotlyTemplate = schema2json;
+
           const toggleSection1 = document.getElementById("toggleSection1"); //get toggle section so actions can hide it.
           const toggleSection2 = document.getElementById("toggleSection2"); //get toggle section so actions can hide it.         
           const toRevealSection = document.getElementById("toReveal"); //get toReveal section so actions can reveal
-          // Assign variables to the two universal schemas.
-          schema = resp[0];
-          plotlyTemplate = resp[1];
-           // STEP 1: User selects a file from computer or drops a file on the browser
-           // Checks if the browser supports the File API
-           // User selects a file or drags/drops one
+
+          // STEP 1: User selects a file from computer or drops a file on the browser
+          // Checks if the browser supports the File API
+          // User selects a file or drags/drops one
           if (window.FileList && window.File) {
             // Event that fires when the user selects a file from the computer from the choose file button
             const fileSelector = document.getElementById("file-selector");
@@ -243,6 +246,7 @@
                 loadAndPlotData(event, "change");
               });
             }
+
             // Event listener for drag and drop
             const dropArea = document.getElementById("file-drop-area");
             if (dropArea) {
@@ -288,12 +292,14 @@
               }
             });
           }
-        })
-        .catch((e) => {
-          console.log(e);
+        } catch (e) {
+          console.log("Error from setupJsonGrapher: ", e);
           errorDiv.innerText += "Error fetching json-schema files...\n";
-        });
+        }
+      }
 
+      // Call the async setup function
+      setupJsonGrapher();
 
       // This function is called when the user drops a file or uploads it via the input button or drag and drop
       async function loadAndPlotData(event, eventType) {
