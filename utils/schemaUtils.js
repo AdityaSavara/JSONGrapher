@@ -105,7 +105,7 @@
 
 
       
-      export async function validateData(jsonified) {
+      export async function validateData(jsonified, errorDiv) {
         // STEP 3: Check if the jsonified object is a valid JSON file against the schema
         let [schema_type, schema_template] = await getSchemaType(jsonified);
 

@@ -22,7 +22,6 @@
 
       // Global Variables
       let globalData = null;
-      let plotlyTemplate = null; //TODO: change this so it is not a global.
       let recentFileName = null; //TODO: change this so it is not a global.
       let url = window.location.href; // Get the current page URL         
       let params = new URLSearchParams(new URL(url).search);
@@ -213,8 +212,8 @@
         try {
           // STEP 0: Prepare the 'universal' schemas occurs inside initializeUniversalSchemas
           const [schema1json, schema2json] = await initializeUniversalSchemas();
-          schema = schema1json;
-          plotlyTemplate = schema2json;
+          const schema = schema1json; //unused
+          const plotlyTemplate = schema2json;
 
           const toggleSection1 = document.getElementById("toggleSection1"); //get toggle section so actions can hide it.
           const toggleSection2 = document.getElementById("toggleSection2"); //get toggle section so actions can hide it.         
@@ -239,7 +238,7 @@
                     toggleSection2.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
                     toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
                 };
-                loadAndPlotData(event, "change");
+                loadAndPlotData(event, "change", plotlyTemplate, errorDiv);
               });
             }
 
@@ -265,7 +264,7 @@
                   toggleSection2.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
                   toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
                 };
-                loadAndPlotData(event, "drop");
+                loadAndPlotData(event, "drop", plotlyTemplate, errorDiv);
               });
             }
           }
@@ -281,7 +280,7 @@
                 toggleSection1.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
                 toggleSection2.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
                 toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
-                loadAndPlotData(url, "url");
+                loadAndPlotData(url, "url", plotlyTemplate, errorDiv);
               } else {
                 console.error("No URL entered.");
                 errorDiv.innerText += "Error: Please enter a valid URL.\n";
@@ -298,14 +297,14 @@
       await setupJsonGrapherAndListen();
 
       // This function is called when the user drops a file or uploads it via the input button or drag and drop
-      async function loadAndPlotData(event, eventType) {
+      async function loadAndPlotData(event, eventType, plotlyTemplate, errorDiv) {
         let loadingMessage = "Loading and plotting data, including evaluating any equations and running any simulations.";
         errorDiv.innerText += loadingMessage; //We want to use a variable so we can remove the loading message, later.
 
-        const { jsonified, fileType } = await loadData(event, eventType); // STEP 1-2
+        const { jsonified, fileType } = await loadData(event, eventType, plotlyTemplate, errorDiv); // STEP 1-2
         if (!jsonified) return;
 
-        const _jsonified = await validateData(jsonified); // STEP 3
+        const _jsonified = await validateData(jsonified, errorDiv); // STEP 3
         if (!_jsonified) return;
 
         await plotData(_jsonified); // STEP 4–7
@@ -313,7 +312,7 @@
         errorDiv.innerText = errorDiv.innerText.replace(loadingMessage, "");
       }
 
-      async function loadData(event, eventType) {
+      async function loadData(event, eventType, plotlyTemplate, errorDiv) {
         let fileType; //Initializing filetype.
         let jsonified; // initializing
         let dataLoaded // initializing
