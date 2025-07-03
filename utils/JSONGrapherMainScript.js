@@ -254,22 +254,21 @@
       // This function is called when the user drops a file or uploads it via the input button or drag and drop
       // This function is also called when a url is provided, in which case the event is the url string and the eventType is "url".
       async function loadAndPlotData(event, eventType, errorDiv) {
+        let loadingMessage = "Loading and plotting data, including evaluating any equations and running any simulations.";
+        errorDiv.innerText += loadingMessage; //We want to use a variable so we can remove the loading message, later.
         let urlReceived = null; //initialize.
-        if (eventType==="url"){urlReceived=event};//the "event" variable holds the url when a url is received.
+        //the "event" variable holds the url when a url is received.
+        if (eventType==="url"){
+          urlReceived=event
+        };
         // STEP 0: Prepare the 'universal' schemas occurs inside initializeUniversalSchemas
         const [schema1json, schema2json] = await initializeUniversalSchemas();
         const schema = schema1json; //unused
         const plotlyTemplate = schema2json;
-
-        let loadingMessage = "Loading and plotting data, including evaluating any equations and running any simulations.";
-        errorDiv.innerText += loadingMessage; //We want to use a variable so we can remove the loading message, later.
-
         const { jsonified, recentFileName, fileType } = await loadData(event, eventType, plotlyTemplate, errorDiv); // STEP 1-2
         if (!jsonified) return;
-
         const _jsonified = await validateData(jsonified, errorDiv); // STEP 3
         if (!_jsonified) return;
-
         globalData = await plotData(globalData, _jsonified, recentFileName, messagesToUserDiv, errorDiv); // STEP 4–7
           // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
           //should  make an if statement here to give newestFigDict with filename if only one record has been uploaded
