@@ -83,6 +83,8 @@
           return [schema1json, schema2json];
         } catch (err) {
           console.log("Error from initializeJSONGrapher: ", err);
+          // Return nulls to maintain consistent output structure on error
+          return [null, null];
         }
       }
 
