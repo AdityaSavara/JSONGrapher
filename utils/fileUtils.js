@@ -16,16 +16,15 @@ export function jsonifyData(filetype, dataLoaded, plotlyTemplate) {
 // A function that checks the uploaded file extension
 export function findFileType(fileName) {
     let arrayName = fileName.split(".");
-
+    let fileType;
     if (arrayName.includes("csv")) {
-        return "csv";
+        fileType = "csv";
+    } else if (arrayName.includes("tsv")) {
+        fileType = "tsv";
+    } else {
+        fileType = "json";
     }
-
-    if (arrayName.includes("tsv")) {
-        return "tsv";
-    }
-
-    return "json";
+    return fileType;
 }
 
 
