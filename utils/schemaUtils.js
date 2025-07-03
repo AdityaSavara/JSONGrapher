@@ -2,7 +2,7 @@
       const ajv = new Ajv();
 
       // function to extract from the datatype the location of the schema
-      export function getSchemaLocation(jsonified, template = false) {
+      export function getSchemaLocation(jsonified, template = false, errorDiv = null) {
         if (!jsonified.datatype) {
           errorDiv.innerText += "Warning: The datatype field was not found in the record provided. Accordingly, a schema check will not be performed and the record will not be fully validated. \n";
           jsonified.datatype = ""; // Populate with an empty string
@@ -34,7 +34,7 @@
       }
 
       // function to extract from the datatype the json schema
-      export async function getSchemaType(jsonified) {
+      export async function getSchemaType(jsonified, errorDiv) {
         let schema2body;
         const schema_location = getSchemaLocation(jsonified);
         const schema_template_location = getSchemaLocation(jsonified, true);
@@ -52,7 +52,7 @@
           return [schema1json, schema2json];
         } catch (err) {
           // TODO: !! error catching to be made informative.
-          //errorDiv.innerText += "undocumented error in getSchemaType\n";
+          errorDiv.innerText += "undocumented error in getSchemaType\n";
 
           try {
             const schema1 = await fetch("./utils/schema/0_PlotlyTemplate.json");
@@ -107,7 +107,7 @@
       
       export async function validateData(jsonified, errorDiv) {
         // STEP 3: Check if the jsonified object is a valid JSON file against the schema
-        let [schema_type, schema_template] = await getSchemaType(jsonified);
+        let [schema_type, schema_template] = await getSchemaType(jsonified, errorDiv);
 
         if (Object.keys(schema_type).length === 0) {
           errorDiv.innerText +=
