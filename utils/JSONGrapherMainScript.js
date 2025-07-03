@@ -150,7 +150,6 @@
       async function loadFromUrlParams(urlInput, errorDiv){
         if (isValidUrl(urlInput)){ 
           const url = parseUrl(urlInput);
-          // STEP 0: Prepare the 'universal' schemas occurs inside loadAndPlotData
           loadAndPlotData(url, "url", errorDiv);
         } else {
           console.error("No URL entered.");
@@ -248,7 +247,6 @@
       }
 
       // Start the JSONGrapherWebGUI listeners and give them the loadAndPlotData function to use when they receive something.
-      // STEP 0: Prepare the 'universal' schemas occurs inside loadAndPlotData
       await startJSONGrapherWebGUIListenersWithCallBack(loadAndPlotData, errorDiv);
 
       // This function is called when the user drops a file or uploads it via the input button or drag and drop
@@ -260,11 +258,7 @@
         let urlReceived = null; //initialize.
         //the "event" variable holds the url when a url is received.
         if (eventType==="url"){urlReceived=event};
-        // STEP 0: Prepare the 'universal' schemas occurs inside initializeUniversalSchemas
-        const [schema1json, schema2json] = await initializeUniversalSchemas();
-        const schema = schema1json; //unused
-        const plotlyTemplate = schema2json;
-        const { jsonified, recentFileName, fileType } = await loadData(event, eventType, plotlyTemplate, errorDiv); // STEP 1-2
+        const { jsonified, recentFileName, fileType } = await loadData(event, eventType, errorDiv); // STEP 0, STEP 1, STEP 2
         //validateData Block
         const _jsonified = await validateData(jsonified, errorDiv); // STEP 3
         //plotData Block
@@ -277,11 +271,15 @@
         errorDiv.innerText = errorDiv.innerText.replace(loadingMessage, "");
       }
 
-      async function loadData(event, eventType, plotlyTemplate, errorDiv) {
+      async function loadData(event, eventType, errorDiv) {
         let fileType; //Initializing filetype.
         let jsonified; // initializing
         let dataLoaded // initializing
         let recentFileName = null; 
+        // STEP 0: Prepare the 'universal' schemas occurs inside initializeUniversalSchemas
+        const [schema1json, schema2json] = await initializeUniversalSchemas();
+        const schema = schema1json; //unused
+        const plotlyTemplate = schema2json;
 
         // STEP 1 (Variation A): User selects a file from computer or drops a file on the browser
         //TODO: Variation A should probably be functionalized to take event, eventType and return jsonified
@@ -322,7 +320,7 @@
           toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
         }
 
-        // STEP 2 (VARIATION A): If the file is a .csv or .tsv file it is converted to a .json file
+        // STEP 2 (If needed): If the file is a .csv or .tsv file it is converted to a .json file
         if (eventType === "change" || eventType === "drop") {
           try {
             // try to parse the file as json
