@@ -10,9 +10,9 @@ import { cleanJsonFigDict } from './figDictUtils.js';
 
       // If the data is valid against the schema, then we can proceed to the next step
       // if necessary create download button with json
-      export async function plotData(globalData, _jsonified, recentFileName, messagesToUserDiv, errorDiv) {
+      export async function plotData(globalFigDict, _jsonified, recentFileName, messagesToUserDiv, errorDiv) {
         // STEP 4 and STEP 5 is done in the prepareForPlotting function
-        const { mergedFigDict, fileName, newestFigDict } = await prepareForPlotting(globalData, _jsonified, recentFileName, errorDiv); // recentFileName is a global variable.
+        const { mergedFigDict, fileName, newestFigDict } = await prepareForPlotting(globalFigDict, _jsonified, recentFileName, errorDiv); // recentFileName is a global variable.
         if (mergedFigDict) {
           // STEP 7: Then create a plotly JSON, clean it, and render it on the browser
           plot_with_plotly(mergedFigDict);
@@ -21,7 +21,7 @@ import { cleanJsonFigDict } from './figDictUtils.js';
             const dataPlottedMessage = "\u2003\u2003\u2003\u2003\u2003\u2003 Data plotted! Add more data or click 'Clear Data' to start a new graph! \u2003\u2003\u2003\u2003\u2003\u2003"
             messagesToUserDiv.innerText += dataPlottedMessage;
           }
-          return mergedFigDict //This returns the mergedFigDict to use as globalData.
+          return mergedFigDict //This returns the mergedFigDict to use as globalFigDict.
         } else {
           console.log("Plotting skipped: incompatible data or merge failure.");
           return;
@@ -29,13 +29,13 @@ import { cleanJsonFigDict } from './figDictUtils.js';
       }
 
       // This a function that plots the data on the graph
-      // the input, jsonified, is the new figDict. globalData is the 'global' figDict.
-      export async function prepareForPlotting(globalData, jsonified, recentFileName, errorDiv) {
+      // the input, jsonified, is the new figDict. globalFigDict is the 'global' figDict.
+      export async function prepareForPlotting(globalFigDict, jsonified, recentFileName, errorDiv) {
         try {
           // Checks if the Jsonified is the first file uploaded
-          if (!globalData) {
+          if (!globalFigDict) {
             let _jsonified = JSON.parse(JSON.stringify(jsonified)); // make a local copy
-            globalData = copyJson(_jsonified); // populate global figDict since this is the first record received.            
+            globalFigDict = copyJson(_jsonified); // populate global figDict since this is the first record received.            
 
             // Get the unit from the label
             const xUnit = getUnitFromLabel(_jsonified.layout.xaxis.title.text);
@@ -50,52 +50,52 @@ import { cleanJsonFigDict } from './figDictUtils.js';
             // STEP 4: Check if the object has a dataSet that has a simulate key in it, and runs the simulate function based on the value provided in the key model
             _jsonified = await executeImplicitDataSeriesOperations(_jsonified); // _jsonified is a figDict.
 
-            // No STEP 5 for first record; it defines the units of globalData.
-            globalData = _jsonified;
+            // No STEP 5 for first record; it defines the units of globalFigDict.
+            globalFigDict = _jsonified;
 
             // Return the objects that have been prepared for plotting and downloading.
             return {
-              mergedFigDict: globalData,
+              mergedFigDict: globalFigDict,
               newestFigDict: _jsonified,
               fileName: recentFileName,
             };
           } else {
             let fieldsMatch = true;
 
-            if (globalData.datatype !== jsonified.datatype) {
+            if (globalFigDict.datatype !== jsonified.datatype) {
               fieldsMatch = false;
               errorDiv.innerText += "The added record's datatype is different. Stopping merging. The two values are: " +
-                String(globalData.datatype) + " " + String(jsonified.datatype) + "\n";
+                String(globalFigDict.datatype) + " " + String(jsonified.datatype) + "\n";
             }
 
-            if (removeUnitFromLabel(globalData.layout.xaxis.title.text) !==
+            if (removeUnitFromLabel(globalFigDict.layout.xaxis.title.text) !==
                 removeUnitFromLabel(jsonified.layout.xaxis.title.text)) {
               fieldsMatch = false;
               errorDiv.innerText += "The added record's xaxis label text is different. Stopping merging. The two values are: " +
-                removeUnitFromLabel(globalData.layout.xaxis.title.text) + " " +
+                removeUnitFromLabel(globalFigDict.layout.xaxis.title.text) + " " +
                 removeUnitFromLabel(jsonified.layout.xaxis.title.text) + "\n";
             }
 
-            if (removeUnitFromLabel(globalData.layout.yaxis.title.text) !==
+            if (removeUnitFromLabel(globalFigDict.layout.yaxis.title.text) !==
                 removeUnitFromLabel(jsonified.layout.yaxis.title.text)) {
               fieldsMatch = false;
               errorDiv.innerText += "The added record's yaxis label text is different. Stopping merging. The two values are: " +
-                removeUnitFromLabel(globalData.layout.yaxis.title.text) + " " +
+                removeUnitFromLabel(globalFigDict.layout.yaxis.title.text) + " " +
                 removeUnitFromLabel(jsonified.layout.yaxis.title.text) + "\n";
             }
 
             if (fieldsMatch) {
               let _jsonified = JSON.parse(JSON.stringify(jsonified));
               _jsonified = await executeImplicitDataSeriesOperations(_jsonified);
-              _jsonified = await convertUnits(_jsonified, globalData);
+              _jsonified = await convertUnits(_jsonified, globalFigDict);
 
-              globalData.data = [
-                ...globalData.data,
+              globalFigDict.data = [
+                ...globalFigDict.data,
                 ..._jsonified.data,
               ];
 
               return {
-                mergedFigDict: globalData,
+                mergedFigDict: globalFigDict,
                 newestFigDict: _jsonified,
                 fileName: recentFileName,
               };
