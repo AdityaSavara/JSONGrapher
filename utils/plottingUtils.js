@@ -70,6 +70,7 @@ import { cleanJsonFigDict } from './figDictUtils.js';
                 removeUnitFromLabel(jsonified.layout.xaxis.title.text) + "\n";
             }
 
+            // Check compatibility of y-axis label (excluding units)
             if (removeUnitFromLabel(globalFigDict.layout.yaxis.title.text) !==
                 removeUnitFromLabel(jsonified.layout.yaxis.title.text)) {
               fieldsMatch = false;
