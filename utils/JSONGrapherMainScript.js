@@ -259,22 +259,25 @@
       // This function is called when the user drops a file or uploads it via the input button or drag and drop
       // This function is also called when a url is provided, in which case the event is the url string and the eventType is "url".
       async function loadAndPlotData(event, eventType, errorDiv) {
+        const existingFigDict = globalFigDict
         let loadingMessage = "Loading and plotting data, including evaluating any equations and running any simulations.";
         errorDiv.innerText += loadingMessage; //We want to use a variable so we can remove the loading message, later.
         //loadData Block
         let urlReceived = null; //initialize.
         //the "event" variable holds the url when a url is received.
         if (eventType==="url"){urlReceived=event};
-        const { jsonified, recentFileName, fileType } = await loadData(event, eventType, errorDiv); // STEP 0, STEP 1, STEP 2
+        let { jsonified, recentFileName, fileType } = await loadData(event, eventType, errorDiv); // STEP 0, STEP 1, STEP 2
         //validateData Block
-        const _jsonified = await validateData(jsonified, errorDiv); // STEP 3
-        //plotData Block
-        globalFigDict = await plotData(globalFigDict, _jsonified, recentFileName, messagesToUserDiv, errorDiv); // STEP 4-7
+        let newFigDict = jsonified
+        newFigDict = await validateData(newFigDict, errorDiv); // STEP 3
+        //plotData Block, also merges the newFigDict into the existingFigDict
+        const updatedFigDict = await plotData(existingFigDict, newFigDict, recentFileName, messagesToUserDiv, errorDiv); // STEP 4-7
+        globalFigDict = updatedFigDict
           // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
           //should  make an if statement here to give newestFigDict with filename if only one record has been uploaded
           // and to otherwise give the full data with name like "mergedGraphRecord.json" for the filename.
           // urlRceived will be a blank string, "", or a null object, if the record is not from url.
-        if (globalFigDict){appendDownloadButtons(globalFigDict, "mergedJSONGrapherRecord.json", urlReceived);}
+        if (updatedFigDict){appendDownloadButtons(updatedFigDict, "mergedJSONGrapherRecord.json", urlReceived);}
         errorDiv.innerText = errorDiv.innerText.replace(loadingMessage, "");
       }
 
