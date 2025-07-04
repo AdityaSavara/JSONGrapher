@@ -51,7 +51,7 @@ import { cleanJsonFigDict } from './figDictUtils.js';
           } 
           else {
             // Checks for field compatibility and merges if appropriate
-            const result = await checkAndMergeFigDict(existingFigDict, _newFigDict, newFigDict, errorDiv);
+            const result = await checkAndMergeFigDict(existingFigDict, _newFigDict, errorDiv);
             if (!result) return null;
             existingFigDict = result;
           }
@@ -69,7 +69,7 @@ import { cleanJsonFigDict } from './figDictUtils.js';
       }
 
       //This function takes an existingFigDict and a newFigDict and then it merges if compatible.
-      async function checkAndMergeFigDict(existingFigDict, _newFigDict, newFigDict, errorDiv) {
+      async function checkAndMergeFigDict(existingFigDict, newFigDict, errorDiv) {
         let fieldsMatch = true; //initilize as true, will set false if the fields don't match.
         // Check compatibility of datatype
         if (existingFigDict.datatype !== newFigDict.datatype) {
@@ -100,9 +100,9 @@ import { cleanJsonFigDict } from './figDictUtils.js';
           return null;
         }
         // STEP 5: Perform unit conversion if the fields match
-        _newFigDict = await convertUnits(_newFigDict, existingFigDict);
+        newFigDict = await convertUnits(newFigDict, existingFigDict);
         // Merge new data into global dictionary
-        existingFigDict.data = [...existingFigDict.data, ..._newFigDict.data];
+        existingFigDict.data = [...existingFigDict.data, ...newFigDict.data];
         return existingFigDict;
       }
 
