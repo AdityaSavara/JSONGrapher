@@ -150,7 +150,7 @@
       async function loadFromUrlParams(urlInput, errorDiv){
         if (isValidUrl(urlInput)){ 
           const url = parseUrl(urlInput);
-          loadAndPlotData(url, "url", errorDiv);
+          loadAndPlotData(globalFigDict, url, "url", errorDiv);
         } else {
           console.error("No URL entered.");
           errorDiv.innerText += "Error: Please enter a valid URL.\n";
@@ -199,7 +199,7 @@
                     toggleSection2.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
                     toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
                 };
-                callback(event, "change", errorDiv);
+                callback(globalFigDict, event, "change", errorDiv);
               });
             }
 
@@ -225,7 +225,7 @@
                   toggleSection2.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
                   toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
                 };
-                callback(event, "drop", errorDiv);
+                callback(globalFigDict, event, "drop", errorDiv);
               });
             }
           }
@@ -240,7 +240,7 @@
                 toggleSection1.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
                 toggleSection2.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
                 toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
-                callback(url, "url", errorDiv);
+                callback(globalFigDict, url, "url", errorDiv);
               } else {
                 console.error("No URL entered.");
                 errorDiv.innerText += "Error: Please enter a valid URL.\n";
@@ -258,8 +258,7 @@
 
       // This function is called when the user drops a file or uploads it via the input button or drag and drop
       // This function is also called when a url is provided, in which case the event is the url string and the eventType is "url".
-      async function loadAndPlotData(event, eventType, errorDiv) {
-        const existingFigDict = globalFigDict
+      async function loadAndPlotData(existingFigDict, event, eventType, errorDiv) {
         let loadingMessage = "Loading and plotting data, including evaluating any equations and running any simulations.";
         errorDiv.innerText += loadingMessage; //We want to use a variable so we can remove the loading message, later.
         //loadData Block
