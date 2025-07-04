@@ -52,12 +52,10 @@
 
       function createCopyURLButton(jsonURL) {
           // Generate the URL
-          const urlString = createCopyUrlLink(jsonURL);
-          
+          const urlString = createCopyUrlLink(jsonURL);       
           // Create the button
           const copyButton = document.createElement("button");
           copyButton.innerText = "Copy URL";
-          
           // Function to copy text using a fallback method if navigator way doesn't work.
           function fallbackCopyText(text) {
               const textArea = document.createElement("textarea");
@@ -67,7 +65,6 @@
               document.execCommand("copy");
               document.body.removeChild(textArea);
           }
-
           // Add click event listener to copy to clipboard
           copyButton.addEventListener("click", () => {
               if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -128,7 +125,6 @@
           // Below was when I tried to put the whole JSON record into the URL, but that was quickly too long for webservers and browsers.
           //const downloadURLButton = createCopyURLButton(jsonified);
         };
-        
         const buttonsContainer = document.getElementById(
           "downloadButtonsContainer"
         );
@@ -201,7 +197,6 @@
                 if (globalFigDict){appendDownloadButtons(globalFigDict, "mergedJSONGrapherRecord.json", urlReceived);}                
               });
             }
-
             // Event listener for drag and drop
             const dropArea = document.getElementById("file-drop-area");
             if (dropArea) {
@@ -210,7 +205,6 @@
                 event.preventDefault();
                 event.dataTransfer.dropEffect = "copy";
               });
-
               dropArea.addEventListener("drop", async (event) => {
                 event.preventDefault();
                 const file = event.dataTransfer.files[0]; //this is a local temporary variable
@@ -311,7 +305,6 @@
         const [schema1json, schema2json] = await initializeUniversalSchemas();
         const schema = schema1json; //unused
         const plotlyTemplate = schema2json;
-
         // STEP 1 (Variation A): User selects a file from computer or drops a file on the browser
         //TODO: Variation A should probably be functionalized to take event, eventType and return jsonified
         if (eventType === "change" || eventType === "drop") {
@@ -321,11 +314,9 @@
           } else if (eventType === "drop") {
             file = event.dataTransfer.files[0];
           }
-
           // Initialize the reader
           const reader = new FileReader();
           reader.fileName = file.name;
-
           // Read file contents asynchronously
           try {
             dataLoaded = await readFileAsText(file);
@@ -337,13 +328,11 @@
           fileType = findFileType(file.name); //initialized near beginning of loadAndPlotData
           recentFileName = getBaseFileName(file.name);//This is a global variable.
         }
-
         // STEP 1 (Variation B): User Providees a URL.
         if (eventType === "url") {
           fileType = "json"; //Should update to support csv in future.
           jsonified = await loadJsonFromUrl(event); //the event will have the url in it.
         }
-
         // STEP 2 (If needed): If the file is a .csv or .tsv file it is converted to a .json file
         if (eventType === "change" || eventType === "drop") {
           try {
@@ -353,9 +342,7 @@
             errorDiv.innerText += `Error: Data record could not be converted to JSON. If it is in a zipfile, unzip before uploading. Error Details: ${e.message} \n`;
           }
         }
-
         return { jsonified, recentFileName, fileType };
       }
-
 
 window.clearData = clearData;
