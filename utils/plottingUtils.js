@@ -30,44 +30,38 @@ import { cleanJsonFigDict } from './figDictUtils.js';
 
       // This a function that plots the data on the graph
       // the input, jsonified, is the new figDict. globalFigDict is the 'global' figDict.
+      // if globalFigDict is null or otherwise false-like, and jsonified is not false-like,
+      // then jsonified is treated as the first figDict and globalFigDict is made from it.
       export async function prepareForPlotting(globalFigDict, jsonified, recentFileName, errorDiv) {
         try {
+          // Make a local copy of the incoming data to avoid mutating the original object
+          let _jsonified = JSON.parse(JSON.stringify(jsonified));
+
+          // STEP 4: Check if the object has a dataSet that has a simulate or equation key in it,
+          // and runs the simulate function or does the equation evaluation based on the dictionary within.
+          _jsonified = await executeImplicitDataSeriesOperations(_jsonified);
+
           // Checks if the Jsonified is the first file uploaded
           if (!globalFigDict) {
-            let _jsonified = JSON.parse(JSON.stringify(jsonified)); // make a local copy
-            globalFigDict = copyJson(_jsonified); // populate global figDict since this is the first record received.            
-
             // Get the unit from the label
             const xUnit = getUnitFromLabel(_jsonified.layout.xaxis.title.text);
             const yUnit = getUnitFromLabel(_jsonified.layout.yaxis.title.text);
-
             // Adding the extracted units to _jsonified
-            _jsonified.unit = {
-              x: xUnit,
-              y: yUnit,
-            };
-
-            // STEP 4: Check if the object has a dataSet that has a simulate key in it, and runs the simulate function based on the value provided in the key model
-            _jsonified = await executeImplicitDataSeriesOperations(_jsonified); // _jsonified is a figDict.
-
+            _jsonified.unit = { x: xUnit, y: yUnit };
             // No STEP 5 for first record; it defines the units of globalFigDict.
             globalFigDict = _jsonified;
 
-            // Return the objects that have been prepared for plotting and downloading.
-            return {
-              mergedFigDict: globalFigDict,
-              newestFigDict: _jsonified,
-              fileName: recentFileName,
-            };
-          } else {
-            let fieldsMatch = true;
-
+          } 
+          else {
+            let fieldsMatch = true; //initilize as true, will set false if the fields don't match.
+            // Check compatibility of datatype
             if (globalFigDict.datatype !== jsonified.datatype) {
               fieldsMatch = false;
               errorDiv.innerText += "The added record's datatype is different. Stopping merging. The two values are: " +
                 String(globalFigDict.datatype) + " " + String(jsonified.datatype) + "\n";
             }
 
+            // Check compatibility of x-axis label (excluding units)
             if (removeUnitFromLabel(globalFigDict.layout.xaxis.title.text) !==
                 removeUnitFromLabel(jsonified.layout.xaxis.title.text)) {
               fieldsMatch = false;
@@ -84,29 +78,30 @@ import { cleanJsonFigDict } from './figDictUtils.js';
                 removeUnitFromLabel(jsonified.layout.yaxis.title.text) + "\n";
             }
 
-            if (fieldsMatch) {
-              let _jsonified = JSON.parse(JSON.stringify(jsonified));
-              _jsonified = await executeImplicitDataSeriesOperations(_jsonified);
-              _jsonified = await convertUnits(_jsonified, globalFigDict);
-
-              globalFigDict.data = [
-                ...globalFigDict.data,
-                ..._jsonified.data,
-              ];
-
-              return {
-                mergedFigDict: globalFigDict,
-                newestFigDict: _jsonified,
-                fileName: recentFileName,
-              };
-            } else {
-              errorDiv.innerText += `Added data not plotted. The records were not compatible for merging. You may continue trying to add data sets, or may click "Clear Data" to start a new graph. These error messages will be automatically cleared after 10 seconds. \n`;
+            // If fields don't match, show error and exit
+            if (!fieldsMatch) {
+              errorDiv.innerText += `Added data not plotted. The records were not compatible for merging. You may continue trying to add data sets, or may click "Clear Data" to start a new graph. These error messages will be automatically cleared after 10 seconds.\n`;
               setTimeout(() => { errorDiv.innerText = ''; }, 10000);
               return null;
             }
+
+            // STEP 5: Perform unit conversion if the fields match
+            _jsonified = await convertUnits(_jsonified, globalFigDict);
+
+            // Merge new data into global dictionary
+            globalFigDict.data = [...globalFigDict.data, ..._jsonified.data];
           }
+
+          // Return the objects that have been prepared for plotting and downloading.
+          return {
+            mergedFigDict: globalFigDict,
+            newestFigDict: _jsonified,
+            fileName: recentFileName,
+          };
+
         } catch (err) {
-          console.log("Error from plotData: ", err);
+          // Logging error for debugging
+          console.log("Error from prepareForPlotting: ", err);
           throw err;
         }
       }
