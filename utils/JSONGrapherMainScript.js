@@ -147,21 +147,6 @@
       }
 
 
-      async function loadFromUrlParams(urlInput, errorDiv){
-        if (isValidUrl(urlInput)){ 
-          const url = parseUrl(urlInput);
-          let urlReceived
-          [globalFigDict, urlReceived] = await loadMergeAndPlotData(globalFigDict, url, "url", errorDiv);
-          // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
-          //should  make an if statement here to give newestFigDict with filename if only one record has been uploaded
-          // and to otherwise give the full data with name like "mergedGraphRecord.json" for the filename.
-          // urlReceived will be a blank string, "", or a null object, if the record is not from url.
-          if (globalFigDict){appendDownloadButtons(globalFigDict, "mergedJSONGrapherRecord.json", urlReceived);}
-        } else {
-          console.error("No URL entered.");
-          errorDiv.innerText += "Error: Please enter a valid URL.\n";
-        }
-      };
       ///############################ BELOW IS THE MAIN BLOCK OF CODE FOR JSON GRAPHER ##################################
       if (urlParamsString) {
         //This waiting of the DOM to be loaded line is because the "isValidURL" and other functions need to load from the modules.
@@ -282,6 +267,22 @@
       // Start the JSONGrapherWebGUI listeners and give them the loadAndPlotData function to use when they receive something.
       await startJSONGrapherWebGUIListenersWithCallBack(loadMergeAndPlotData, errorDiv);
 
+      async function loadFromUrlParams(urlInput, errorDiv){
+        if (isValidUrl(urlInput)){ 
+          const url = parseUrl(urlInput);
+          let urlReceived
+          [globalFigDict, urlReceived] = await loadMergeAndPlotData(globalFigDict, url, "url", errorDiv);
+          // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
+          //should  make an if statement here to give newestFigDict with filename if only one record has been uploaded
+          // and to otherwise give the full data with name like "mergedGraphRecord.json" for the filename.
+          // urlReceived will be a blank string, "", or a null object, if the record is not from url.
+          if (globalFigDict){appendDownloadButtons(globalFigDict, "mergedJSONGrapherRecord.json", urlReceived);}
+        } else {
+          console.error("No URL entered.");
+          errorDiv.innerText += "Error: Please enter a valid URL.\n";
+        }
+      };
+      
       // This function is called when the user drops a file or uploads it via the input button or drag and drop
       // This function is also called when a url is provided, in which case the event is the url string and the eventType is "url".
       async function loadMergeAndPlotData(existingFigDict, event, eventType, errorDiv) {
