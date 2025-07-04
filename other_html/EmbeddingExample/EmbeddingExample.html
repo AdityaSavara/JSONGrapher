@@ -1,0 +1,16 @@
+<!--This will be a simple example that shows how to embed a graph from JSONGrapher.
+The basic steps are to make a div, typically named like "graph1" or "graph2" and then to provide the
+url of the json source file and call the JSONGrapher plotting functions. -->
+<html>
+<body>
+<script type="module">
+    import { loadMergeAndPlotData  } from './../../utils/JSONGrapherMainScript.js'; 
+    urlString = "https://github.com/AdityaSavara/JSONGrapherExamples/blob/main/ExampleDataRecords/1-CO2__Adsorption_Isotherms/CO2AdsorptionNaX2.json"
+    loadMergeAndPlotData(null, urlString, "url", graph2, null);
+</script>
+<div id ="graph2">
+<!-- The graph will be drawn inside this DIV -->
+</div>
+</body>
+</html>
+
