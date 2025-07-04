@@ -10,12 +10,13 @@ import { cleanJsonFigDict } from './figDictUtils.js';
 
       // If the data is valid against the schema, then we can proceed to the next step
       // if necessary create download button with json
-      export async function mergeAndplotData(existingFigDict, newFigDict, newFigDictFileName, messagesToUserDiv, errorDiv) {
+      // It's recommended to use a divName like Graph1 so that you are able to use Graph1, Graph2, Graph3, etc.
+      export async function mergeAndplotData(existingFigDict, newFigDict, newFigDictFileName, graphDivName, messagesToUserDiv, errorDiv) {
         // STEP 4 and STEP 5 is done in the prepareForPlotting function
         const { mergedFigDict, fileName, newestFigDict } = await prepareForPlotting(existingFigDict, newFigDict, newFigDictFileName, errorDiv); 
         if (mergedFigDict) {
           // STEP 7: Then create a plotly JSON, clean it, and render it on the browser
-          plot_with_plotly(mergedFigDict);
+          plot(mergedFigDict, graphDivName);
           //Replace existing "Data Plotted" message if it is already there, to avoid duplicating it.
           if (!messagesToUserDiv.innerText) { //Currently, we assume the below message is present or not present. If we later put additional messagesToUser, we may need to add more logic.
             const dataPlottedMessage = "\u2003\u2003\u2003\u2003\u2003\u2003 Data plotted! Add more data or click 'Clear Data' to start a new graph! \u2003\u2003\u2003\u2003\u2003\u2003"
@@ -112,8 +113,8 @@ import { cleanJsonFigDict } from './figDictUtils.js';
       }
 
 
-      // A function that visualizes the data with plotly
-      async function plot_with_plotly(figDict) {
+      // A function that visualizes the data with plotly, within the div that has been specified.
+      async function plot(figDict, graphDivName="graph1") {
         let plotStyle = { layout_style: "", trace_styles_collection: "" };
           if (JSON.stringify(plotStyle) === JSON.stringify({ layout_style: "", trace_styles_collection: "" })) {
               plotStyle = figDict.plot_style ?? { layout_style: "", trace_styles_collection: "" };
@@ -140,7 +141,7 @@ import { cleanJsonFigDict } from './figDictUtils.js';
           }
           // Ensure Plotly is available before calling newPlot
           if (typeof Plotly !== "undefined") {
-              await Plotly.newPlot("plotlyDiv", copyForPlotly.data, copyForPlotly.layout);
+              await Plotly.newPlot(graphDivName, copyForPlotly.data, copyForPlotly.layout);
           } else {
               console.error("Plotly is not loaded.");
           }

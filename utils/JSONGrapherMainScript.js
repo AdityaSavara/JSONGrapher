@@ -30,7 +30,7 @@
       window.convert = convert //This is so simulateUtils can access convert. TODO: Find a better solution to provide access to convert for simulateUtils.
 
       // A function that clears the data from global variables and removes the error text and plotly chart
-      export function clearData() {
+      export function clearData(graphDivName) {
         globalFigDict = null;
         urlParamsString = null; //empty this global variable.
         document.getElementById("errorDiv").innerHTML = "";
@@ -45,7 +45,7 @@
         toggleSection1.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
         toggleSection2.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
         toRevealSection.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
-        Plotly.purge("plotlyDiv");
+        Plotly.purge(graphDivName);
       }
 
 
@@ -150,7 +150,9 @@
         //More likely, those functions should stay in this file, while the main function should be moved into a module.
         //That way, an external json can be called and downloaded even before the DOM is finished loading.
         document.addEventListener('DOMContentLoaded', () => {
-          loadFromUrlParams(urlParamsString, errorDiv);
+          //I have hardcoded this event listener to plot to the Graph1 div.
+          //It is also hardcoded to pass in the globalFigDict.
+          loadFromUrlParams(globalFigDict, urlParamsString, "graph1", errorDiv);
           //This function needs to toggle the reveal/hide blocks directly, since it is like an independent event listener.
           const toggleSection1 = document.getElementById("toggleSection2");
           const toggleSection2 = document.getElementById("toggleSection2");
@@ -163,7 +165,7 @@
       
       //callbackForPlotting is a function that gets passed in.
       // When a new figDict is passed, in, the callBack does things like the merging and plotting, and returns the revised globalFigDict.
-      async function startJSONGrapherWebGUIListenersWithCallBack(callbackForMergingAndPlotting, errorDiv) {
+      async function startJSONGrapherWebGUIListenersWithCallBack(callbackForMergingAndPlotting, graphDivName, errorDiv) {
         try {
           const toggleSection1 = document.getElementById("toggleSection1"); //get toggle section so actions can hide it.
           const toggleSection2 = document.getElementById("toggleSection2"); //get toggle section so actions can hide it.         
@@ -189,7 +191,8 @@
                     toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
                 };
                 let urlReceived
-                [globalFigDict, urlReceived] = await callbackForMergingAndPlotting(globalFigDict, event, "change", errorDiv);
+                //These callbacks are hardcoded to use the globalFigDict.
+                [globalFigDict, urlReceived] = await callbackForMergingAndPlotting(globalFigDict, event, "change", graphDivName, errorDiv);
                 // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
                 //should  make an if statement here to give newestFigDict with filename if only one record has been uploaded
                 // and to otherwise give the full data with name like "mergedGraphRecord.json" for the filename.
@@ -219,7 +222,8 @@
                   toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
                 };
                 let urlReceived
-                [globalFigDict, urlReceived] = await callbackForMergingAndPlotting(globalFigDict, event, "drop", errorDiv);
+                //These callbacks are hardcoded to use the globalFigDict.
+                [globalFigDict, urlReceived] = await callbackForMergingAndPlotting(globalFigDict, event, "drop", graphDivName, errorDiv);
                 // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
                 //should  make an if statement here to give newestFigDict with filename if only one record has been uploaded
                 // and to otherwise give the full data with name like "mergedGraphRecord.json" for the filename.
@@ -240,7 +244,8 @@
                 toggleSection2.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
                 toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
                 let urlReceived
-                [globalFigDict, urlReceived] = await callbackForMergingAndPlotting(globalFigDict, url, "url", errorDiv);
+                //These callbacks are hardcoded to use the globalFigDict.
+                [globalFigDict, urlReceived] = await callbackForMergingAndPlotting(globalFigDict, url, "url", graphDivName, errorDiv);
                 // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
                 //should  make an if statement here to give newestFigDict with filename if only one record has been uploaded
                 // and to otherwise give the full data with name like "mergedGraphRecord.json" for the filename.
@@ -259,13 +264,17 @@
       }
 
       // Start the JSONGrapherWebGUI listeners and give them the loadAndPlotData function to use when they receive something.
-      await startJSONGrapherWebGUIListenersWithCallBack(loadMergeAndPlotData, errorDiv);
+      // Here, I am using graph1 for the graphDivName.
+      // There is also an "implied" argument of globalFigDict.
+      await startJSONGrapherWebGUIListenersWithCallBack(loadMergeAndPlotData, "graph1", errorDiv);
 
-      async function loadFromUrlParams(urlInput, errorDiv){
+      //This loads from url params. Url params are variables in the url after a "?", for example:
+      // http://www.jsongrapher.com?fromUrl=https%3A%2F%2Fraw.githubusercontent.com%2FAdityaSavara%2FJSONGrapherExamples%2Fmain%2FExampleDataRecords%2F9-3DArrhenius%2FRate_Constant_scatter3d.json
+      async function loadFromUrlParams(existingFigDict, urlInput, graphDivName, errorDiv){
         if (isValidUrl(urlInput)){ 
           const url = parseUrl(urlInput);
           let urlReceived
-          [globalFigDict, urlReceived] = await loadMergeAndPlotData(globalFigDict, url, "url", errorDiv);
+          [globalFigDict, urlReceived] = await loadMergeAndPlotData(existingFigDict, url, "url", graphDivName, errorDiv);
           // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
           //should  make an if statement here to give newestFigDict with filename if only one record has been uploaded
           // and to otherwise give the full data with name like "mergedGraphRecord.json" for the filename.
@@ -279,7 +288,8 @@
       
       // This function is called when the user drops a file or uploads it via the input button or drag and drop
       // This function is also called when a url is provided, in which case the event is the url string and the eventType is "url".
-      async function loadMergeAndPlotData(existingFigDict, event, eventType, errorDiv) {
+      // existingFigDict may be null if this is the first item.
+      async function loadMergeAndPlotData(existingFigDict, event, eventType, graphDivName, errorDiv) {
         let loadingMessage = "Loading and plotting data, including evaluating any equations and running any simulations.";
         errorDiv.innerText += loadingMessage; //We want to use a variable so we can remove the loading message, later.
         //loadData Block
@@ -290,8 +300,8 @@
         //validateData Block
         let newFigDict = jsonified
         newFigDict = await validateData(newFigDict, errorDiv); // STEP 3
-        //plotData Block, also merges the newFigDict into the existingFigDict
-        const updatedFigDict = await mergeAndplotData(existingFigDict, newFigDict, recentFileName, messagesToUserDiv, errorDiv); // STEP 4-7
+        //plotData Block, also merges the newFigDict into the existingFigDict. existingFigDict may be null if this is the first item.
+        const updatedFigDict = await mergeAndplotData(existingFigDict, newFigDict, recentFileName, graphDivName, messagesToUserDiv, errorDiv); // STEP 4-7
         errorDiv.innerText = errorDiv.innerText.replace(loadingMessage, "");
         return [updatedFigDict, urlReceived]
       }
