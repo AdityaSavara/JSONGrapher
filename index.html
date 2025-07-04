@@ -25,7 +25,7 @@
     <script src="./styles/layout_styles_library.js"></script>
     <script src="./styles/trace_styles_collection_library.js"></script>
     <script type="module"> 
-      import { jsonifyData, findFileType, jsonifyTSV, jsonifyCSV, getFileName, readFileAsText } from './utils/fileUtils.js'; 
+      import { jsonifyData, findFileType, jsonifyTSV, jsonifyCSV, getBaseFileName, readFileAsText } from './utils/fileUtils.js'; 
       import { loadJsonFromUrl, isValidUrl, createDownloadJSONLink, createDownloadCSVLink, jsonToUrl, createCopyUrlLink, addOpeningURLonButtonClick, addDownloadingLinkToButton, parseUrl } from './utils/linkUtils.js'; 
       import { clearData } from './utils/JSONGrapherMainScript.js'; 
     </script>  
@@ -141,7 +141,7 @@
       <p></p>
       <div class="file-actions">
         <input type="file" id="file-selector" />
-        <button id="reset" onclick="clearData()">Clear Data</button>
+        <button id="reset" onclick="clearData('graph1')">Clear Data</button><!--hardcoding graph1 as the graphDivName for clearing data. graph1 div is lower down.-->
         <button id="load-from-url">From URL</button>        
         <button id="download" style="display: none">
           Download Last Data Set as a JSON File
@@ -155,8 +155,8 @@
       </div>
       <div id="messagesToUserDiv"></div>
       <div id="errorDiv"></div>
-      <div id="plotlyDiv">
-        <!-- Plotly chart will be drawn inside this DIV -->
+      <div id="graph1">
+        <!-- The graph will be drawn inside this DIV -->
       </div>
       <div id="downloadLink"></div>
       <div id="copyUrlLink"></div>

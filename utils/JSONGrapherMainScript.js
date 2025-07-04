@@ -1,10 +1,7 @@
-      import { jsonifyData, findFileType, createCSV, getFileName, readFileAsText } from './fileUtils.js'; 
-      import {initializeUniversalSchemas, getSchemaType, mergeFigDictWithTemplate, getSchemaLocation} from './schemaUtils.js'
-      import {getUnitFromLabel, removeUnitFromLabel, replaceSuperscripts} from './unitUtils.js'
-      import {convertUnits} from './figDictUtils.js'
-      import {executeImplicitDataSeriesOperations} from './json_equationer/implicitUtils.js'
-      import { parsePlotStyle, applyPlotStyleToPlotlyDict } from './styleUtils.js';
-      import { cleanJsonFigDict } from './figDictUtils.js'; 
+      import { jsonifyData, findFileType, createCSV, getBaseFileName, readFileAsText } from './fileUtils.js'; 
+      import {initializeUniversalSchemas, getSchemaType, mergeFigDictWithTemplate, getSchemaLocation, validateData} from './schemaUtils.js'
+      import { loadJsonFromUrl, isValidUrl, parseUrl } from './linkUtils.js'; 
+      import {mergeAndplotData, prepareForPlotting} from './plottingUtils.js'
 
       function copyJson(obj) { //for debugging.
         return JSON.parse(JSON.stringify(obj));
@@ -21,18 +18,11 @@
 
 
       // Global Variables
-      let globalData = null;
-      let plotlyTemplate = null;
-      let schema = null;
-      let recentFileName = null;
+      let globalFigDict = null;
       let url = window.location.href; // Get the current page URL         
       let params = new URLSearchParams(new URL(url).search);
       let urlParamsString = params.get("fromUrl"); //default ends up as null.
-      let urlReceived = "" //Start as an empty string. Will populate this later from the user's input or from the urlParamsString
 
-
-      // Initializing the AJV validator
-      const ajv = new Ajv();
       const errorDiv = document.getElementById("errorDiv");
       const messagesToUserDiv = document.getElementById("messagesToUserDiv");
       // Initiating the UUC converter
@@ -40,10 +30,9 @@
       window.convert = convert //This is so simulateUtils can access convert. TODO: Find a better solution to provide access to convert for simulateUtils.
 
       // A function that clears the data from global variables and removes the error text and plotly chart
-      export function clearData() {
-        globalData = null;
+      export function clearData(graphDivName) {
+        globalFigDict = null;
         urlParamsString = null; //empty this global variable.
-        urlReceived = null; //empty this global variable.
         document.getElementById("errorDiv").innerHTML = "";
         document.getElementById("messagesToUserDiv").innerHTML = "";
         document.getElementById("downloadButtonsContainer").innerHTML = "";
@@ -56,51 +45,17 @@
         toggleSection1.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
         toggleSection2.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
         toRevealSection.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
-        Plotly.purge("plotlyDiv");
+        Plotly.purge(graphDivName);
       }
 
-      // A function that visualizes the data with plotly
-      async function plot_with_plotly(figDict) {
-        let plotStyle = { layout_style: "", trace_styles_collection: "" };
-          if (JSON.stringify(plotStyle) === JSON.stringify({ layout_style: "", trace_styles_collection: "" })) {
-              plotStyle = figDict.plot_style ?? { layout_style: "", trace_styles_collection: "" };
-          }
 
-          let copyForPlotly = JSON.parse(JSON.stringify(figDict)); // Plotly mutates the input, and we also do when applying plot style.      
-          //offset2D and arrange2dTo3d must be executed after making the copy, if requested. The other implicit functions have already been called.
-          copyForPlotly = await executeImplicitDataSeriesOperations(copyForPlotly, false, false, false, true, true);
-          // Parse the plot style
-          plotStyle = parsePlotStyle(plotStyle);
-          // Apply the plot style
-          copyForPlotly = applyPlotStyleToPlotlyDict(copyForPlotly, plotStyle);
-
-          // Clean out the fields to make a Plotly figDict
-          copyForPlotly = cleanJsonFigDict(copyForPlotly, ['simulate', 'custom_units_chevrons', 'equation', 'trace_style', '3d_axes', 'bubble', 'superscripts', 'nested_comments', 'extraInformation']);          
-
-          // Replace superscripts in some fields for Plotly
-          if (copyForPlotly.layout.scene) {
-            copyForPlotly.layout.scene.yaxis.title.text = replaceSuperscripts(copyForPlotly.layout.scene.yaxis.title?.text ?? "");
-            copyForPlotly.layout.scene.xaxis.title.text = replaceSuperscripts(copyForPlotly.layout.scene.xaxis.title?.text ?? "");
-          } else {
-            copyForPlotly.layout.yaxis.title.text = replaceSuperscripts(copyForPlotly.layout.yaxis.title?.text ?? "");
-            copyForPlotly.layout.xaxis.title.text = replaceSuperscripts(copyForPlotly.layout.xaxis.title?.text ?? "");
-          }
-          // Ensure Plotly is available before calling newPlot
-          if (typeof Plotly !== "undefined") {
-              await Plotly.newPlot("plotlyDiv", copyForPlotly.data, copyForPlotly.layout);
-          } else {
-              console.error("Plotly is not loaded.");
-          }
-      }
 
       function createCopyURLButton(jsonURL) {
           // Generate the URL
-          const urlString = createCopyUrlLink(jsonURL);
-          
+          const urlString = createCopyUrlLink(jsonURL);       
           // Create the button
           const copyButton = document.createElement("button");
           copyButton.innerText = "Copy URL";
-          
           // Function to copy text using a fallback method if navigator way doesn't work.
           function fallbackCopyText(text) {
               const textArea = document.createElement("textarea");
@@ -110,7 +65,6 @@
               document.execCommand("copy");
               document.body.removeChild(textArea);
           }
-
           // Add click event listener to copy to clipboard
           copyButton.addEventListener("click", () => {
               if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -128,7 +82,6 @@
       }
 
       // A function that will create a download button for the csv file
-      //As of 6/15/2025, this file only contains data from the most recently uploaded dataset.
       function createDownloadCSVButton(csv, filename) {
         // Creating a download link for the csv file
         const downloadLink = createDownloadCSVLink(csv.csv, filename);
@@ -141,7 +94,6 @@
       }
 
       //A function that will create a download button for the JSON file
-      //As of 6/15/2025, this file only contains data from the most recently uploaded dataset.
       // For the first argument, this takes in a json object (a "javascript object", not a string)
       // For the second argument, the filename field is a string.
       function createDownloadJSONButton(json, filename) {
@@ -158,7 +110,7 @@
 
       // A function that will append a download button to the page
       // The button will be appended after the element with the id beforeElId
-      function appendDownloadButtons(jsonified, filename) {
+      function appendDownloadButtons(jsonified, filename, urlReceived) {
         // Parse csv from jsonified
         const csvContent = createCSV(jsonified);
         // Create download csv button
@@ -173,35 +125,24 @@
           // Below was when I tried to put the whole JSON record into the URL, but that was quickly too long for webservers and browsers.
           //const downloadURLButton = createCopyURLButton(jsonified);
         };
-        
         const buttonsContainer = document.getElementById(
           "downloadButtonsContainer"
         );
         // insert a download button with downloadLink after downloadJSON
         // Clear the container
         buttonsContainer.innerHTML =
-          "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Download Last Data Set As:"; //&nbsp; is HTML code to add a space.
+          "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Download Graph Record As:"; //&nbsp; is HTML code to add a space.
         // Add download JSON button
         buttonsContainer.appendChild(downloadJSONButton);
         // Add download CSV button
         buttonsContainer.appendChild(downloadCSVButton);
         // Add download URL button, but only if load from url was used.
-        if (urlReceived){  //use "if urlReceived" because it can be null or "" and this will catch both cases.
+        if (urlReceived){  //use "if urlReceived" because it can be null or "" and this will catch both cases.Could also be undefined.
           buttonsContainer.appendChild(downloadURLButton);
         }
       }
 
 
-      async function loadFromUrlParams(urlInput){
-        if (isValidUrl(urlInput)){ 
-          const url = parseUrl(urlInput);
-          urlReceived = url //This line is populating a global variable. 
-          loadAndPlotData(url, "url");
-        } else {
-          console.error("No URL entered.");
-          errorDiv.innerText += "Error: Please enter a valid URL.\n";
-        }
-      };
       ///############################ BELOW IS THE MAIN BLOCK OF CODE FOR JSON GRAPHER ##################################
       if (urlParamsString) {
         //This waiting of the DOM to be loaded line is because the "isValidURL" and other functions need to load from the modules.
@@ -209,26 +150,35 @@
         //More likely, those functions should stay in this file, while the main function should be moved into a module.
         //That way, an external json can be called and downloaded even before the DOM is finished loading.
         document.addEventListener('DOMContentLoaded', () => {
-          loadFromUrlParams(urlParamsString);
+          //I have hardcoded this event listener to plot to the Graph1 div.
+          //It is also hardcoded to pass in the globalFigDict.
+          loadFromUrlParams(globalFigDict, urlParamsString, "graph1", errorDiv);
+          //This function needs to toggle the reveal/hide blocks directly, since it is like an independent event listener.
+          const toggleSection1 = document.getElementById("toggleSection2");
+          const toggleSection2 = document.getElementById("toggleSection2");
+          const toRevealSection = document.getElementById("toReveal"); //get toReveal section so actions can reveal
+          toggleSection1.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
+          toggleSection2.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
+          toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
         });
       };
-      // STEP 0: Prepare the 'universal' schemas occurs inside initializeJSONGrapher
-      initializeUniversalSchemas()
-        .then((resp) => {
+      
+      //callbackForPlotting is a function that gets passed in.
+      // When a new figDict is passed, in, the callBack does things like the merging and plotting, and returns the revised globalFigDict.
+      async function startJSONGrapherWebGUIListenersWithCallBack(callbackForMergingAndPlotting, graphDivName, errorDiv) {
+        try {
           const toggleSection1 = document.getElementById("toggleSection1"); //get toggle section so actions can hide it.
           const toggleSection2 = document.getElementById("toggleSection2"); //get toggle section so actions can hide it.         
           const toRevealSection = document.getElementById("toReveal"); //get toReveal section so actions can reveal
-          // Assign variables to the two universal schemas.
-          schema = resp[0];
-          plotlyTemplate = resp[1];
-           // STEP 1: User selects a file from computer or drops a file on the browser
-           // Checks if the browser supports the File API
-           // User selects a file or drags/drops one
+
+          // STEP 1: User selects a file from computer or drops a file on the browser
+          // Checks if the browser supports the File API
+          // User selects a file or drags/drops one
           if (window.FileList && window.File) {
             // Event that fires when the user selects a file from the computer from the choose file button
             const fileSelector = document.getElementById("file-selector");
             if (fileSelector) {
-              fileSelector.addEventListener("change", (event) => {
+              fileSelector.addEventListener("change", async (event) => {
                 const file = event.target.files[0]; //this is a local temporary variable.
                 const fileName = file.name; //this is a local temporary variable
                 if (
@@ -240,19 +190,25 @@
                     toggleSection2.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
                     toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
                 };
-                loadAndPlotData(event, "change");
+                let urlReceived
+                //These callbacks are hardcoded to use the globalFigDict.
+                [globalFigDict, urlReceived] = await callbackForMergingAndPlotting(globalFigDict, event, "change", graphDivName, errorDiv);
+                // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
+                //should  make an if statement here to give newestFigDict with filename if only one record has been uploaded
+                // and to otherwise give the full data with name like "mergedGraphRecord.json" for the filename.
+                // urlReceived will be a blank string, "", or a null object, if the record is not from url.
+                if (globalFigDict){appendDownloadButtons(globalFigDict, "mergedJSONGrapherRecord.json", urlReceived);}                
               });
             }
             // Event listener for drag and drop
             const dropArea = document.getElementById("file-drop-area");
             if (dropArea) {
-              dropArea.addEventListener("dragover", (event) => {
+              dropArea.addEventListener("dragover", async (event) => {
                 event.stopPropagation();
                 event.preventDefault();
                 event.dataTransfer.dropEffect = "copy";
               });
-
-              dropArea.addEventListener("drop", (event) => {
+              dropArea.addEventListener("drop", async (event) => {
                 event.preventDefault();
                 const file = event.dataTransfer.files[0]; //this is a local temporary variable
                 const fileName = file.name; //this is a local temporary variable
@@ -265,7 +221,14 @@
                   toggleSection2.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
                   toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
                 };
-                loadAndPlotData(event, "drop");
+                let urlReceived
+                //These callbacks are hardcoded to use the globalFigDict.
+                [globalFigDict, urlReceived] = await callbackForMergingAndPlotting(globalFigDict, event, "drop", graphDivName, errorDiv);
+                // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
+                //should  make an if statement here to give newestFigDict with filename if only one record has been uploaded
+                // and to otherwise give the full data with name like "mergedGraphRecord.json" for the filename.
+                // urlReceived will be a blank string, "", or a null object, if the record is not from url.
+                if (globalFigDict){appendDownloadButtons(globalFigDict, "mergedJSONGrapherRecord.json", urlReceived);}
               });
             }
           }
@@ -273,36 +236,85 @@
           // User inputs URL via a prompt instead of selecting/dropping a file
           const loadFromUrlButton = document.getElementById("load-from-url");
           if (loadFromUrlButton) {
-            loadFromUrlButton.addEventListener("click", () => {
+            loadFromUrlButton.addEventListener("click", async () => {
               const urlInput = window.prompt("Enter the URL with a desired .json File:");
               if (isValidUrl(urlInput)){ 
                 const url = parseUrl(urlInput);
-                urlReceived = url //This line is populating a global variable. 
                 toggleSection1.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
                 toggleSection2.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
                 toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
-                loadAndPlotData(url, "url");
+                let urlReceived
+                //These callbacks are hardcoded to use the globalFigDict.
+                [globalFigDict, urlReceived] = await callbackForMergingAndPlotting(globalFigDict, url, "url", graphDivName, errorDiv);
+                // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
+                //should  make an if statement here to give newestFigDict with filename if only one record has been uploaded
+                // and to otherwise give the full data with name like "mergedGraphRecord.json" for the filename.
+                // urlReceived will be a blank string, "", or a null object, if the record is not from url.
+                if (globalFigDict){appendDownloadButtons(globalFigDict, "mergedJSONGrapherRecord.json", urlReceived);}
               } else {
                 console.error("No URL entered.");
                 errorDiv.innerText += "Error: Please enter a valid URL.\n";
               }
             });
           }
-        })
-        .catch((e) => {
-          console.log(e);
+        } catch (e) {
+          console.log("Error from setupJsonGrapher: ", e);
           errorDiv.innerText += "Error fetching json-schema files...\n";
-        });
+        }
+      }
 
+      // Start the JSONGrapherWebGUI listeners and give them the loadAndPlotData function to use when they receive something.
+      // Here, I am using graph1 for the graphDivName.
+      // There is also an "implied" argument of globalFigDict.
+      await startJSONGrapherWebGUIListenersWithCallBack(loadMergeAndPlotData, "graph1", errorDiv);
 
+      //This loads from url params. Url params are variables in the url after a "?", for example:
+      // http://www.jsongrapher.com?fromUrl=https%3A%2F%2Fraw.githubusercontent.com%2FAdityaSavara%2FJSONGrapherExamples%2Fmain%2FExampleDataRecords%2F9-3DArrhenius%2FRate_Constant_scatter3d.json
+      async function loadFromUrlParams(existingFigDict, urlInput, graphDivName, errorDiv){
+        if (isValidUrl(urlInput)){ 
+          const url = parseUrl(urlInput);
+          let urlReceived
+          [globalFigDict, urlReceived] = await loadMergeAndPlotData(existingFigDict, url, "url", graphDivName, errorDiv);
+          // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
+          //should  make an if statement here to give newestFigDict with filename if only one record has been uploaded
+          // and to otherwise give the full data with name like "mergedGraphRecord.json" for the filename.
+          // urlReceived will be a blank string, "", or a null object, if the record is not from url.
+          if (globalFigDict){appendDownloadButtons(globalFigDict, "mergedJSONGrapherRecord.json", urlReceived);}
+        } else {
+          console.error("No URL entered.");
+          errorDiv.innerText += "Error: Please enter a valid URL.\n";
+        }
+      };
+      
       // This function is called when the user drops a file or uploads it via the input button or drag and drop
-      async function loadAndPlotData(event, eventType) {
+      // This function is also called when a url is provided, in which case the event is the url string and the eventType is "url".
+      // existingFigDict may be null if this is the first item.
+      async function loadMergeAndPlotData(existingFigDict, event, eventType, graphDivName, errorDiv) {
         let loadingMessage = "Loading and plotting data, including evaluating any equations and running any simulations.";
         errorDiv.innerText += loadingMessage; //We want to use a variable so we can remove the loading message, later.
+        //loadData Block
+        let urlReceived = null; //initialize.
+        //the "event" variable holds the url when a url is received.
+        if (eventType==="url"){urlReceived=event};
+        let { jsonified, recentFileName, fileType } = await loadData(event, eventType, errorDiv); // STEP 0, STEP 1, STEP 2
+        //validateData Block
+        let newFigDict = jsonified
+        newFigDict = await validateData(newFigDict, errorDiv); // STEP 3
+        //plotData Block, also merges the newFigDict into the existingFigDict. existingFigDict may be null if this is the first item.
+        const updatedFigDict = await mergeAndplotData(existingFigDict, newFigDict, recentFileName, graphDivName, messagesToUserDiv, errorDiv); // STEP 4-7
+        errorDiv.innerText = errorDiv.innerText.replace(loadingMessage, "");
+        return [updatedFigDict, urlReceived]
+      }
+
+      async function loadData(event, eventType, errorDiv) {
         let fileType; //Initializing filetype.
         let jsonified; // initializing
         let dataLoaded // initializing
-        // Checks if the file is dropped and if it is uploaded via the input button and gets the file
+        let recentFileName = null; 
+        // STEP 0: Prepare the 'universal' schemas occurs inside initializeUniversalSchemas
+        const [schema1json, schema2json] = await initializeUniversalSchemas();
+        const schema = schema1json; //unused
+        const plotlyTemplate = schema2json;
         // STEP 1 (Variation A): User selects a file from computer or drops a file on the browser
         //TODO: Variation A should probably be functionalized to take event, eventType and return jsonified
         if (eventType === "change" || eventType === "drop") {
@@ -320,25 +332,18 @@
             dataLoaded = await readFileAsText(file);
           } catch (error) {
             errorDiv.innerText += `Error: Failed to read file. ${error.message} \n`;
-            return;
+            return {};
           }
           document.getElementById("file-selector").value = ""; // resetting to blank.
           fileType = findFileType(file.name); //initialized near beginning of loadAndPlotData
-          recentFileName = getFileName(file.name);//This is a global variable.
+          recentFileName = getBaseFileName(file.name);//This is a global variable.
         }
         // STEP 1 (Variation B): User Providees a URL.
-        //Should actually also also csv, probably.
-        if (eventType === "url"){
-          jsonified = await loadJsonFromUrl(event);//the event will have the url in it.
-          fileType = "json";
-          const toggleSection1 = document.getElementById("toggleSection2");
-          const toggleSection2 = document.getElementById("toggleSection2");
-          const toRevealSection = document.getElementById("toReveal"); //get toReveal section so actions can reveal
-          toggleSection1.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
-          toggleSection2.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
-          toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
-        }  
-        // STEP 2 (VARIATION A): If the file is a .csv or .tsv file it is converted to a .json file
+        if (eventType === "url") {
+          fileType = "json"; //Should update to support csv in future.
+          jsonified = await loadJsonFromUrl(event); //the event will have the url in it.
+        }
+        // STEP 2 (If needed): If the file is a .csv or .tsv file it is converted to a .json file
         if (eventType === "change" || eventType === "drop") {
           try {
             // try to parse the file as json
@@ -347,138 +352,7 @@
             errorDiv.innerText += `Error: Data record could not be converted to JSON. If it is in a zipfile, unzip before uploading. Error Details: ${e.message} \n`;
           }
         }
-        // Checking if the uploaded data is valid against the schema
-        // STEP 3: Check if the jsonified object is a valid JSON file against the schema
-        let [schema_type, schema_template] = await getSchemaType(jsonified);
-
-        if (Object.keys(schema_type).length === 0) {
-          errorDiv.innerText +=
-            "Schema check: There was no Schema specific to this DataType, or the schema was not compatible. The default scatter plot schema was used.\n";
-          schema_type = schema;
-        }
-
-        // validate the json
-        const validate = ajv.compile(schema_type);
-        const valid = validate(jsonified);
-
-        if (!valid) {
-          // Console log an error if the data is not valid against the schema
-          console.log("validate errors: ", JSON.stringify(validate.errors));
-          // Display an error message if the data is not valid against the schema
-          errorDiv.innerText += `Json file does not match the schema. ${JSON.stringify(
-            validate.errors
-          )}\n`;
-          errorDiv.innerText += `Json file does not match the schema. ${JSON.stringify(
-            validate.errors
-          )}\n`;
-        } else {
-          let _jsonified = jsonified;
-          if (Object.keys(schema_template).length !== 0) {
-            _jsonified = mergeFigDictWithTemplate(jsonified, schema_template);
-          }
-          // If the data is valid against the schema, then we can proceed to the next step
-          // if necessary create download button with json
-          // STEP 4 and STEP 5 is done in the prepareForPlotting function
-          const res = await prepareForPlotting(_jsonified, recentFileName); //recentFileName is a global variable. 
-          // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
-          appendDownloadButtons(res.downloadData, res.fileName);
-          // STEP 7: The create a plotly JSON, clean it, and render it on the browser
-          plot_with_plotly(res.data);
-          //Replace existing "Data Plotted" message if it is already there, to avoid duplicating it.
-          if (!messagesToUserDiv.innerText){ //Currently, we assume the below message is present or not present. If we later put additional messagesToUser, we may need to add more logic.
-            const dataPlottedMessage = "\u2003\u2003\u2003\u2003\u2003\u2003 Data plotted! Add more data or click 'Clear Data' to start a new graph! \u2003\u2003\u2003\u2003\u2003\u2003"
-            messagesToUserDiv.innerText += dataPlottedMessage
-          }
-          }
-        errorDiv.innerText = errorDiv.innerText.replace(loadingMessage,"");
-      }
-
-
-      // This a function that plots the data on the graph
-      //the input, jsonified, is the new figDict. globalData is the 'global' figDict.
-      async function prepareForPlotting(jsonified, filename) {
-        return new Promise(async (resolve, reject) => {
-          try {
-            // Checks if the Jsonified is the first file uploaded
-            if (!globalData) {
-              let _jsonified = JSON.parse(JSON.stringify(jsonified)); //make a local copy
-              globalData = copyJson(_jsonified); //populate global figDict since this is the first record received.            
-
-              // Get the unit from the label
-              const xUnit = getUnitFromLabel(_jsonified.layout.xaxis.title.text);
-              const yUnit = getUnitFromLabel(_jsonified.layout.yaxis.title.text);
-
-              // Adding the extracted units to _jsonified
-              _jsonified.unit = {
-                x: xUnit,
-                y: yUnit,
-              };
-              // STEP 4: Check if the object has a dataSet that has a simulate key in it, and runs the simulate function based on the value provided in the key model
-              // Iterate through the dataset and check if there is a simulation to run for each dataset
-              _jsonified = await executeImplicitDataSeriesOperations(_jsonified); //_jsonified is a figDict.
-              
-              // There is  no STEP 5 for first record, because first record provided by the user is used to define the units of GlobalData.
-              //After going through all datasets for implicit dataseries updates, we set globalData equal to the updated _jsonified, since this is the first record.
-              globalData = _jsonified
-              //Finally, return the objects that have been prepared for plotting and downloading.
-              resolve({
-                data: globalData,
-                downloadData: _jsonified,
-                fileName: recentFileName, //recentFileName is a global variable.
-              });
-            } else {
-              // If the Jsonified is not the first file uploaded, then we can proceed to the next step
-              let fieldsMatch=true; //initialize this variable as true, and set it to false if any fields that need to match do not.
-              //Check if the datatype fields match. Should actually be doing the hierarchical check with the underscores.
-              if (globalData.datatype !== jsonified.datatype){
-                fieldsMatch=false;
-                errorDiv.innerText += "The added record's datatype is different. Stopping merging. The two values are: " + String(globalData.datatype) + " " + +String(jsonified.datatype) +   "\n";
-              }
-              //Check if the xaxis titles are the same after removing the units area. Ideally, should check if the units are convertable.
-              if (removeUnitFromLabel(globalData.layout.xaxis.title.text) !==
-                  removeUnitFromLabel(jsonified.layout.xaxis.title.text)){
-                fieldsMatch=false;
-                errorDiv.innerText += "The added record's xaxis label text is different. Stopping merging. The two values are: " + removeUnitFromLabel(globalData.layout.xaxis.title.text) + " " +removeUnitFromLabel(jsonified.layout.xaxis.title.text) +   "\n";
-              }
-              //Check if the yaxis titles are the same after removing the units area. Ideally, should check if the units are convertable.
-              if (removeUnitFromLabel(globalData.layout.yaxis.title.text) !==
-                  removeUnitFromLabel(jsonified.layout.yaxis.title.text)){
-                fieldsMatch=false;
-                errorDiv.innerText += "The added record's yaxis label text is different. Stopping merging. The two values are: " + removeUnitFromLabel(globalData.layout.yaxis.title.text) + " " +removeUnitFromLabel(jsonified.layout.yaxis.title.text) +   "\n";
-              }
-              if(fieldsMatch)
-              {
-                // create a deep copy of jsonified to avoid mutating the original jsonified
-                let _jsonified = JSON.parse(JSON.stringify(jsonified));
-                // STEP 4: Check if the object has a dataSet that has a simulate key in it, and runs the simulate function based on the value provided in the key model
-                // Iterate through the dataset and check if there is a simulation to run for each dataset
-                _jsonified = await executeImplicitDataSeriesOperations(_jsonified); //globalData is a figDict.
-                
-                // STEP 5: Check if the units in the _jsonified are the same as the units in the overall record and convert them if needed.
-                _jsonified = await convertUnits( _jsonified, globalData);
-
-                // merge the new data with the globalData so everything can be plotted together.
-                globalData.data = [
-                  ...globalData.data,
-                  ..._jsonified.data,
-                ];
-                //Finally, return the objects that have been prepared for plotting an downloading.
-                resolve({
-                  data: globalData,
-                  downloadData: _jsonified,
-                  fileName: recentFileName,
-                });
-              } else {
-                //clearData(); //Should not clear data when chart or axis titles do not match, just should not plot the new data.
-                errorDiv.innerText += `Added data not plotted. The records were not compatible for merging. You may continue trying to add data sets, or may click "Clear Data" to start a new graph. These error messages will be automatically cleared after 10 seconds. \n`;
-                setTimeout(() => { errorDiv.innerText = '';  }, 10000); // Clears the text after 10 seconds
-              }
-            }
-          } catch (err) {
-            reject(err);
-            console.log("Error from plotData: ", err);
-          }
-        });
+        return { jsonified, recentFileName, fileType };
       }
 
 window.clearData = clearData;

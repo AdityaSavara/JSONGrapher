@@ -1,5 +1,8 @@
+      // Initializing the AJV validator
+      const ajv = new Ajv();
+
       // function to extract from the datatype the location of the schema
-      export function getSchemaLocation(jsonified, template = false) {
+      export function getSchemaLocation(jsonified, template = false, errorDiv = null) {
         if (!jsonified.datatype) {
           errorDiv.innerText += "Warning: The datatype field was not found in the record provided. Accordingly, a schema check will not be performed and the record will not be fully validated. \n";
           jsonified.datatype = ""; // Populate with an empty string
@@ -31,7 +34,7 @@
       }
 
       // function to extract from the datatype the json schema
-      export async function getSchemaType(jsonified) {
+      export async function getSchemaType(jsonified, errorDiv) {
         let schema2body;
         const schema_location = getSchemaLocation(jsonified);
         const schema_template_location = getSchemaLocation(jsonified, true);
@@ -83,6 +86,8 @@
           return [schema1json, schema2json];
         } catch (err) {
           console.log("Error from initializeJSONGrapher: ", err);
+          // Return nulls to maintain consistent output structure on error
+          return [null, null];
         }
       }
 
@@ -96,4 +101,37 @@
         });
 
         return merged;
+      }
+
+
+      
+      export async function validateData(jsonified, errorDiv) {
+        // STEP 3: Check if the jsonified object is a valid JSON file against the schema
+        let [schema_type, schema_template] = await getSchemaType(jsonified, errorDiv);
+
+        if (Object.keys(schema_type).length === 0) {
+          errorDiv.innerText +=
+            "Schema check: There was no Schema specific to this DataType, or the schema was not compatible. The default scatter plot schema was used.\n";
+          schema_type = schema;
+        }
+
+        // validate the json
+        const validate = ajv.compile(schema_type);
+        const valid = validate(jsonified);
+
+        if (!valid) {
+          // Console log an error if the data is not valid against the schema
+          console.log("validate errors: ", JSON.stringify(validate.errors));
+          // Display an error message if the data is not valid against the schema
+          errorDiv.innerText += `Json file does not match the schema. ${JSON.stringify(validate.errors)}\n`;
+          errorDiv.innerText += `Json file does not match the schema. ${JSON.stringify(validate.errors)}\n`;
+          return null;
+        }
+
+        let _jsonified = jsonified;
+        if (Object.keys(schema_template).length !== 0) {
+          _jsonified = mergeFigDictWithTemplate(jsonified, schema_template);
+        }
+
+        return _jsonified;
       }
