@@ -10,7 +10,7 @@ import { cleanJsonFigDict } from './figDictUtils.js';
 
       // If the data is valid against the schema, then we can proceed to the next step
       // if necessary create download button with json
-      export async function plotData(existingFigDict, newFigDict, recentFileName, messagesToUserDiv, errorDiv) {
+      export async function mergeAndplotData(existingFigDict, newFigDict, recentFileName, messagesToUserDiv, errorDiv) {
         // STEP 4 and STEP 5 is done in the prepareForPlotting function
         const { mergedFigDict, fileName, newestFigDict } = await prepareForPlotting(existingFigDict, newFigDict, recentFileName, errorDiv); 
         if (mergedFigDict) {

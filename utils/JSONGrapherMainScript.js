@@ -1,7 +1,7 @@
       import { jsonifyData, findFileType, createCSV, getBaseFileName, readFileAsText } from './fileUtils.js'; 
       import {initializeUniversalSchemas, getSchemaType, mergeFigDictWithTemplate, getSchemaLocation, validateData} from './schemaUtils.js'
       import { loadJsonFromUrl, isValidUrl, parseUrl } from './linkUtils.js'; 
-      import {plotData, prepareForPlotting} from './plottingUtils.js'
+      import {mergeAndplotData, prepareForPlotting} from './plottingUtils.js'
 
       function copyJson(obj) { //for debugging.
         return JSON.parse(JSON.stringify(obj));
@@ -296,7 +296,7 @@
         let newFigDict = jsonified
         newFigDict = await validateData(newFigDict, errorDiv); // STEP 3
         //plotData Block, also merges the newFigDict into the existingFigDict
-        const updatedFigDict = await plotData(existingFigDict, newFigDict, recentFileName, messagesToUserDiv, errorDiv); // STEP 4-7
+        const updatedFigDict = await mergeAndplotData(existingFigDict, newFigDict, recentFileName, messagesToUserDiv, errorDiv); // STEP 4-7
         errorDiv.innerText = errorDiv.innerText.replace(loadingMessage, "");
         return [updatedFigDict, urlReceived]
       }
