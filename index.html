@@ -27,7 +27,8 @@
     <script type="module"> 
       import { jsonifyData, findFileType, jsonifyTSV, jsonifyCSV, getBaseFileName, readFileAsText } from './utils/fileUtils.js'; 
       import { loadJsonFromUrl, isValidUrl, createDownloadJSONLink, createDownloadCSVLink, jsonToUrl, createCopyUrlLink, addOpeningURLonButtonClick, addDownloadingLinkToButton, parseUrl } from './utils/linkUtils.js'; 
-      import { clearData } from './utils/JSONGrapherMainScript.js'; 
+      import { clearData, startJSONGrapherWebGUIListenersWithCallBack, loadMergeAndPlotData } from './utils/JSONGrapherMainScript.js'; 
+      
     </script>  
     <style>
       .file-actions {
@@ -176,7 +177,14 @@
         <a href="https://raw.githubusercontent.com/AdityaSavara/JSONGrapher-py/main/examples/example_1_drag_and_drop/images/SrTiO3_rainbow_image.gif" target="_blank"><img src="https://raw.githubusercontent.com/AdityaSavara/JSONGrapher-py/main/examples/example_1_drag_and_drop/images/SrTiO3_rainbow_image.gif" width="30%"></a>
       </div>
     </div>
-    <script type="module" src="./utils/JSONGrapherMainScript.js"></script>
+    <script type="module">
+      // Start the JSONGrapherWebGUI listeners and give them the loadAndPlotData function to use when they receive something.
+      // Here, I am using graph1 for the graphDivName.
+      // There is also an "implied" argument of globalFigDict.
+      // type="module" would also let us use awit for the below funciton call, but we shouldn't need await here.      
+      const errorDiv = document.getElementById("errorDiv");
+      startJSONGrapherWebGUIListenersWithCallBack(loadMergeAndPlotData, "graph1", errorDiv);
+    </script> 
   </body>
   <footer>
     <center>
