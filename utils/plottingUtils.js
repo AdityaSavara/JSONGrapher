@@ -36,11 +36,9 @@ import { cleanJsonFigDict } from './figDictUtils.js';
         try {
           // Make a local copy of the incoming data to avoid mutating the original object
           let _newFigDict = JSON.parse(JSON.stringify(newFigDict));
-
           // STEP 4: Check if the object has a dataSet that has a simulate or equation key in it,
           // and runs the simulate function or does the equation evaluation based on the dictionary within.
           _newFigDict = await executeImplicitDataSeriesOperations(_newFigDict);
-
           // Checks if the newFigDict is the first file uploaded
           if (!existingFigDict) {
             // Get the unit from the label
@@ -50,61 +48,62 @@ import { cleanJsonFigDict } from './figDictUtils.js';
             _newFigDict.unit = { x: xUnit, y: yUnit };
             // No STEP 5 for first record; it directly defines the units of the mergedFigDict.
             existingFigDict = _newFigDict;
-
           } 
           else {
-            let fieldsMatch = true; //initilize as true, will set false if the fields don't match.
-            // Check compatibility of datatype
-            if (existingFigDict.datatype !== newFigDict.datatype) {
-              fieldsMatch = false;
-              errorDiv.innerText += "The added record's datatype is different. Stopping merging. The two values are: " +
-                String(existingFigDict.datatype) + " " + String(newFigDict.datatype) + "\n";
-            }
-
-            // Check compatibility of x-axis label (excluding units)
-            if (removeUnitFromLabel(existingFigDict.layout.xaxis.title.text) !==
-                removeUnitFromLabel(newFigDict.layout.xaxis.title.text)) {
-              fieldsMatch = false;
-              errorDiv.innerText += "The added record's xaxis label text is different. Stopping merging. The two values are: " +
-                removeUnitFromLabel(existingFigDict.layout.xaxis.title.text) + " " +
-                removeUnitFromLabel(newFigDict.layout.xaxis.title.text) + "\n";
-            }
-
-            // Check compatibility of y-axis label (excluding units)
-            if (removeUnitFromLabel(existingFigDict.layout.yaxis.title.text) !==
-                removeUnitFromLabel(newFigDict.layout.yaxis.title.text)) {
-              fieldsMatch = false;
-              errorDiv.innerText += "The added record's yaxis label text is different. Stopping merging. The two values are: " +
-                removeUnitFromLabel(existingFigDict.layout.yaxis.title.text) + " " +
-                removeUnitFromLabel(newFigDict.layout.yaxis.title.text) + "\n";
-            }
-
-            // If fields don't match, show error and exit
-            if (!fieldsMatch) {
-              errorDiv.innerText += `Added data not plotted. The records were not compatible for merging. You may continue trying to add data sets, or may click "Clear Data" to start a new graph. These error messages will be automatically cleared after 10 seconds.\n`;
-              setTimeout(() => { errorDiv.innerText = ''; }, 10000);
-              return null;
-            }
-
-            // STEP 5: Perform unit conversion if the fields match
-            _newFigDict = await convertUnits(_newFigDict, existingFigDict);
-
-            // Merge new data into global dictionary
-            existingFigDict.data = [...existingFigDict.data, ..._newFigDict.data];
+            // Checks for field compatibility and merges if appropriate
+            const result = await checkAndMergeFigDict(existingFigDict, _newFigDict, newFigDict, errorDiv);
+            if (!result) return null;
+            existingFigDict = result;
           }
-
           // Return the objects that have been prepared for plotting and downloading.
           return {
             mergedFigDict: existingFigDict,
             newestFigDict: _newFigDict,
             fileName: recentFileName,
           };
-
         } catch (err) {
           // Logging error for debugging
           console.log("Error from prepareForPlotting: ", err);
           throw err;
         }
+      }
+
+      //This function takes an existingFigDict and a newFigDict and then it merges if compatible.
+      async function checkAndMergeFigDict(existingFigDict, _newFigDict, newFigDict, errorDiv) {
+        let fieldsMatch = true; //initilize as true, will set false if the fields don't match.
+        // Check compatibility of datatype
+        if (existingFigDict.datatype !== newFigDict.datatype) {
+          fieldsMatch = false;
+          errorDiv.innerText += "The added record's datatype is different. Stopping merging. The two values are: " +
+            String(existingFigDict.datatype) + " " + String(newFigDict.datatype) + "\n";
+        }
+        // Check compatibility of x-axis label (excluding units)
+        if (removeUnitFromLabel(existingFigDict.layout.xaxis.title.text) !==
+            removeUnitFromLabel(newFigDict.layout.xaxis.title.text)) {
+          fieldsMatch = false;
+          errorDiv.innerText += "The added record's xaxis label text is different. Stopping merging. The two values are: " +
+            removeUnitFromLabel(existingFigDict.layout.xaxis.title.text) + " " +
+            removeUnitFromLabel(newFigDict.layout.xaxis.title.text) + "\n";
+        }
+        // Check compatibility of y-axis label (excluding units)
+        if (removeUnitFromLabel(existingFigDict.layout.yaxis.title.text) !==
+            removeUnitFromLabel(newFigDict.layout.yaxis.title.text)) {
+          fieldsMatch = false;
+          errorDiv.innerText += "The added record's yaxis label text is different. Stopping merging. The two values are: " +
+            removeUnitFromLabel(existingFigDict.layout.yaxis.title.text) + " " +
+            removeUnitFromLabel(newFigDict.layout.yaxis.title.text) + "\n";
+        }
+        // If fields don't match, show error and exit
+        if (!fieldsMatch) {
+          errorDiv.innerText += `Added data not plotted. The records were not compatible for merging. You may continue trying to add data sets, or may click "Clear Data" to start a new graph. These error messages will be automatically cleared after 10 seconds.\n`;
+          setTimeout(() => { errorDiv.innerText = ''; }, 10000);
+          return null;
+        }
+        // STEP 5: Perform unit conversion if the fields match
+        _newFigDict = await convertUnits(_newFigDict, existingFigDict);
+        // Merge new data into global dictionary
+        existingFigDict.data = [...existingFigDict.data, ..._newFigDict.data];
+        return existingFigDict;
       }
 
 
