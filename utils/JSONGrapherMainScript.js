@@ -150,7 +150,13 @@
       async function loadFromUrlParams(urlInput, errorDiv){
         if (isValidUrl(urlInput)){ 
           const url = parseUrl(urlInput);
-          globalFigDict = await loadAndPlotData(globalFigDict, url, "url", errorDiv);
+          let urlReceived
+          [globalFigDict, urlReceived] = await loadAndPlotData(globalFigDict, url, "url", errorDiv);
+          // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
+          //should  make an if statement here to give newestFigDict with filename if only one record has been uploaded
+          // and to otherwise give the full data with name like "mergedGraphRecord.json" for the filename.
+          // urlReceived will be a blank string, "", or a null object, if the record is not from url.
+          if (globalFigDict){appendDownloadButtons(globalFigDict, "mergedJSONGrapherRecord.json", urlReceived);}
         } else {
           console.error("No URL entered.");
           errorDiv.innerText += "Error: Please enter a valid URL.\n";
@@ -199,7 +205,13 @@
                     toggleSection2.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
                     toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
                 };
-                globalFigDict = await callback(globalFigDict, event, "change", errorDiv);
+                let urlReceived
+                [globalFigDict, urlReceived] = await callback(globalFigDict, event, "change", errorDiv);
+                // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
+                //should  make an if statement here to give newestFigDict with filename if only one record has been uploaded
+                // and to otherwise give the full data with name like "mergedGraphRecord.json" for the filename.
+                // urlReceived will be a blank string, "", or a null object, if the record is not from url.
+                if (globalFigDict){appendDownloadButtons(globalFigDict, "mergedJSONGrapherRecord.json", urlReceived);}                
               });
             }
 
@@ -225,7 +237,13 @@
                   toggleSection2.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
                   toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
                 };
-                globalFigDict = await callback(globalFigDict, event, "drop", errorDiv);
+                let urlReceived
+                [globalFigDict, urlReceived] = await callback(globalFigDict, event, "drop", errorDiv);
+                // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
+                //should  make an if statement here to give newestFigDict with filename if only one record has been uploaded
+                // and to otherwise give the full data with name like "mergedGraphRecord.json" for the filename.
+                // urlReceived will be a blank string, "", or a null object, if the record is not from url.
+                if (globalFigDict){appendDownloadButtons(globalFigDict, "mergedJSONGrapherRecord.json", urlReceived);}
               });
             }
           }
@@ -240,7 +258,13 @@
                 toggleSection1.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
                 toggleSection2.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
                 toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
-                globalFigDict = await callback(globalFigDict, url, "url", errorDiv);
+                let urlReceived
+                [globalFigDict, urlReceived] = await callback(globalFigDict, url, "url", errorDiv);
+                // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
+                //should  make an if statement here to give newestFigDict with filename if only one record has been uploaded
+                // and to otherwise give the full data with name like "mergedGraphRecord.json" for the filename.
+                // urlReceived will be a blank string, "", or a null object, if the record is not from url.
+                if (globalFigDict){appendDownloadButtons(globalFigDict, "mergedJSONGrapherRecord.json", urlReceived);}
               } else {
                 console.error("No URL entered.");
                 errorDiv.innerText += "Error: Please enter a valid URL.\n";
@@ -271,13 +295,8 @@
         newFigDict = await validateData(newFigDict, errorDiv); // STEP 3
         //plotData Block, also merges the newFigDict into the existingFigDict
         const updatedFigDict = await plotData(existingFigDict, newFigDict, recentFileName, messagesToUserDiv, errorDiv); // STEP 4-7
-          // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
-          //should  make an if statement here to give newestFigDict with filename if only one record has been uploaded
-          // and to otherwise give the full data with name like "mergedGraphRecord.json" for the filename.
-          // urlRceived will be a blank string, "", or a null object, if the record is not from url.
-        if (updatedFigDict){appendDownloadButtons(updatedFigDict, "mergedJSONGrapherRecord.json", urlReceived);}
         errorDiv.innerText = errorDiv.innerText.replace(loadingMessage, "");
-        return updatedFigDict
+        return [updatedFigDict, urlReceived]
       }
 
       async function loadData(event, eventType, errorDiv) {
