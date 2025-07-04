@@ -150,7 +150,7 @@
       async function loadFromUrlParams(urlInput, errorDiv){
         if (isValidUrl(urlInput)){ 
           const url = parseUrl(urlInput);
-          loadAndPlotData(url, "url", errorDiv);
+          globalFigDict = await loadAndPlotData(globalFigDict, url, "url", errorDiv);
         } else {
           console.error("No URL entered.");
           errorDiv.innerText += "Error: Please enter a valid URL.\n";
@@ -187,7 +187,7 @@
             // Event that fires when the user selects a file from the computer from the choose file button
             const fileSelector = document.getElementById("file-selector");
             if (fileSelector) {
-              fileSelector.addEventListener("change", (event) => {
+              fileSelector.addEventListener("change", async (event) => {
                 const file = event.target.files[0]; //this is a local temporary variable.
                 const fileName = file.name; //this is a local temporary variable
                 if (
@@ -199,20 +199,20 @@
                     toggleSection2.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
                     toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
                 };
-                callback(event, "change", errorDiv);
+                globalFigDict = await callback(globalFigDict, event, "change", errorDiv);
               });
             }
 
             // Event listener for drag and drop
             const dropArea = document.getElementById("file-drop-area");
             if (dropArea) {
-              dropArea.addEventListener("dragover", (event) => {
+              dropArea.addEventListener("dragover", async (event) => {
                 event.stopPropagation();
                 event.preventDefault();
                 event.dataTransfer.dropEffect = "copy";
               });
 
-              dropArea.addEventListener("drop", (event) => {
+              dropArea.addEventListener("drop", async (event) => {
                 event.preventDefault();
                 const file = event.dataTransfer.files[0]; //this is a local temporary variable
                 const fileName = file.name; //this is a local temporary variable
@@ -225,7 +225,7 @@
                   toggleSection2.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
                   toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
                 };
-                callback(event, "drop", errorDiv);
+                globalFigDict = await callback(globalFigDict, event, "drop", errorDiv);
               });
             }
           }
@@ -233,14 +233,14 @@
           // User inputs URL via a prompt instead of selecting/dropping a file
           const loadFromUrlButton = document.getElementById("load-from-url");
           if (loadFromUrlButton) {
-            loadFromUrlButton.addEventListener("click", () => {
+            loadFromUrlButton.addEventListener("click", async () => {
               const urlInput = window.prompt("Enter the URL with a desired .json File:");
               if (isValidUrl(urlInput)){ 
                 const url = parseUrl(urlInput);
                 toggleSection1.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
                 toggleSection2.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
                 toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
-                callback(url, "url", errorDiv);
+                globalFigDict = await callback(globalFigDict, url, "url", errorDiv);
               } else {
                 console.error("No URL entered.");
                 errorDiv.innerText += "Error: Please enter a valid URL.\n";
@@ -258,24 +258,26 @@
 
       // This function is called when the user drops a file or uploads it via the input button or drag and drop
       // This function is also called when a url is provided, in which case the event is the url string and the eventType is "url".
-      async function loadAndPlotData(event, eventType, errorDiv) {
+      async function loadAndPlotData(existingFigDict, event, eventType, errorDiv) {
         let loadingMessage = "Loading and plotting data, including evaluating any equations and running any simulations.";
         errorDiv.innerText += loadingMessage; //We want to use a variable so we can remove the loading message, later.
         //loadData Block
         let urlReceived = null; //initialize.
         //the "event" variable holds the url when a url is received.
         if (eventType==="url"){urlReceived=event};
-        const { jsonified, recentFileName, fileType } = await loadData(event, eventType, errorDiv); // STEP 0, STEP 1, STEP 2
+        let { jsonified, recentFileName, fileType } = await loadData(event, eventType, errorDiv); // STEP 0, STEP 1, STEP 2
         //validateData Block
-        const _jsonified = await validateData(jsonified, errorDiv); // STEP 3
-        //plotData Block
-        globalFigDict = await plotData(globalFigDict, _jsonified, recentFileName, messagesToUserDiv, errorDiv); // STEP 4-7
+        let newFigDict = jsonified
+        newFigDict = await validateData(newFigDict, errorDiv); // STEP 3
+        //plotData Block, also merges the newFigDict into the existingFigDict
+        const updatedFigDict = await plotData(existingFigDict, newFigDict, recentFileName, messagesToUserDiv, errorDiv); // STEP 4-7
           // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
           //should  make an if statement here to give newestFigDict with filename if only one record has been uploaded
           // and to otherwise give the full data with name like "mergedGraphRecord.json" for the filename.
           // urlRceived will be a blank string, "", or a null object, if the record is not from url.
-        if (globalFigDict){appendDownloadButtons(globalFigDict, "mergedJSONGrapherRecord.json", urlReceived);}
+        if (updatedFigDict){appendDownloadButtons(updatedFigDict, "mergedJSONGrapherRecord.json", urlReceived);}
         errorDiv.innerText = errorDiv.innerText.replace(loadingMessage, "");
+        return updatedFigDict
       }
 
       async function loadData(event, eventType, errorDiv) {
