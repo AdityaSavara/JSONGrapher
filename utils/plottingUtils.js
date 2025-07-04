@@ -33,9 +33,10 @@ import { cleanJsonFigDict } from './figDictUtils.js';
       // if existingFigDict is null or otherwise false-like, and newFigDict is not false-like,
       // then newFigDict is treated as the first figDict and existingFigDict is made from it.
       export async function prepareForPlotting(existingFigDict, newFigDict, recentFileName, errorDiv) {
+        let updatedFigDict = null //initializing
         try {
           // Make a local copy of the incoming data to avoid mutating the original object
-          let _newFigDict = JSON.parse(JSON.stringify(newFigDict));
+          let _newFigDict = copyJson(newFigDict);
           // STEP 4: Check if the object has a dataSet that has a simulate or equation key in it,
           // and runs the simulate function or does the equation evaluation based on the dictionary within.
           _newFigDict = await executeImplicitDataSeriesOperations(_newFigDict);
@@ -47,17 +48,17 @@ import { cleanJsonFigDict } from './figDictUtils.js';
             // Adding the extracted units to _newFigDict
             _newFigDict.unit = { x: xUnit, y: yUnit };
             // No STEP 5 for first record; it directly defines the units of the mergedFigDict.
-            existingFigDict = _newFigDict;
+            updatedFigDict = _newFigDict;
           } 
           else {
+            // Make a local copy of the incoming data to avoid mutating the original object
+            existingFigDict = copyJson(existingFigDict);
             // Checks for field compatibility and merges if appropriate
-            const result = await checkAndMergeFigDict(existingFigDict, _newFigDict, errorDiv);
-            if (!result) return null;
-            existingFigDict = result;
+            updatedFigDict = await checkAndMergeFigDict(existingFigDict, _newFigDict, errorDiv);
           }
           // Return the objects that have been prepared for plotting and downloading.
           return {
-            mergedFigDict: existingFigDict,
+            mergedFigDict: updatedFigDict,
             newestFigDict: _newFigDict,
             fileName: recentFileName,
           };
@@ -70,6 +71,9 @@ import { cleanJsonFigDict } from './figDictUtils.js';
 
       //This function takes an existingFigDict and a newFigDict and then it merges if compatible.
       async function checkAndMergeFigDict(existingFigDict, newFigDict, errorDiv) {
+        // Make a local copy of the incoming data to avoid mutating the original object
+        existingFigDict = copyJson(existingFigDict);
+        newFigDict = copyJson(newFigDict);
         let fieldsMatch = true; //initilize as true, will set false if the fields don't match.
         // Check compatibility of datatype
         if (existingFigDict.datatype !== newFigDict.datatype) {
