@@ -10,9 +10,9 @@ import { cleanJsonFigDict } from './figDictUtils.js';
 
       // If the data is valid against the schema, then we can proceed to the next step
       // if necessary create download button with json
-      export async function mergeAndplotData(existingFigDict, newFigDict, recentFileName, messagesToUserDiv, errorDiv) {
+      export async function mergeAndplotData(existingFigDict, newFigDict, newFigDictFileName, messagesToUserDiv, errorDiv) {
         // STEP 4 and STEP 5 is done in the prepareForPlotting function
-        const { mergedFigDict, fileName, newestFigDict } = await prepareForPlotting(existingFigDict, newFigDict, recentFileName, errorDiv); 
+        const { mergedFigDict, fileName, newestFigDict } = await prepareForPlotting(existingFigDict, newFigDict, newFigDictFileName, errorDiv); 
         if (mergedFigDict) {
           // STEP 7: Then create a plotly JSON, clean it, and render it on the browser
           plot_with_plotly(mergedFigDict);
