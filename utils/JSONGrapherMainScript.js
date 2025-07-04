@@ -151,7 +151,7 @@
         if (isValidUrl(urlInput)){ 
           const url = parseUrl(urlInput);
           let urlReceived
-          [globalFigDict, urlReceived] = await loadAndPlotData(globalFigDict, url, "url", errorDiv);
+          [globalFigDict, urlReceived] = await loadMergeAndPlotData(globalFigDict, url, "url", errorDiv);
           // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
           //should  make an if statement here to give newestFigDict with filename if only one record has been uploaded
           // and to otherwise give the full data with name like "mergedGraphRecord.json" for the filename.
@@ -180,7 +180,9 @@
         });
       };
       
-      async function startJSONGrapherWebGUIListenersWithCallBack(callback, errorDiv) {
+      //callbackForPlotting is a function that gets passed in.
+      // When a new figDict is passed, in, the callBack does things like the merging and plotting, and returns the revised globalFigDict.
+      async function startJSONGrapherWebGUIListenersWithCallBack(callbackForMergingAndPlotting, errorDiv) {
         try {
           const toggleSection1 = document.getElementById("toggleSection1"); //get toggle section so actions can hide it.
           const toggleSection2 = document.getElementById("toggleSection2"); //get toggle section so actions can hide it.         
@@ -206,7 +208,7 @@
                     toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
                 };
                 let urlReceived
-                [globalFigDict, urlReceived] = await callback(globalFigDict, event, "change", errorDiv);
+                [globalFigDict, urlReceived] = await callbackForMergingAndPlotting(globalFigDict, event, "change", errorDiv);
                 // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
                 //should  make an if statement here to give newestFigDict with filename if only one record has been uploaded
                 // and to otherwise give the full data with name like "mergedGraphRecord.json" for the filename.
@@ -238,7 +240,7 @@
                   toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
                 };
                 let urlReceived
-                [globalFigDict, urlReceived] = await callback(globalFigDict, event, "drop", errorDiv);
+                [globalFigDict, urlReceived] = await callbackForMergingAndPlotting(globalFigDict, event, "drop", errorDiv);
                 // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
                 //should  make an if statement here to give newestFigDict with filename if only one record has been uploaded
                 // and to otherwise give the full data with name like "mergedGraphRecord.json" for the filename.
@@ -259,7 +261,7 @@
                 toggleSection2.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
                 toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
                 let urlReceived
-                [globalFigDict, urlReceived] = await callback(globalFigDict, url, "url", errorDiv);
+                [globalFigDict, urlReceived] = await callbackForMergingAndPlotting(globalFigDict, url, "url", errorDiv);
                 // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
                 //should  make an if statement here to give newestFigDict with filename if only one record has been uploaded
                 // and to otherwise give the full data with name like "mergedGraphRecord.json" for the filename.
@@ -278,11 +280,11 @@
       }
 
       // Start the JSONGrapherWebGUI listeners and give them the loadAndPlotData function to use when they receive something.
-      await startJSONGrapherWebGUIListenersWithCallBack(loadAndPlotData, errorDiv);
+      await startJSONGrapherWebGUIListenersWithCallBack(loadMergeAndPlotData, errorDiv);
 
       // This function is called when the user drops a file or uploads it via the input button or drag and drop
       // This function is also called when a url is provided, in which case the event is the url string and the eventType is "url".
-      async function loadAndPlotData(existingFigDict, event, eventType, errorDiv) {
+      async function loadMergeAndPlotData(existingFigDict, event, eventType, errorDiv) {
         let loadingMessage = "Loading and plotting data, including evaluating any equations and running any simulations.";
         errorDiv.innerText += loadingMessage; //We want to use a variable so we can remove the loading message, later.
         //loadData Block
