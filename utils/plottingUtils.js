@@ -32,7 +32,8 @@ import { cleanJsonFigDict } from './figDictUtils.js';
       // the input, newFigDict, is the new figDict. existingFigDict is the 'global' figDict.
       // if existingFigDict is null or otherwise false-like, and newFigDict is not false-like,
       // then newFigDict is treated as the first figDict and existingFigDict is made from it.
-      export async function prepareForPlotting(existingFigDict, newFigDict, recentFileName, errorDiv) {
+      // the newFigDictFileName is just a passthrough variable that is metadata, and can be null.
+      export async function prepareForPlotting(existingFigDict, newFigDict, newFigDictFileName, errorDiv) {
         let updatedFigDict = null //initializing
         try {
           // Make a local copy of the incoming data to avoid mutating the original object
@@ -60,7 +61,7 @@ import { cleanJsonFigDict } from './figDictUtils.js';
           return {
             mergedFigDict: updatedFigDict,
             newestFigDict: _newFigDict,
-            fileName: recentFileName,
+            fileName: newFigDictFileName,
           };
         } catch (err) {
           // Logging error for debugging
