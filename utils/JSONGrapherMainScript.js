@@ -150,7 +150,7 @@
       async function loadFromUrlParams(urlInput, errorDiv){
         if (isValidUrl(urlInput)){ 
           const url = parseUrl(urlInput);
-          loadAndPlotData(globalFigDict, url, "url", errorDiv);
+          globalFigDict = loadAndPlotData(globalFigDict, url, "url", errorDiv);
         } else {
           console.error("No URL entered.");
           errorDiv.innerText += "Error: Please enter a valid URL.\n";
@@ -199,7 +199,7 @@
                     toggleSection2.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
                     toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
                 };
-                callback(globalFigDict, event, "change", errorDiv);
+                globalFigDict = callback(globalFigDict, event, "change", errorDiv);
               });
             }
 
@@ -225,7 +225,7 @@
                   toggleSection2.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
                   toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
                 };
-                callback(globalFigDict, event, "drop", errorDiv);
+                globalFigDict = callback(globalFigDict, event, "drop", errorDiv);
               });
             }
           }
@@ -240,7 +240,7 @@
                 toggleSection1.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
                 toggleSection2.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
                 toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
-                callback(globalFigDict, url, "url", errorDiv);
+                globalFigDict = callback(globalFigDict, url, "url", errorDiv);
               } else {
                 console.error("No URL entered.");
                 errorDiv.innerText += "Error: Please enter a valid URL.\n";
@@ -271,13 +271,14 @@
         newFigDict = await validateData(newFigDict, errorDiv); // STEP 3
         //plotData Block, also merges the newFigDict into the existingFigDict
         const updatedFigDict = await plotData(existingFigDict, newFigDict, recentFileName, messagesToUserDiv, errorDiv); // STEP 4-7
-        globalFigDict = updatedFigDict
+        globalFigDict = updatedFigDict;
           // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
           //should  make an if statement here to give newestFigDict with filename if only one record has been uploaded
           // and to otherwise give the full data with name like "mergedGraphRecord.json" for the filename.
           // urlRceived will be a blank string, "", or a null object, if the record is not from url.
         if (updatedFigDict){appendDownloadButtons(updatedFigDict, "mergedJSONGrapherRecord.json", urlReceived);}
         errorDiv.innerText = errorDiv.innerText.replace(loadingMessage, "");
+        return updatedFigDict
       }
 
       async function loadData(event, eventType, errorDiv) {
