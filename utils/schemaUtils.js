@@ -8,13 +8,13 @@ if (navigator.onLine) {
   // Online: load from CDN
   loadScript('Ajv', 'https://cdnjs.cloudflare.com/ajax/libs/ajv/6.12.6/ajv.bundle.min.js', (AjvConstructor) => {
     ajvInstance = new AjvConstructor();
-    console.log('AJV loaded from CDN:', ajvInstance);
+    console.log('AJV loaded in schemaUtils.js from CDN');
   });
 } else {
   // Offline: load from local
   loadScript('Ajv', './utils/AJV/6.12.6/ajv.bundle.min.js', (AjvConstructor) => {
     ajvInstance = new AjvConstructor();
-    console.log('AJV loaded from local copy:', ajvInstance);
+    console.log('AJV loaded in schemaUtils.js from local copy');
   });
 }
 //end of block to get Ajv ready.

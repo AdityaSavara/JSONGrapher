@@ -2,7 +2,7 @@ import { loadScript } from './../loadingUtils.js';
 let math;
 loadScript('math', 'https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.1/math.min.js', (mathModule) => {
   math = mathModule;
-  console.log('mathJS instance ready:', math);
+  console.log('mathJS loaded in equation_evaluator.js from CDN');
 });
 
 function parseVariable(variableString) {
