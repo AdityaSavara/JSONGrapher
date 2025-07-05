@@ -1,3 +1,10 @@
+import { loadScript } from './../loadingUtils.js';
+let math;
+loadScript('math', 'https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.1/math.min.js', (mathModule) => {
+  math = mathModule;
+  console.log('mathJS instance ready:', math);
+});
+
 function parseVariable(variableString) {
     // Split numeric part and unit using a regular expression.
     const match = variableString.match(/([\d.]+)\s*(.*)/);
