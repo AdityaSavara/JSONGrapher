@@ -7,7 +7,7 @@
 */
 
 //program constants
-const csts  = {
+export const csts  = {
 	R: 8.3144598, //[J/K/mol]
 	TC0: 273.15, //[K]
 	TF0: 459.67*5/9, //[K]
@@ -36,7 +36,7 @@ Units object is the database of all known units.
 	note: a note that conveys anything important beyond description - what is noteworthy or weird about this unit or its usage. Implemented as an object of strings for all language mutations.
 */
 
-const Units = [
+export const Units = [
 	//EIGHT BASIC UNITS
 	{v: [1,0,0,0,0,0,0,0], id: 'm', name: {cz: 'metr', en: 'meter', am: 'meter'}, k:1, SI: true, basic: true, prefix: 'all'},
 	{v: [0,1,0,0,0,0,0,0], id: 'kg', name: {cz: 'kilogram', en: 'kilogram'}, k:1, SI: true, basic: true, note: {
@@ -217,7 +217,7 @@ const Units = [
 
 //unitfuns - irregular units that have a conversion function instead of mere ratio
 //{id: link to regular unit, f: function UF => SI, fi: inverse function SI => UF, v: SI dimension (output when f, input when fi)}
-const Unitfuns = [
+export const Unitfuns = [
 	{id: '°C', f: UF => UF + csts.TC0, fi: SI => SI - csts.TC0, v: [0,0,0,0,1,0,0,0]},
 	{id: '°F', f: UF => 5/9*UF + csts.TF0, fi: SI => 9/5*(SI - csts.TF0), v: [0,0,0,0,1,0,0,0]},
 	{id: '°Re', f: UF => 1.25*UF + csts.TC0, fi: SI => 0.8*(SI - csts.TC0), v: [0,0,0,0,1,0,0,0]},
@@ -227,7 +227,7 @@ const Unitfuns = [
 
 //currencies - their conversion ratio to dollar is unknown and will be obtained by currencies.php
 //k and v will be filled later (v is always the same, k is obtained from API)
-const Currencies = [
+export const Currencies = [
 	{id: 'EUR', alias:['€'], name: {cz: 'euro', en: 'Euro'}},
 	{id: 'AED', name: {cz: 'dirham Spojených arabských emirátů', en: 'United Arab Emirates Dirham'}},
 	{id: 'ARS', name: {cz: 'argentinské peso', en: 'Argentine Peso'}},
@@ -264,7 +264,7 @@ const Currencies = [
 ];
 
 //standard SI prefixes
-const Prefixes = [
+export const Prefixes = [
 	{id: 'a', v: -18},
 	{id: 'f', v: -15},
 	{id: 'p', v: -12},

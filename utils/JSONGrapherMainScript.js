@@ -3,7 +3,7 @@
       import { loadJsonFromUrl, isValidUrl, parseUrl } from './linkUtils.js'; 
       import {mergeAndplotData, prepareForPlotting} from './plottingUtils.js'
       import { loadScript } from './loadingUtils.js';
-
+      import {Convert} from './UUC/app/convert.js';
       //start of block to get Plotly ready.
       let Plotly;
       if (navigator.onLine) {

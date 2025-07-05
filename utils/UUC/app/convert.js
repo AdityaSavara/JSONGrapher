@@ -1,3 +1,7 @@
+import {Convert_macro} from './convert_macro.js';
+import {Convert_parse} from './convert_parse.js';
+import {Units} from './data.js';
+
 /*
 	convert.js
 	contains the convert object constructor
@@ -10,7 +14,7 @@
 		4. single Q() instance - enumerated expression with numeric value and dimension
 */
 
-function Convert() {
+export function Convert() {
 	//database of messages (strings or functions)
 	const msgDB = {};
 	//these messages must be supplied before using convert. Some of these are just strings, some are functions with specific arguments. See lang.js
@@ -146,8 +150,10 @@ function Convert() {
 	this.fullConversion = function(input, target) {
 		const res = {}; //output object
 
-		try {res.output = this.convert(input, target);}
-		catch(err) {this.status = 2; this.messages = [err];} //downgrade status to 2 and only the error message will be shown
+		//Removing the try and catch for debugging.
+		//try {res.output = this.convert(input, target);}
+		//catch(err) {this.status = 2; this.messages = [err];} //downgrade status to 2 and only the error message will be shown
+		res.output = this.convert(input, target);
 
 		//return the results
 		if(this.status === 0) {this.messages = ['OK'];}
@@ -234,7 +240,7 @@ function Convert() {
 
 		//subcrawling ^ has similar code as * /, so this "subcrawl" function can do them all with callback
 		function subcrawl(arr, signs, callback) {
-			let res = null; let arr2 = []; //current result, new reduced array of Q
+			let i; let res = null; let arr2 = []; //current result, new reduced array of Q
 			for(i = 0; i < arr.length; i += 2) {
 				if(!arr.hasOwnProperty(i+1)) {break;}
 				//is it the sign that we'd like to process right now?
