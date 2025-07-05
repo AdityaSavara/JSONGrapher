@@ -8,7 +8,7 @@ if (navigator.onLine) {
     console.log('mathJS loaded in equation_evaluator.js from CDN');
 } else {
     // Offline: load from local
-    math = await loadScript('Ajv', './utils/mathjs/11.11.1/math.min.js');
+    math = await loadScript('math', './utils/mathjs/11.11.1/math.min.js');
     console.log('mathJS loaded in equation_evaluator.js from local copy');
 }
 //end of block to get mathJS ready.
