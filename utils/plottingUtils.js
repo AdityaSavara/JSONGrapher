@@ -3,20 +3,11 @@ import {convertUnits} from './figDictUtils.js'
 import {executeImplicitDataSeriesOperations} from './json_equationer/implicitUtils.js'
 import { parsePlotStyle, applyPlotStyleToPlotlyDict } from './styleUtils.js';
 import { cleanJsonFigDict } from './figDictUtils.js'; 
-import { loadScript } from './loadingUtils.js';
+import { loadLibrary } from './loadingUtils.js';
 
 //start of block to get Plotly ready.
-let Plotly;
-if (navigator.onLine) {
-    // Online: load from CDN
-    Plotly = await loadScript('Plotly', 'https://cdn.plot.ly/plotly-2.14.0.min.js');
-    console.log('Plotly loaded in plottingUtils.js from CDN');
-} else {
-    // Offline: load from local
-    Plotly = await loadScript('Plotly', './utils/Plotly/2.14.0/plotly-2.14.0.min.js');
-    console.log('Plotly loaded in plottingUtils.js from local copy');
-}
-//end of block to get mathJS ready.
+const Plotly = await loadLibrary('Plotly', 'Plotly/plotly-2.14.0.min.js');
+//end of block to get Plotly ready.
 
 
       function copyJson(obj) { //for deepcopy

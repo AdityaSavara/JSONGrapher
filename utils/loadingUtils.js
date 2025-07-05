@@ -1,23 +1,61 @@
 // This module is for loading scripts that place a global variable in the window.
-// For example, the script from mathJS, when run, places "math" as a variable in the window.
-// And the script from Ajv, when run, places a constructor (normally named Ajv) in the window.
-// That global variable gets *renamed locally* by loadScript, so "math" becomes "mathModule"
-// and "Ajv" becomes "AjvConstructor". We then use those local names of the global variables
-// to start whatever we need to, in our work. It's a bit confusing, but useful.
-// The loadScript function uses a Promise inside because that allows us to
-// have the same module instance loaded across different places while ensuring that
-// even if the import statement executes early, the importing module will wait for the loading to really finish.
+//
+// For example:
+//   - mathJS places "math" on the window.
+//   - Ajv places a constructor named "Ajv" on the window.
+//
+// The loadScript function returns a Promise that resolves once the global variable is available.
+// This allows different modules to safely wait for the script to finish loading before using it.
+//
+// The loadLibrary function wraps loadScript and uses config.js to decide whether to load
+// from a remote source or a local copy, based on config.useRemote.
 //
 // Example usage for mathJS, which does not require a constructor:
-//     import { loadScript } from './loadingUtils.js';
-//     const math = await loadScript('math', 'https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.1/math.min.js');
-//     console.log('mathJS instance ready:', math);
+//   import { loadLibrary } from './loadingUtils.js';
+//   const math = await loadLibrary('math', 'mathjs/11.11.1/math.min.js');
+//   console.log('mathJS instance ready:', math);
 //
-// Example usage for loading the ajv script, which requires a constructor:
-//     import { loadScript } from './loadingUtils.js';
-//     const AjvConstructor = await loadScript('Ajv', 'https://cdn.jsdelivr.net/gh/AdityaSavara/JSONGrapher@main/utils/AJV/6.12.6/ajv.bundle.min.js');
-//     const ajvInstance = new AjvConstructor();
-//     console.log('AJV instance ready:', ajvInstance);
+// Example usage for loading the Ajv script, which requires a constructor:
+//   import { loadLibrary } from './loadingUtils.js';
+//   const AjvConstructor = await loadLibrary('Ajv', 'AJV/6.12.6/ajv.bundle.min.js');
+//   const ajvInstance = new AjvConstructor();
+//   console.log('AJV instance ready:', ajvInstance);
+//
+// Original usage pattern with navigator.onLine (for reference):
+//   import { loadScript } from './loadingUtils.js';
+//   let math;
+//   if (navigator.onLine) {
+//     math = await loadScript('math', 'https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.1/math.min.js');
+//     console.log('mathJS loaded in equation_evaluator.js from CDN');
+//   } else {
+//     math = await loadScript('math', './utils/mathjs/11.11.1/math.min.js');
+//     console.log('mathJS loaded in equation_evaluator.js from local copy');
+//   }
+
+import { getConfig } from './config.js';
+
+/**
+ * Wrapper around loadScript that builds the path using config
+ *
+ * @param {string} globalVarName - Global name placed in window
+ * @param {string} relativePath - Relative path to the module file, like 'mathjs/11.11.1/math.min.js'
+ * @param {boolean} [forceReload=false] - Optional force reload flag
+ * @returns {Promise<any>} - Resolves with loaded global object
+ */
+export async function loadLibrary(globalVarName, relativePath, forceReload = false) {
+  const config = await getConfig()
+  let baseURL;
+  if (config.useRemote) {
+    baseURL = config.moduleSourceBaseURL;
+  } else {
+    baseURL = config.localBaseURL;
+  }
+  const fullPath = baseURL + relativePath;
+  console.log("Library for global loaded:", globalVarName)
+  return loadScript(globalVarName, fullPath, forceReload);
+}
+
+
 
 /**
  * Loads an external script and returns a Promise that resolves
@@ -28,7 +66,7 @@
  * @param {boolean} [forceReload=false] - Whether to force script reinjection.
  * @returns {Promise<any>} - Resolves with the loaded global object.
  */
-export function loadScript(globalVarName, scriptUrl, forceReload = false) {
+export async function loadScript(globalVarName, scriptUrl, forceReload = false) {
   return new Promise((resolve, reject) => {
     const finalURL = createCDNURLasNeeded(scriptUrl);
     const existingScript = document.querySelector(`script[src="${finalURL}"]`);

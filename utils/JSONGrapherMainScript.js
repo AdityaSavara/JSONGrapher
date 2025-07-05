@@ -2,20 +2,12 @@
       import {initializeUniversalSchemas, getSchemaType, mergeFigDictWithTemplate, getSchemaLocation, validateData} from './schemaUtils.js'
       import { loadJsonFromUrl, isValidUrl, parseUrl } from './linkUtils.js'; 
       import {mergeAndplotData, prepareForPlotting} from './plottingUtils.js'
-      import { loadScript } from './loadingUtils.js';
+      import { loadLibrary } from './loadingUtils.js';
       import {Convert} from './UUC/app/convert.js';
+      
       //start of block to get Plotly ready.
-      let Plotly;
-      if (navigator.onLine) {
-          // Online: load from CDN
-          Plotly = await loadScript('Plotly', 'https://cdn.plot.ly/plotly-2.14.0.min.js');
-          console.log('Plotly loaded in JSONGrapherMainScript.js from CDN');
-      } else {
-          // Offline: load from local
-          Plotly = await loadScript('Plotly', './utils/Plotly/2.14.0/plotly-2.14.0.min.js');
-          console.log('Plotly loaded in JSONGrapherMainScript.js from local copy');
-      }
-      //end of block to get mathJS ready.
+      const Plotly = await loadLibrary('Plotly', 'Plotly/plotly-2.14.0.min.js');
+      //end of block to get Plotly ready.
 
       function copyJson(obj) { //for debugging.
         return JSON.parse(JSON.stringify(obj));

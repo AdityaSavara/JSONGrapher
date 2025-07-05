@@ -1,16 +1,7 @@
-import { loadScript } from './../loadingUtils.js';
+import { loadLibrary } from './../loadingUtils.js';
 
 //start of block to get mathJS ready.
-let math;
-if (navigator.onLine) {
-    // Online: load from CDN
-    math = await loadScript('math', 'https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.1/math.min.js');
-    console.log('mathJS loaded in equation_evaluator.js from CDN');
-} else {
-    // Offline: load from local
-    math = await loadScript('math', './utils/mathjs/11.11.1/math.min.js');
-    console.log('mathJS loaded in equation_evaluator.js from local copy');
-}
+const math = await loadLibrary('math', '/mathjs/11.11.1/math.min.js');
 //end of block to get mathJS ready.
 
 function parseVariable(variableString) {
