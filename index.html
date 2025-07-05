@@ -12,22 +12,14 @@
     <meta charset="UTF-8" />
     <title>JSONGrapher</title>
     <link rel="stylesheet" href="./other_html/styles.css" />
-    <script src="https://cdn.plot.ly/plotly-2.14.0.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.1/math.min.js"></script>    
-    <!--  We use AJV for json validation. We use the 6.12.6 version because the later version had a compilation error. To reduce the external dependency, we have the source code on our github in he AJV folder, it is an under an MIT LICENSE, as noted in the LICENSE file of JSON Grapher.
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ajv/6.12.6/ajv.bundle.min.js" integrity="sha512-Xl0g/DHU98OkfXTsDfAAuTswzkniYQWPwLyGXzcpgDxCeH52eePfaHj/ictLAv2GvlPX2qZ6YV+3oDsw17L9qw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> -->
-    <script src="./utils/AJV//6.12.6/ajv.bundle.min.js"></script>
     <script src="./utils/UUC/app/convert.js"></script>
     <script src="./utils/UUC/app/convert_parse.js"></script>
     <script src="./utils/UUC/app/convert_macro.js"></script>
     <script src="./utils/UUC/app/data.js"></script>
     <!-- Load the layout styles here so that the other utils can use them -->
-    <script src="./styles/layout_styles_library.js"></script>
-    <script src="./styles/trace_styles_collection_library.js"></script>
     <script type="module"> 
       import { jsonifyData, findFileType, jsonifyTSV, jsonifyCSV, getBaseFileName, readFileAsText } from './utils/fileUtils.js'; 
-      import { loadJsonFromUrl, isValidUrl, createDownloadJSONLink, createDownloadCSVLink, jsonToUrl, createCopyUrlLink, addOpeningURLonButtonClick, addDownloadingLinkToButton, parseUrl } from './utils/linkUtils.js'; 
-      import { clearData } from './utils/JSONGrapherMainScript.js'; 
+      import { loadJsonFromUrl, isValidUrl, createDownloadJSONLink, createDownloadCSVLink, jsonToUrl, createCopyUrlLink, addOpeningURLonButtonClick, addDownloadingLinkToButton, parseUrl } from './utils/linkUtils.js';      
     </script>  
     <style>
       .file-actions {
@@ -176,7 +168,15 @@
         <a href="https://raw.githubusercontent.com/AdityaSavara/JSONGrapher-py/main/examples/example_1_drag_and_drop/images/SrTiO3_rainbow_image.gif" target="_blank"><img src="https://raw.githubusercontent.com/AdityaSavara/JSONGrapher-py/main/examples/example_1_drag_and_drop/images/SrTiO3_rainbow_image.gif" width="30%"></a>
       </div>
     </div>
-    <script type="module" src="./utils/JSONGrapherMainScript.js"></script>
+    <script type="module">
+      import { clearData, startJSONGrapherWebGUIListenersWithCallBack, loadMergeAndPlotData } from './utils/JSONGrapherMainScript.js'; 
+      // Start the JSONGrapherWebGUI listeners and give them the loadAndPlotData function to use when they receive something.
+      // Here, I am using graph1 for the graphDivName.
+      // There is also an "implied" argument of globalFigDict.
+      // type="module" would also let us use awit for the below funciton call, but we shouldn't need await here.      
+      const errorDiv = document.getElementById("errorDiv");
+      startJSONGrapherWebGUIListenersWithCallBack(loadMergeAndPlotData, "graph1", errorDiv);
+    </script> 
   </body>
   <footer>
     <center>

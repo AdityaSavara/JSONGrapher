@@ -1,5 +1,22 @@
-      // Initializing the AJV validator
-      const ajv = new Ajv();
+import { loadScript } from './loadingUtils.js';
+//start of block to get Ajv ready
+//    <!--  We use AJV for json validation. We use the 6.12.6 version because the later version had a compilation error. To reduce the external dependency, we have the source code on our github in he AJV folder, it is an under an MIT LICENSE, as noted in the LICENSE file of JSON Grapher.
+//    <script src="https://cdnjs.cloudflare.com/ajax/libs/ajv/6.12.6/ajv.bundle.min.js" integrity="sha512-Xl0g/DHU98OkfXTsDfAAuTswzkniYQWPwLyGXzcpgDxCeH52eePfaHj/ictLAv2GvlPX2qZ6YV+3oDsw17L9qw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> -->
+let ajvInstance;
+
+if (navigator.onLine) {
+    // Online: load from CDN
+    const AjvConstructor = await loadScript('Ajv', 'https://cdn.jsdelivr.net/gh/AdityaSavara/JSONGrapher@main/utils/AJV/6.12.6/ajv.bundle.min.js');
+    ajvInstance = new AjvConstructor();
+    console.log('AJV loaded in schemaUtils.js from CDN');
+} else {
+    // Offline: load from local
+    const AjvConstructor = await loadScript('Ajv', './utils/AJV/6.12.6/ajv.bundle.min.js');
+    ajvInstance = new AjvConstructor();
+    console.log('AJV loaded in schemaUtils.js from local copy');
+}
+//end of block to get Ajv ready.
+
 
       // function to extract from the datatype the location of the schema
       export function getSchemaLocation(jsonified, template = false, errorDiv = null) {
@@ -116,7 +133,7 @@
         }
 
         // validate the json
-        const validate = ajv.compile(schema_type);
+        const validate = compileSchema(schema_type);
         const valid = validate(jsonified);
 
         if (!valid) {
@@ -135,3 +152,11 @@
 
         return _jsonified;
       }
+
+
+      function compileSchema(schema) {
+          if (!ajvInstance) {
+            throw new Error('AJV has not been initialized yet.');
+          }
+          return ajvInstance.compile(schema);
+        }
