@@ -3,10 +3,20 @@ import { loadScript } from './loadingUtils.js';
 //    <!--  We use AJV for json validation. We use the 6.12.6 version because the later version had a compilation error. To reduce the external dependency, we have the source code on our github in he AJV folder, it is an under an MIT LICENSE, as noted in the LICENSE file of JSON Grapher.
 //    <script src="https://cdnjs.cloudflare.com/ajax/libs/ajv/6.12.6/ajv.bundle.min.js" integrity="sha512-Xl0g/DHU98OkfXTsDfAAuTswzkniYQWPwLyGXzcpgDxCeH52eePfaHj/ictLAv2GvlPX2qZ6YV+3oDsw17L9qw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> -->
 let ajvInstance;
-loadScript('Ajv', './utils/AJV/6.12.6/ajv.bundle.min.js', (AjvConstructor) => {
-  ajvInstance = new AjvConstructor();
-  console.log('AJV instance ready:', ajvInstance);
-});
+
+if (navigator.onLine) {
+  // Online: load from CDN
+  loadScript('Ajv', 'https://cdnjs.cloudflare.com/ajax/libs/ajv/6.12.6/ajv.bundle.min.js', (AjvConstructor) => {
+    ajvInstance = new AjvConstructor();
+    console.log('AJV loaded from CDN:', ajvInstance);
+  });
+} else {
+  // Offline: load from local
+  loadScript('Ajv', './utils/AJV/6.12.6/ajv.bundle.min.js', (AjvConstructor) => {
+    ajvInstance = new AjvConstructor();
+    console.log('AJV loaded from local copy:', ajvInstance);
+  });
+}
 //end of block to get Ajv ready.
 
 
