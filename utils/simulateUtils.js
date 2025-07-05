@@ -95,7 +95,7 @@ import {getUnitFromLabel, removeUnitFromLabel, replaceSuperscripts} from './unit
                   return parseFloat(x) * xConvertFactor.output.num;
                 } else {
                   xConvertFactor.messages.forEach((message) => {
-                    errorDiv.innerText += message.message + "\n";
+                    errorDiv.innerText += message.message + " (error message from UUC fullConversion, returned by maybeConvertSimulatedDataUnits)\n";
                   });
                 }
               });
@@ -117,7 +117,7 @@ import {getUnitFromLabel, removeUnitFromLabel, replaceSuperscripts} from './unit
                   return parseFloat(y) * yConvertFactor.output.num;
                 } else {
                   yConvertFactor.messages.forEach((message) => {
-                    errorDiv.innerText += message.message + "\n";
+                    errorDiv.innerText += message.message + " (error message from UUC fullConversion, returned by in maybeConvertSimulatedDataUnits)\n";
                   });
                 }
               });
