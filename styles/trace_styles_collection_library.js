@@ -7,7 +7,7 @@
 // Each object below represents one 'trace_styles_collection'.
 // "default" is the first one.
 
-const trace_styles_collection_library = {
+export const trace_styles_collection_library = {
     default: {
         scatter_spline: {
             type: "scatter",
