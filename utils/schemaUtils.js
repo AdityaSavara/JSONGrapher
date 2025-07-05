@@ -1,5 +1,13 @@
-      // Initializing the AJV validator
-      const ajv = new Ajv();
+import { loadScript } from './loadingUtils.js';
+
+//start of block to get Ajv ready
+let ajvInstance;
+loadScript('Ajv', './utils/AJV/6.12.6/ajv.bundle.min.js', (AjvConstructor) => {
+  ajvInstance = new AjvConstructor();
+  console.log('AJV instance ready:', ajvInstance);
+});
+//end of block to get Ajv ready.
+
 
       // function to extract from the datatype the location of the schema
       export function getSchemaLocation(jsonified, template = false, errorDiv = null) {
@@ -116,7 +124,7 @@
         }
 
         // validate the json
-        const validate = ajv.compile(schema_type);
+        const validate = compileSchema(schema_type);
         const valid = validate(jsonified);
 
         if (!valid) {
@@ -135,3 +143,11 @@
 
         return _jsonified;
       }
+
+
+      function compileSchema(schema) {
+          if (!ajvInstance) {
+            throw new Error('AJV has not been initialized yet.');
+          }
+          return ajvInstance.compile(schema);
+        }
