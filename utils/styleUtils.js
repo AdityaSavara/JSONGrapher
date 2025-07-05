@@ -1,4 +1,5 @@
-//The below two lines allow us to use syntax more like in python, but were not used in the end.
+import { trace_styles_collection_library} from './../styles/trace_styles_collection_library.js';
+import { layout_styles_library} from './../styles/layout_styles_library.js';
 // layout_styles.styles_library.default
 // trace_styles_collection.styles_library.default
 

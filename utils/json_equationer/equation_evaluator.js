@@ -1,3 +1,18 @@
+import { loadScript } from './../loadingUtils.js';
+
+//start of block to get mathJS ready.
+let math;
+if (navigator.onLine) {
+    // Online: load from CDN
+    math = await loadScript('math', 'https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.1/math.min.js');
+    console.log('mathJS loaded in equation_evaluator.js from CDN');
+} else {
+    // Offline: load from local
+    math = await loadScript('math', './utils/mathjs/11.11.1/math.min.js');
+    console.log('mathJS loaded in equation_evaluator.js from local copy');
+}
+//end of block to get mathJS ready.
+
 function parseVariable(variableString) {
     // Split numeric part and unit using a regular expression.
     const match = variableString.match(/([\d.]+)\s*(.*)/);
@@ -345,11 +360,11 @@ function generatePointsBySpacing(numOfPoints = 10, rangeMin = 0, rangeMax = 1, p
         );
     } else if (spacingType === "logarithmic") {
         pointsList = Array.from({ length: numOfPoints }, (_, i) => 
-            rangeMin * Math.pow(rangeMax / rangeMin, i / (numOfPoints - 1))
+            rangeMin * math.pow(rangeMax / rangeMin, i / (numOfPoints - 1))
         );
     } else if (spacingType === "exponential") {
         pointsList = Array.from({ length: numOfPoints }, (_, i) => 
-            rangeMin * Math.exp(i * Math.log(rangeMax / rangeMin) / (numOfPoints - 1))
+            rangeMin * math.exp(i * math.log(rangeMax / rangeMin) / (numOfPoints - 1))
         );
     } else if (typeof pointsSpacing === "number" && pointsSpacing > 0) {
         pointsList = generateMultiplicativePoints(rangeMin, rangeMax, numOfPoints, pointsSpacing);

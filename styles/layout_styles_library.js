@@ -7,7 +7,7 @@
 // Each object below, like "default" or "Nature," represents a 'layout_style'.
 // Style names are currently case-sensitive, but this may change in the future.
 
-const layout_styles_library = {
+export const layout_styles_library = {
     default: {
         layout: {
             paper_bgcolor:'rgba(0,0,0,0)',

@@ -2,6 +2,20 @@
       import {initializeUniversalSchemas, getSchemaType, mergeFigDictWithTemplate, getSchemaLocation, validateData} from './schemaUtils.js'
       import { loadJsonFromUrl, isValidUrl, parseUrl } from './linkUtils.js'; 
       import {mergeAndplotData, prepareForPlotting} from './plottingUtils.js'
+      import { loadScript } from './loadingUtils.js';
+
+      //start of block to get Plotly ready.
+      let Plotly;
+      if (navigator.onLine) {
+          // Online: load from CDN
+          Plotly = await loadScript('Plotly', 'https://cdn.plot.ly/plotly-2.14.0.min.js');
+          console.log('Plotly loaded in JSONGrapherMainScript.js from CDN');
+      } else {
+          // Offline: load from local
+          Plotly = await loadScript('Plotly', './utils/Plotly/2.14.0/plotly-2.14.0.min.js');
+          console.log('Plotly loaded in JSONGrapherMainScript.js from local copy');
+      }
+      //end of block to get mathJS ready.
 
       function copyJson(obj) { //for debugging.
         return JSON.parse(JSON.stringify(obj));
@@ -165,7 +179,7 @@
       
       //callbackForPlotting is a function that gets passed in.
       // When a new figDict is passed, in, the callBack does things like the merging and plotting, and returns the revised globalFigDict.
-      async function startJSONGrapherWebGUIListenersWithCallBack(callbackForMergingAndPlotting, graphDivName, errorDiv) {
+      export async function startJSONGrapherWebGUIListenersWithCallBack(callbackForMergingAndPlotting, graphDivName, errorDiv) {
         try {
           const toggleSection1 = document.getElementById("toggleSection1"); //get toggle section so actions can hide it.
           const toggleSection2 = document.getElementById("toggleSection2"); //get toggle section so actions can hide it.         
@@ -263,10 +277,7 @@
         }
       }
 
-      // Start the JSONGrapherWebGUI listeners and give them the loadAndPlotData function to use when they receive something.
-      // Here, I am using graph1 for the graphDivName.
-      // There is also an "implied" argument of globalFigDict.
-      await startJSONGrapherWebGUIListenersWithCallBack(loadMergeAndPlotData, "graph1", errorDiv);
+
 
       //This loads from url params. Url params are variables in the url after a "?", for example:
       // http://www.jsongrapher.com?fromUrl=https%3A%2F%2Fraw.githubusercontent.com%2FAdityaSavara%2FJSONGrapherExamples%2Fmain%2FExampleDataRecords%2F9-3DArrhenius%2FRate_Constant_scatter3d.json
@@ -289,7 +300,7 @@
       // This function is called when the user drops a file or uploads it via the input button or drag and drop
       // This function is also called when a url is provided, in which case the event is the url string and the eventType is "url".
       // existingFigDict may be null if this is the first item.
-      async function loadMergeAndPlotData(existingFigDict, event, eventType, graphDivName, errorDiv) {
+      export async function loadMergeAndPlotData(existingFigDict, event, eventType, graphDivName, errorDiv) {
         let loadingMessage = "Loading and plotting data, including evaluating any equations and running any simulations.";
         errorDiv.innerText += loadingMessage; //We want to use a variable so we can remove the loading message, later.
         //loadData Block
@@ -356,3 +367,5 @@
       }
 
 window.clearData = clearData;
+window.startJSONGrapherWebGUIListenersWithCallBack = startJSONGrapherWebGUIListenersWithCallBack;
+window.loadMergeAndPlotData = loadMergeAndPlotData;
