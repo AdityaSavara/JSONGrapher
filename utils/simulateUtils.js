@@ -30,7 +30,7 @@ import {getUnitFromLabel, removeUnitFromLabel, replaceSuperscripts} from './unit
           return new Promise(async (resolve, reject) => {
         try {
             // Create a script element
-            const loadScript = document.createElement("script");
+            const loadSimulateScript = document.createElement("script");
 
             // Debug the URL being parsed and fetched
             const scriptUrl = parseUrl(dataSet.simulate.model);
@@ -39,10 +39,10 @@ import {getUnitFromLabel, removeUnitFromLabel, replaceSuperscripts} from './unit
             const data = await getRawContent(scriptUrl);
 
             // Attach the content to the script element
-            loadScript.textContent = data;
+            loadSimulateScript.textContent = data;
 
             // Add the script to the document head
-            document.getElementsByTagName("head")[0].appendChild(loadScript);
+            document.getElementsByTagName("head")[0].appendChild(loadSimulateScript);
 
             // Debug if simulate function is available globally
             if (typeof simulate !== "function") {
