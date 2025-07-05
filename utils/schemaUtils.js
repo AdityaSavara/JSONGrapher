@@ -5,17 +5,15 @@ import { loadScript } from './loadingUtils.js';
 let ajvInstance;
 
 if (navigator.onLine) {
-  // Online: load from CDN
-  loadScript('Ajv', 'https://cdnjs.cloudflare.com/ajax/libs/ajv/6.12.6/ajv.bundle.min.js', (AjvConstructor) => {
+    // Online: load from CDN
+    const AjvConstructor = await loadScript('Ajv', 'https://cdn.jsdelivr.net/gh/AdityaSavara/JSONGrapher@main/utils/AJV/6.12.6/ajv.bundle.min.js');
     ajvInstance = new AjvConstructor();
     console.log('AJV loaded in schemaUtils.js from CDN');
-  });
 } else {
-  // Offline: load from local
-  loadScript('Ajv', './utils/AJV/6.12.6/ajv.bundle.min.js', (AjvConstructor) => {
+    // Offline: load from local
+    const AjvConstructor = await loadScript('Ajv', './utils/AJV/6.12.6/ajv.bundle.min.js');
     ajvInstance = new AjvConstructor();
     console.log('AJV loaded in schemaUtils.js from local copy');
-  });
 }
 //end of block to get Ajv ready.
 
