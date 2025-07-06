@@ -4,13 +4,15 @@ url of the json source file and call the JSONGrapher plotting functions. -->
 <html>
 <body>
 <script type="module">
-    import { loadMergeAndPlotData  } from './../../utils/index.js'; 
-    urlString = "https://github.com/AdityaSavara/JSONGrapherExamples/blob/main/ExampleDataRecords/1-CO2__Adsorption_Isotherms/CO2AdsorptionNaX2.json"
-    loadMergeAndPlotData(null, urlString, "url", graph2, null);
+    import { loadMergeAndPlotData  } from './../../src/index.js'; 
+    let jsonUrlString = "https://github.com/AdityaSavara/JSONGrapherExamples/blob/main/ExampleDataRecords/1-CO2__Adsorption_Isotherms/CO2AdsorptionNaX2.json"
+    const messagesToUserDiv = document.getElementById("messagesToUserDiv");
+    const errorDiv = document.getElementById("errorDiv");
+    loadMergeAndPlotData(null, jsonUrlString, "url", graph2, messagesToUserDiv, errorDiv);
 </script>
-<div id ="graph2">
-<!-- The graph will be drawn inside this DIV -->
-</div>
+<div id ="graph2"><!-- The graph will be drawn inside this DIV --></div>
+<div id ="messagesToUserDiv"></div>
+<div id ="errorDiv"></div>
 </body>
 </html>
 

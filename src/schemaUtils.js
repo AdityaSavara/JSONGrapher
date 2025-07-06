@@ -1,4 +1,7 @@
 import { loadLibrary } from './loadingUtils.js';
+import { getConfig } from './config.js';
+import { parseUrl } from './linkUtils.js'; 
+
 //start of block to get Ajv ready
 //    <!--  We use AJV for json validation. We use the 6.12.6 version because the later version had a compilation error. To reduce the external dependency, we have the source code on our github in he AJV folder, it is an under an MIT LICENSE, as noted in the LICENSE file of JSON Grapher.
 //    <script src="https://cdnjs.cloudflare.com/ajax/libs/ajv/6.12.6/ajv.bundle.min.js" integrity="sha512-Xl0g/DHU98OkfXTsDfAAuTswzkniYQWPwLyGXzcpgDxCeH52eePfaHj/ictLAv2GvlPX2qZ6YV+3oDsw17L9qw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> -->
@@ -9,9 +12,20 @@ const AjvConstructor = await loadLibrary('Ajv', '/AJV/6.12.6/ajv.bundle.min.js')
 const ajvInstance = new AjvConstructor();
 //end of block to get Ajv ready.
 
+      async function setSchemaBaseURL(){
+        const config = await getConfig()
+        let baseURL
+        if (config.useRemote === false){
+          baseURL = './src/schema/'          
+        }else{
+          baseURL = 'https://github.com/AdityaSavara/JSONGrapher/tree/main/src/schema/'
+        }
+        return baseURL
+      }
 
       // function to extract from the datatype the location of the schema
-      export function getSchemaLocation(jsonified, template = false, errorDiv = null) {
+      export async function getSchemaLocation(jsonified, template = false, errorDiv = null) {
+        const baseURL = await setSchemaBaseURL()
         if (!jsonified.datatype) {
           errorDiv.innerText += "Warning: The datatype field was not found in the record provided. Accordingly, a schema check will not be performed and the record will not be fully validated. \n";
           jsonified.datatype = ""; // Populate with an empty string
@@ -29,21 +43,22 @@ const ajvInstance = new AjvConstructor();
               ".schema.json",
               ".schema.template.json"
             );
-            return "./src/schema/" + template_suffix;
+            return parseUrl(baseURL + template_suffix);
           } else {
-            return "./src/schema/" + jsonified.datatype;
+            return parseUrl(baseURL + jsonified.datatype);
           }
         } else {
           if (template) {
-            return "./src/schema/" + jsonified.datatype + ".schema.template.json";
+            return parseUrl(baseURL + jsonified.datatype + ".schema.template.json");
           } else {
-            return "./src/schema/" + jsonified.datatype + ".schema.json";
+            return parseUrl(baseURL + jsonified.datatype + ".schema.json");
           }
         }
       }
 
       // function to extract from the datatype the json schema
       export async function getSchemaType(jsonified, errorDiv) {
+        const baseURL = await setSchemaBaseURL()
         let schema2body;
         const schema_location = getSchemaLocation(jsonified);
         const schema_template_location = getSchemaLocation(jsonified, true);
@@ -64,7 +79,7 @@ const ajvInstance = new AjvConstructor();
           //errorDiv.innerText += "undocumented error in getSchemaType\n";
 
           try {
-            const schema1 = await fetch("./src/schema/0_PlotlyTemplate.json");
+            const schema1 = await fetch(parseUrl(baseURL + "0_PlotlyTemplate.json"));
             const schema1body = await schema1.text();
             const schema1json = JSON.parse(schema1body);
             return [schema1json, {}];
@@ -76,10 +91,11 @@ const ajvInstance = new AjvConstructor();
 
       // A function that prepares the plotly schema and the template for the jsonification
       export async function prepareUniversalSchemas() {
-        const schema1 = await fetch("./src/schema/plot-schema.json");
+        const baseURL = await setSchemaBaseURL()
+        const schema1 = await fetch(parseUrl(baseURL + "plot-schema.json"));
         const schema1body = await schema1.text();
         const schema1json = JSON.parse(schema1body);
-        const schema2 = await fetch("./src/schema/0_PlotlyTemplate.json");
+        const schema2 = await fetch(parseUrl(baseURL + "0_PlotlyTemplate.json"));
         const schema2body = await schema2.text();
         const schema2json = await JSON.parse(schema2body);
         return [schema1json, schema2json];

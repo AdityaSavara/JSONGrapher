@@ -1,7 +1,7 @@
 import { loadLibrary } from './../loadingUtils.js';
 
 //start of block to get mathJS ready.
-const math = await loadLibrary('math', '/mathjs/11.11.1/math.min.js');
+const math = await loadLibrary('math', 'mathjs/11.11.1/math.min.js');
 //end of block to get mathJS ready.
 
 function parseVariable(variableString) {
