@@ -1,3 +1,5 @@
+import {Units, Prefixes} from './data.js';
+
 /*
 	convert_parse.js
 	contains the convert parse function
@@ -5,7 +7,7 @@
 */
 
 //enter the Convert object as reference
-function Convert_parse(convert, text) {
+export function Convert_parse(convert, text) {
 	//create auxiliary database that maps each id and alias to the original unit object
 	const UnitIdMap = Units.map(item => ({id: item.id, ref: item})); //first just map the main ids
 	Units.forEach(o => o.alias && o.alias.forEach(a => UnitIdMap.push({id: a, ref: o}))); //and push all aliases

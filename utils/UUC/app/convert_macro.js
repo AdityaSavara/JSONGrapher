@@ -1,3 +1,5 @@
+import {Convert_parse} from './convert_parse.js';
+
 /*
 	convert_macro.js
 	contains the convert macro function, which interprets "macro code" as string
@@ -6,7 +8,7 @@
 	Macro can be switched between simple mode, which is a very simple "programming language" interpreted by the following algorithms,
 	and javascript mode, which is delimited by <js></js> and is simply evaled. It's less intuitive, but has practically unlimited features
 */
-function Convert_macro(code) {
+export function Convert_macro(code) {
 	const that = this;
 	this.clearStatus();
 	try {
