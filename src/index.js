@@ -299,7 +299,6 @@
       // The internal (normal) messagesToUserDiv will also be discarded since there is no interaction needed.
       // If they use a null or undefined for messagesToUserDiv, any messages going to messagesToUserDiv will be discarded.      
       export async function loadMergeAndPlotData(existingFigDict, event, eventType, graphDivName, messagesToUserDiv, errorDiv) {
-        console.log("line 302", messagesToUserDiv);
         let loadingMessage = "Loading and plotting data, including evaluating any equations and running any simulations.";
         errorDiv.innerText += loadingMessage; //We want to use a variable so we can remove the loading message, later.
         //loadData Block
