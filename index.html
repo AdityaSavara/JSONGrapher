@@ -14,8 +14,8 @@
     <link rel="stylesheet" href="./other_html/styles.css" />
     <!-- Load the layout styles here so that the other utils can use them -->
     <script type="module"> 
-      import { jsonifyData, findFileType, jsonifyTSV, jsonifyCSV, getBaseFileName, readFileAsText } from './utils/fileUtils.js'; 
-      import { loadJsonFromUrl, isValidUrl, createDownloadJSONLink, createDownloadCSVLink, jsonToUrl, createCopyUrlLink, addOpeningURLonButtonClick, addDownloadingLinkToButton, parseUrl } from './utils/linkUtils.js';      
+      import { jsonifyData, findFileType, jsonifyTSV, jsonifyCSV, getBaseFileName, readFileAsText } from './src/fileUtils.js'; 
+      import { loadJsonFromUrl, isValidUrl, createDownloadJSONLink, createDownloadCSVLink, jsonToUrl, createCopyUrlLink, addOpeningURLonButtonClick, addDownloadingLinkToButton, parseUrl } from './src/linkUtils.js';      
     </script>  
     <style>
       .file-actions {
@@ -165,7 +165,7 @@
       </div>
     </div>
     <script type="module">
-      import { clearData, startJSONGrapherWebGUIListenersWithCallBack, loadMergeAndPlotData } from './utils/JSONGrapherMainScript.js';
+      import { clearData, startJSONGrapherWebGUIListenersWithCallBack, loadMergeAndPlotData } from './src/index.js';
       // Start the JSONGrapherWebGUI listeners and give them the loadAndPlotData function to use when they receive something.
       // Here, I am using graph1 for the graphDivName.
       // There is also an "implied" argument of globalFigDict.

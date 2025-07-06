@@ -29,15 +29,15 @@ const ajvInstance = new AjvConstructor();
               ".schema.json",
               ".schema.template.json"
             );
-            return "./utils/schema/" + template_suffix;
+            return "./src/schema/" + template_suffix;
           } else {
-            return "./utils/schema/" + jsonified.datatype;
+            return "./src/schema/" + jsonified.datatype;
           }
         } else {
           if (template) {
-            return "./utils/schema/" + jsonified.datatype + ".schema.template.json";
+            return "./src/schema/" + jsonified.datatype + ".schema.template.json";
           } else {
-            return "./utils/schema/" + jsonified.datatype + ".schema.json";
+            return "./src/schema/" + jsonified.datatype + ".schema.json";
           }
         }
       }
@@ -64,7 +64,7 @@ const ajvInstance = new AjvConstructor();
           //errorDiv.innerText += "undocumented error in getSchemaType\n";
 
           try {
-            const schema1 = await fetch("./utils/schema/0_PlotlyTemplate.json");
+            const schema1 = await fetch("./src/schema/0_PlotlyTemplate.json");
             const schema1body = await schema1.text();
             const schema1json = JSON.parse(schema1body);
             return [schema1json, {}];
@@ -76,10 +76,10 @@ const ajvInstance = new AjvConstructor();
 
       // A function that prepares the plotly schema and the template for the jsonification
       export async function prepareUniversalSchemas() {
-        const schema1 = await fetch("./utils/schema/plot-schema.json");
+        const schema1 = await fetch("./src/schema/plot-schema.json");
         const schema1body = await schema1.text();
         const schema1json = JSON.parse(schema1body);
-        const schema2 = await fetch("./utils/schema/0_PlotlyTemplate.json");
+        const schema2 = await fetch("./src/schema/0_PlotlyTemplate.json");
         const schema2body = await schema2.text();
         const schema2json = await JSON.parse(schema2body);
         return [schema1json, schema2json];

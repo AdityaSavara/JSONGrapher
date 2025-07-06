@@ -2,8 +2,8 @@ let initialized = false;//global variable to keep trakck of whether config has b
 
 export const config = {
     useRemote: false,  
-    moduleSourceBaseURL: 'https://github.com/AdityaSavara/JSONGrapher/blob/main/utils/',
-    localBaseURL: './utils/'
+    moduleSourceBaseURL: 'https://github.com/AdityaSavara/JSONGrapher/blob/main/src/',
+    localBaseURL: './src/'
 };
 
 //This function checks whether modules can be accessed by CDN or not.
@@ -17,14 +17,14 @@ async function canAccessCDN(url) {
 }
 
 //When config.js is first loaded, this line checks if CDNs can be accessed, and sets config.useRemote based on test result
-canAccessCDN(`https://cdn.jsdelivr.net/gh/AdityaSavara/JSONGrapher@main/utils/AJV/6.12.6/ajv.bundle.min.js`)
+canAccessCDN(`https://cdn.jsdelivr.net/gh/AdityaSavara/JSONGrapher@main/src/AJV/6.12.6/ajv.bundle.min.js`)
     .then(result => config.useRemote = result);
 
 // Call this once at app startup
 export async function initConfig() {
     if (initialized) return; // Prevent double init
 
-    const testURL = `https://cdn.jsdelivr.net/gh/AdityaSavara/JSONGrapher@main/utils/AJV/6.12.6/ajv.bundle.min.js`;
+    const testURL = `https://cdn.jsdelivr.net/gh/AdityaSavara/JSONGrapher@main/src/AJV/6.12.6/ajv.bundle.min.js`;
     const result = await canAccessCDN(testURL);
     config.useRemote = result;
     initialized = true;
