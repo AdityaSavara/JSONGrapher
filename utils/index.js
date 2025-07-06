@@ -4,6 +4,7 @@
       import {mergeAndplotData, prepareForPlotting} from './plottingUtils.js'
       import { loadLibrary } from './loadingUtils.js';
       import {Convert} from './UUC/app/convert.js';
+      export {mergeAndplotData} //make this function available more widely.
       
       //start of block to get Plotly ready.
       const Plotly = await loadLibrary('Plotly', 'Plotly/plotly-2.14.0.min.js');
