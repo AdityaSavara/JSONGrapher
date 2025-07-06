@@ -293,7 +293,13 @@
       // This function is called when the user drops a file or uploads it via the input button or drag and drop
       // This function is also called when a url is provided, in which case the event is the url string and the eventType is "url".
       // existingFigDict may be null if this is the first item.
+      // There is some 'special logic' here. Normally, for a JSONGrapher GUI, we want two Divs: messagesToUserDiv and errorDiv.
+      // However, sometimes people are embedding a graph for display, in which case there is no messagesToUserDiv.
+      // If the person wants to display a message, they'll pass a string in for that argument and we'll disply it in errorDiv.
+      // The internal (normal) messagesToUserDiv will also be discarded since there is no interaction needed.
+      // If they use a null or undefined for messagesToUserDiv, any messages going to messagesToUserDiv will be discarded.      
       export async function loadMergeAndPlotData(existingFigDict, event, eventType, graphDivName, messagesToUserDiv, errorDiv) {
+        console.log("line 302", messagesToUserDiv);
         let loadingMessage = "Loading and plotting data, including evaluating any equations and running any simulations.";
         errorDiv.innerText += loadingMessage; //We want to use a variable so we can remove the loading message, later.
         //loadData Block
@@ -344,9 +350,14 @@
         }
         // STEP 1 (Variation B): User Providees a URL.
         if (eventType === "url") {
-          fileType = "json"; //Should update to support csv in future.
-          jsonified = await loadJsonFromUrl(event); //the event will have the url in it.
+          fileType = "json"; // Should update to support csv in future.
+          const responsePayload = await loadJsonFromUrl(event); // the event will have the url in it.
+          if (responsePayload.failed===true) { //
+            errorDiv.innerText = `Failed to load JSON: ${responsePayload.error || "Unknown error"}`;
+          }
+          jsonified = responsePayload.data;
         }
+
         // STEP 2 (If needed): If the file is a .csv or .tsv file it is converted to a .json file
         if (eventType === "change" || eventType === "drop") {
           try {

@@ -4,13 +4,12 @@ url of the json source file and call the JSONGrapher plotting functions. -->
 <html>
 <body>
 <center>
-  <p>
-   
-</p>
+  
 <table border="1">
   <tr>
     <td align="left">
-      <strong>Instructions:</strong> To embed an interactive graph like this on your own website, copy the below code into your html and then follow the bullets below. <br>
+      <strong>Instructions:</strong> This version of the embedding example uses relative paths and is meant for developers who have a local copy of jsongrapher.<br>
+ To embed an interactive graph like this on your own website, copy the below code into your html and then follow the bullets below. <br>
       <ul>  
           <pre>
 &lt;!-- Start of JSONGrapher Embedding Code --&gt;
@@ -18,7 +17,7 @@ url of the json source file and call the JSONGrapher plotting functions. -->
 &lt;div id="graph2"&gt; &lt;!-- The graph will be drawn inside this DIV  --&gt;  &lt;/div&gt;
 &lt;div id="errorMessagesDiv2"&gt;&lt;/div&gt;
 &lt;script type="module"&gt;
-  import { loadMergeAndPlotData } from 'https://cdn.jsdelivr.net/gh/AdityaSavara/JSONGrapher@main/src/index.js';
+  import { loadMergeAndPlotData  } from './../../src/index.js'; 
   let jsonUrlString = "https://github.com/AdityaSavara/JSONGrapherExamples/blob/main/ExampleDataRecords/2-Differential_Heats_of_Adsorption/La_Perovskites_Combined.json";
   const errorMessagesDiv2 = document.getElementById("errorMessagesDiv2");
   const messagesToUser2 = "Create and embed your own graphs following the manual at www.jsongrapher.com!";  
@@ -35,11 +34,13 @@ url of the json source file and call the JSONGrapher plotting functions. -->
     </td>
   </tr>
 </table>
+
+
 <center>
 <div id ="graph2"><!-- The graph will be drawn inside this DIV --></div>
 <div id ="errorMessagesDiv2"></div>
 <script type="module">
-    import { loadMergeAndPlotData  } from 'https://cdn.jsdelivr.net/gh/AdityaSavara/JSONGrapher@main/src/index.js'; 
+    import { loadMergeAndPlotData  } from './../../src/index.js'; 
     let jsonUrlString = "https://github.com/AdityaSavara/JSONGrapherExamples/blob/main/ExampleDataRecords/2-Differential_Heats_of_Adsorption/La_Perovskites_Combined.json"
     const errorMessagesDiv2 = document.getElementById("errorMessagesDiv2");
     const messagesToUser2 = "Create and embed your own graphs following the manual at www.jsongrapher.com!";
