@@ -28,7 +28,7 @@
 //     math = await loadScript('math', 'https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.1/math.min.js');
 //     console.log('mathJS loaded in equation_evaluator.js from CDN');
 //   } else {
-//     math = await loadScript('math', './utils/mathjs/11.11.1/math.min.js');
+//     math = await loadScript('math', './src/mathjs/11.11.1/math.min.js');
 //     console.log('mathJS loaded in equation_evaluator.js from local copy');
 //   }
 
