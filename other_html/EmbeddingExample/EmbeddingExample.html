@@ -16,7 +16,7 @@ url of the json source file and call the JSONGrapher plotting functions. -->
 &lt;div id="graph2"&gt; &lt;!-- The graph will be drawn inside this DIV  --&gt;  &lt;/div&gt;
 &lt;div id="errorMessagesDiv2"&gt;&lt;/div&gt;
 &lt;script type="module"&gt;
-  import { loadMergeAndPlotData  } from './../../src/index.js'; 
+  import { loadMergeAndPlotData } from 'https://cdn.jsdelivr.net/gh/AdityaSavara/JSONGrapher@main/src/index.js';
   const jsonUrlStringGraph2 = "https://github.com/AdityaSavara/JSONGrapherExamples/blob/main/ExampleDataRecords/2-Differential_Heats_of_Adsorption/La_Perovskites_Combined.json";
   const errorMessagesDivGraph2 = document.getElementById("errorMessagesDivGraph2");
   const messagesToUserGraph2 = "Create and embed your own graphs following the manual at www.jsongrapher.com!";  
@@ -34,18 +34,21 @@ url of the json source file and call the JSONGrapher plotting functions. -->
   </tr>
 </table>
 
-
+<h2>This graph displays a JSONGrapher record from github:</h2>
 <center>
 <div id ="graph2"><!-- The graph will be drawn inside this DIV --></div>
 <div id ="errorMessagesDiv2"></div>
 <script type="module">
-    import { loadMergeAndPlotData  } from './../../src/index.js'; 
+    import { loadMergeAndPlotData } from 'https://cdn.jsdelivr.net/gh/AdityaSavara/JSONGrapher@main/src/index.js';
     const jsonUrlStringGraph2 = "https://github.com/AdityaSavara/JSONGrapherExamples/blob/main/ExampleDataRecords/2-Differential_Heats_of_Adsorption/La_Perovskites_Combined.json"
     const errorMessagesDivGraph2 = document.getElementById("errorMessagesDivGraph2");
     const messagesToUserGraph2 = "Create and embed your own graphs following the manual at www.jsongrapher.com!";
     loadMergeAndPlotData(null, jsonUrlStringGraph2, "url", graph2, messagesToUserGraph2, errorMessagesDivGraph2);
 </script>
 </center>
+
+
+
 </center>
 </body>
 </html>
