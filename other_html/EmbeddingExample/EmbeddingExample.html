@@ -3,16 +3,42 @@ The basic steps are to make a div, typically named like "graph1" or "graph2" and
 url of the json source file and call the JSONGrapher plotting functions. -->
 <html>
 <body>
+<p>
+  <strong>Embedding Instructions:</strong><br> 
+</p>
+
+<ol>
+   To embed an interactive graph like this on your own website, follow the below steps.<br><br>
+  <li>Copy and insert the following code, including the div and script tags. Update the <code>jsonUrlString</code> with your JSON file's URL.</li>
+  <li>Give your <code>&lt;div&gt;</code> element a unique ID (such as <code>graph2</code>) and also put that name into the loadMergeandPlotData arguments.</li>
+  <li>
+    <pre>
+    &lt;!-- Start of JSONGrapher Embedding Code --&gt;
+    &lt;div id="graph2"&gt;&lt;/div&gt;
+    &lt;script type="module"&gt;
+      import { loadMergeAndPlotData } from 'https://cdn.jsdelivr.net/gh/AdityaSavara/JSONGrapher@main/src/index.js';
+      let jsonUrlString = "https://github.com/AdityaSavara/JSONGrapherExamples/blob/main/ExampleDataRecords/2-Differential_Heats_of_Adsorption/SrTiO3_rainbow.json";
+      const messagesToUserDiv = document.getElementById("messagesToUserDiv");
+      const errorMessagesDiv = document.getElementById("errorMessagesDiv");
+      loadMergeAndPlotData(null, jsonUrlString, "url", graph2, messagesToUserDiv, errorMessagesDiv);
+    &lt;/script&gt;
+    &lt;div id="messagesToUserDiv"&gt;&lt;/div&gt;
+    &lt;div id="errorMessagesDiv"&gt;&lt;/div&gt;
+    &lt;!-- End of JSONGrapher Embedding Code --&gt;
+    </pre>
+   </li>
+</ol>
+
+<div id ="graph2"><!-- The graph will be drawn inside this DIV --></div>
 <script type="module">
     import { loadMergeAndPlotData  } from 'https://cdn.jsdelivr.net/gh/AdityaSavara/JSONGrapher@main/src/index.js'; 
-    let jsonUrlString = "https://github.com/AdityaSavara/JSONGrapherExamples/blob/main/ExampleDataRecords/1-CO2__Adsorption_Isotherms/CO2AdsorptionNaX2.json"
+    let jsonUrlString = "https://github.com/AdityaSavara/JSONGrapherExamples/blob/main/ExampleDataRecords/2-Differential_Heats_of_Adsorption/La_Perovskites_Combined.json"
     const messagesToUserDiv = document.getElementById("messagesToUserDiv");
-    const errorDiv = document.getElementById("errorDiv");
-    loadMergeAndPlotData(null, jsonUrlString, "url", graph2, messagesToUserDiv, errorDiv);
+    const errorMessagesDiv = document.getElementById("errorMessagesDiv");
+    loadMergeAndPlotData(null, jsonUrlString, "url", graph2, messagesToUserDiv, errorMessagesDiv);
 </script>
-<div id ="graph2"><!-- The graph will be drawn inside this DIV --></div>
 <div id ="messagesToUserDiv"></div>
-<div id ="errorDiv"></div>
+<div id ="errorMessagesDiv"></div>
 </body>
 </html>
 
