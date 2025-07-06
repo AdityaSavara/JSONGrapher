@@ -172,7 +172,7 @@
       
       //callbackForPlotting is a function that gets passed in.
       // When a new figDict is passed, in, the callBack does things like the merging and plotting, and returns the revised globalFigDict.
-      export async function startJSONGrapherWebGUIListenersWithCallBack(callbackForMergingAndPlotting, graphDivName, errorDiv) {
+      export async function startJSONGrapherWebGUIListenersWithCallBack(callbackForMergingAndPlotting, graphDivName, messagesToUserDiv, errorDiv) {
         try {
           const toggleSection1 = document.getElementById("toggleSection1"); //get toggle section so actions can hide it.
           const toggleSection2 = document.getElementById("toggleSection2"); //get toggle section so actions can hide it.         
@@ -199,7 +199,7 @@
                 };
                 let urlReceived
                 //These callbacks are hardcoded to use the globalFigDict.
-                [globalFigDict, urlReceived] = await callbackForMergingAndPlotting(globalFigDict, event, "change", graphDivName, errorDiv);
+                [globalFigDict, urlReceived] = await callbackForMergingAndPlotting(globalFigDict, event, "change", graphDivName, messagesToUserDiv, errorDiv);
                 // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
                 //should  make an if statement here to give newestFigDict with filename if only one record has been uploaded
                 // and to otherwise give the full data with name like "mergedGraphRecord.json" for the filename.
@@ -230,7 +230,7 @@
                 };
                 let urlReceived
                 //These callbacks are hardcoded to use the globalFigDict.
-                [globalFigDict, urlReceived] = await callbackForMergingAndPlotting(globalFigDict, event, "drop", graphDivName, errorDiv);
+                [globalFigDict, urlReceived] = await callbackForMergingAndPlotting(globalFigDict, event, "drop", graphDivName, messagesToUserDiv, errorDiv);
                 // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
                 //should  make an if statement here to give newestFigDict with filename if only one record has been uploaded
                 // and to otherwise give the full data with name like "mergedGraphRecord.json" for the filename.
@@ -252,7 +252,7 @@
                 toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
                 let urlReceived
                 //These callbacks are hardcoded to use the globalFigDict.
-                [globalFigDict, urlReceived] = await callbackForMergingAndPlotting(globalFigDict, url, "url", graphDivName, errorDiv);
+                [globalFigDict, urlReceived] = await callbackForMergingAndPlotting(globalFigDict, url, "url", graphDivName, messagesToUserDiv, errorDiv);
                 // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
                 //should  make an if statement here to give newestFigDict with filename if only one record has been uploaded
                 // and to otherwise give the full data with name like "mergedGraphRecord.json" for the filename.
@@ -293,13 +293,13 @@
       // This function is called when the user drops a file or uploads it via the input button or drag and drop
       // This function is also called when a url is provided, in which case the event is the url string and the eventType is "url".
       // existingFigDict may be null if this is the first item.
-      export async function loadMergeAndPlotData(existingFigDict, event, eventType, graphDivName, errorDiv) {
+      export async function loadMergeAndPlotData(existingFigDict, event, eventType, graphDivName, messagesToUserDiv, errorDiv) {
         let loadingMessage = "Loading and plotting data, including evaluating any equations and running any simulations.";
         errorDiv.innerText += loadingMessage; //We want to use a variable so we can remove the loading message, later.
         //loadData Block
         let urlReceived = null; //initialize.
         //the "event" variable holds the url when a url is received.
-        if (eventType==="url"){urlReceived=event};
+        if (eventType==="url"){event = parseUrl(event); urlReceived=event};
         let { jsonified, recentFileName, fileType } = await loadData(event, eventType, errorDiv); // STEP 0, STEP 1, STEP 2
         //validateData Block
         let newFigDict = jsonified
