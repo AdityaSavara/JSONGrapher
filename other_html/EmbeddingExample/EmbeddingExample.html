@@ -4,9 +4,7 @@ url of the json source file and call the JSONGrapher plotting functions. -->
 <html>
 <body>
 <center>
-  <p>
-   
-</p>
+  
 <table border="1">
   <tr>
     <td align="left">
@@ -15,37 +13,55 @@ url of the json source file and call the JSONGrapher plotting functions. -->
           <pre>
 &lt;!-- Start of JSONGrapher Embedding Code --&gt;
 &lt;center&gt;
-&lt;div id="graph2"&gt; &lt;!-- The graph will be drawn inside this DIV  --&gt;  &lt;/div&gt;
-&lt;div id="errorMessagesDiv2"&gt;&lt;/div&gt;
+&lt;div id="graphDivGraph2"&gt; &lt;!-- The graph will be drawn inside this DIV  --&gt;  &lt;/div&gt;
+&lt;div id="errorMessagesDivGraph2"&gt;&lt;/div&gt;
 &lt;script type="module"&gt;
   import { loadMergeAndPlotData } from 'https://cdn.jsdelivr.net/gh/AdityaSavara/JSONGrapher@main/src/index.js';
-  let jsonUrlString = "https://github.com/AdityaSavara/JSONGrapherExamples/blob/main/ExampleDataRecords/2-Differential_Heats_of_Adsorption/La_Perovskites_Combined.json";
-  const errorMessagesDiv2 = document.getElementById("errorMessagesDiv2");
-  const messagesToUser2 = "Create and embed your own graphs following the manual at www.jsongrapher.com!";  
-  loadMergeAndPlotData(null, jsonUrlString, "url", graph2, messagesToUser2, errorMessagesDiv2);
+  const jsonUrlStringGraph2 = "https://github.com/AdityaSavara/JSONGrapherExamples/blob/main/ExampleDataRecords/2-Differential_Heats_of_Adsorption/La_Perovskites_Combined.json";
+  const errorMessagesDivGraph2 = document.getElementById("errorMessagesDivGraph2");
+  const messagesToUserGraph2 = "Create and embed your own graphs following the manual at www.jsongrapher.com!";  
+  loadMergeAndPlotData(null, jsonUrlString, "url", graphDivGraph2, messagesToUserGraph2, errorMessagesDivGraph2);
 &lt;/script&gt;
 &lt;/center&gt;
 &lt;!-- End of JSONGrapher Embedding Code --&gt;
           </pre>
         <li>Update the <code>jsonUrlString</code> with your JSON file's URL.</li>
         <li>Give the first <code>&lt;div&gt;</code> element a unique ID (such as <code>graph2</code>) and also put that name into the <code>loadMergeandPlotData</code> arguments.</li>
-        <li>Add the number of your graph into the other places (errorMessagesDiv2, messagesToUser2). The number is recommended to ensure uniqueness for the divs and messages.</li>
+        <li>Add the number of your graph into the other places (errorMessagesDivGraph2, messagesToUserGraph2). The number is recommended to ensure uniqueness for the divs and messages.</li>
         <li>Leave the comments in, which look like this: <code> &lt;!-- This is a comment in the html. --&gt; </code></li>
+        <li>Compatible with github, dropbox, and some servers.</li>
       </ul>
     </td>
   </tr>
 </table>
+
+<h2>This graph displays a JSONGrapher record from github (after a few seconds):</h2>
 <center>
-<div id ="graph2"><!-- The graph will be drawn inside this DIV --></div>
-<div id ="errorMessagesDiv2"></div>
+<div id ="graphDivGraph2"><!-- The graph will be drawn inside this DIV --></div>
+<div id ="errorMessagesDivGraph2"></div>
 <script type="module">
-    import { loadMergeAndPlotData  } from 'https://cdn.jsdelivr.net/gh/AdityaSavara/JSONGrapher@main/src/index.js'; 
-    let jsonUrlString = "https://github.com/AdityaSavara/JSONGrapherExamples/blob/main/ExampleDataRecords/2-Differential_Heats_of_Adsorption/La_Perovskites_Combined.json"
-    const errorMessagesDiv2 = document.getElementById("errorMessagesDiv2");
-    const messagesToUser2 = "Create and embed your own graphs following the manual at www.jsongrapher.com!";
-    loadMergeAndPlotData(null, jsonUrlString, "url", graph2, messagesToUser2, errorMessagesDiv2);
+    import { loadMergeAndPlotData } from 'https://cdn.jsdelivr.net/gh/AdityaSavara/JSONGrapher@main/src/index.js';
+    const jsonUrlStringGraph2 = "https://github.com/AdityaSavara/JSONGrapherExamples/blob/main/ExampleDataRecords/2-Differential_Heats_of_Adsorption/La_Perovskites_Combined.json"
+    const messagesToUserGraph2 = "Create and embed your own graphs following the manual at www.jsongrapher.com!";
+    loadMergeAndPlotData(null, jsonUrlStringGraph2, "url", graphDivGraph2, messagesToUserGraph2, errorMessagesDivGraph2);
 </script>
 </center>
+
+
+<center>
+<h2>This graph displays a JSONGrapher record from dropbox (after a few seconds):</h2>
+<div id ="graphDivGraph3"><!-- The graph will be drawn inside this DIV --></div>
+<div id ="errorMessagesDivGraph3"></div>
+<script type="module">
+    import { loadMergeAndPlotData  } from 'https://cdn.jsdelivr.net/gh/AdityaSavara/JSONGrapher@main/src/index.js';
+    const jsonUrlStringGraph3 = "https://www.dropbox.com/scl/fi/i04dgfrri2ngtcvxj35dn/SrTiO3_rainbow.json?rlkey=qi0ejgukr279xtcsavdrsqzrl&dl=0"
+    const messagesToUserGraph3 = "Create and embed your own graphs following the manual at www.jsongrapher.com!";
+    loadMergeAndPlotData(null, jsonUrlStringGraph3, "url", graphDivGraph3, messagesToUserGraph3, errorMessagesDivGraph3);
+</script>
+</center>
+
+
+
 </center>
 </body>
 </html>
