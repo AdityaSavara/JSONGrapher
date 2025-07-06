@@ -2,14 +2,24 @@
 export async function loadJsonFromUrl(url) {
     try {
         const response = await fetch(url);
-        if (!response.ok) throw new Error("Network response was not OK");
         const jsonData = await response.json();
-        return jsonData;
+        return {
+            status: response.status,
+            data: jsonData,
+            failed: false,
+            error: null,
+        };
     } catch (error) {
-        console.error("Error fetching JSON:", error);
-        return null;
+        console.error(`Error fetching JSON from ${url}:`, error);
+        return {
+            status: null,
+            data: null,
+            failed: true,            
+            error: error.message,
+        };
     }
 }
+
 
 // Function to validate a URL string
 export function isValidUrl(urlString) {

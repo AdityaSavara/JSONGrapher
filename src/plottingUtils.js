@@ -17,13 +17,34 @@ const Plotly = await loadLibrary('Plotly', 'Plotly/plotly-2.14.0.min.js');
       // If the data is valid against the schema, then we can proceed to the next step
       // if necessary create download button with json
       // It's recommended to use a divName like Graph1 so that you are able to use Graph1, Graph2, Graph3, etc.
+      // There is some 'special logic' here. Normally, for a JSONGrapher GUI, we want two Divs: messagesToUserDiv and errorDiv.
+      // However, sometimes people are embedding a graph for display, in which case there is no messagesToUserDiv.
+      // If the person wants to display a message, they'll pass a string in for that argument and we'll disply it in errorDiv.
+      // The internal (normal) messagesToUserDiv will also be discarded since there is no interaction needed.
+      // If they use a null or undefined for messagesToUserDiv, any messages going to messagesToUserDiv will be discarded.
       export async function mergeAndplotData(existingFigDict, newFigDict, newFigDictFileName, graphDivName, messagesToUserDiv, errorDiv) {
+        //We'll treat having a Div for messagesToUserDiv as optional.
+        // If we receive a string, we'll add it to the errorDiv and then set to null for next step.
+        if (typeof messagesToUserDiv === 'string') {
+          if (errorDiv && typeof errorDiv.innerText !== 'undefined') {
+            errorDiv.innerText += `\n${messagesToUserDiv}`;
+          }
+          messagesToUserDiv = null;
+        }
+        //If messagesToUserDiv is null or undefined, we'll create a map so that there is a place to add messages without error.
+        if (!messagesToUserDiv) {
+          messagesToUserDiv = new Map();
+          messagesToUserDiv.innerText = ""
+        }
+
+
+
         // STEP 4 and STEP 5 is done in the prepareForPlotting function
         const { mergedFigDict, fileName, newestFigDict } = await prepareForPlotting(existingFigDict, newFigDict, newFigDictFileName, errorDiv); 
         if (mergedFigDict) {
           // STEP 7: Then create a plotly JSON, clean it, and render it on the browser
           plot(mergedFigDict, graphDivName);
-          //Replace existing "Data Plotted" message if it is already there, to avoid duplicating it.
+          //Replace existing "Data Plotted" message if it is already there, to avoid duplicating it. Note that we don't want to put this message in the errorDiv.
           if (!messagesToUserDiv.innerText) { //Currently, we assume the below message is present or not present. If we later put additional messagesToUser, we may need to add more logic.
             const dataPlottedMessage = "\u2003\u2003\u2003\u2003\u2003\u2003 Data plotted! Add more data or click 'Clear Data' to start a new graph! \u2003\u2003\u2003\u2003\u2003\u2003"
             messagesToUserDiv.innerText += dataPlottedMessage;
