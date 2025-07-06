@@ -1,5 +1,6 @@
 // Function to retrieve JSON record from URL
 export async function loadJsonFromUrl(url) {
+    url = parseUrl(url)
     try {
         const response = await fetch(url);
         const jsonData = await response.json();
@@ -139,20 +140,28 @@ export function createCopyUrlLink(jsonURL) {
     return urlString;
 }
 
-// Changes the Github link to a CDN link to avoid CORB issues
+// Changes the Github link to a raw link to avoid CORB issues
 // TODO: currently we only support javascript from github. In the future, cross-domain / cross-origin simulate functions will be supported by SRI hash. https://www.w3schools.com/Tags/att_script_crossorigin.asp https://www.w3schools.com/Tags/att_script_integrity.asp with the SRI hash provided within the simulate object by a field in the JSON record named "SRI" or 'integrity"
 export function parseUrl(url) {
   const urlArr = url.split("/");
+  // GitHub substitution
   if (urlArr[2] === "github.com") {
     return url
       .replace("github.com", "raw.githubusercontent.com")
       .replace("/blob/", "/")
       .replace("/tree/", "/")
       .replace("www.", "");
-  } else {
-    return url;
   }
+  // Dropbox substitution — ensure dl=1 for direct download
+  if (urlArr[2].includes("dropbox.com")) {
+    return url.replace("www.dropbox.com", "dl.dropboxusercontent.com")
+              .replace("dl=0", "dl=1")
+              .replace("dl=1", "dl=1")  // keeps it unchanged if already correct
+              .replace("raw=1", "dl=1");
+  }
+  return url;
 }
+
 
 //This is a helper function that takes in a button and a link
 // and makes it so that the link is opened when a person clicks a button
