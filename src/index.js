@@ -36,24 +36,53 @@
       const convert = new Convert();
       window.convert = convert //This is so simulateUtils can access convert. TODO: Find a better solution to provide access to convert for simulateUtils.
 
-      // A function that clears the data from global variables and removes the error text and plotly chart
-      export function clearData(graphDivName) {
-        globalFigDict = null;
-        urlParamsString = null; //empty this global variable.
-        document.getElementById("errorDiv").innerHTML = "";
-        document.getElementById("messagesToUserDiv").innerHTML = "";
-        document.getElementById("downloadButtonsContainer").innerHTML = "";
-        document.getElementById("file-selector").value = "";
-        document.getElementById("load-from-url").value = "";
-        document.getElementById("download").style.display = "none";
-        const toggleSection1 = document.getElementById("toggleSection1"); //Now will reveal again.
-        const toggleSection2 = document.getElementById("toggleSection2"); //Now will reveal again.
-        const toRevealSection = document.getElementById("toReveal");   // Now will hide.
-        toggleSection1.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
-        toggleSection2.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
-        toRevealSection.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
-        Plotly.purge(graphDivName);
-      }
+/**
+ * Sets the .value of an element safely, if it exists.
+ * @param {Document} domDoc - The DOM document to search within.
+ * @param {string} id - The ID of the element to update.
+ * @param {string} value - The value to assign to the element.
+ */
+function safeSetElementValue(domDoc, id, value) {
+  const el = domDoc.getElementById(id);
+  if (el) el.value = value;
+}
+
+/**
+ * Sets the .innerHTML of an element safely, if it exists.
+ * @param {Document} domDoc - The DOM document to search within.
+ * @param {string} id - The ID of the element to update.
+ * @param {string} html - The HTML string to assign to the element.
+ */
+function safeSetElementInnerHTML(domDoc, id, html) {
+  const el = domDoc.getElementById(id);
+  if (el) el.innerHTML = html;
+}
+
+/**
+ * Clears UI state and resets DOM elements related to the graph and user messages.
+ * The "safeSet" helper functions prevent errors for environments where certain DOM doc elements don't exist.
+ * @param {string} graphDivName - The ID of the Plotly graph container to purge.
+ * @param {Document} domDoc - The DOM document to operate on (defaults to global document).
+ */
+export function clearData(graphDivName, domDoc = document) {
+  globalFigDict = null;
+  urlParamsString = null;
+  safeSetElementInnerHTML(domDoc, "errorDiv", "");
+  safeSetElementInnerHTML(domDoc, "messagesToUserDiv", "");
+  safeSetElementInnerHTML(domDoc, "downloadButtonsContainer", "");
+  safeSetElementValue(domDoc, "file-selector", "");
+  safeSetElementValue(domDoc, "load-from-url", "");
+  const download = domDoc.getElementById("download");
+  if (download) download.style.display = "none";
+  const toggleSection1 = domDoc.getElementById("toggleSection1");
+  if (toggleSection1) toggleSection1.style.display = "block";
+  const toggleSection2 = domDoc.getElementById("toggleSection2");
+  if (toggleSection2) toggleSection2.style.display = "block";
+  const toRevealSection = domDoc.getElementById("toReveal");
+  if (toRevealSection) toRevealSection.style.display = "none";
+  Plotly.purge(graphDivName);
+}
+
 
 
 
