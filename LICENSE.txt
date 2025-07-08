@@ -1,19 +1,7 @@
-BSD 3-Clause License
-
-The UUC code is under an MIT License. https://github.com/AdityaSavara/JSONGrapher/tree/main/utils/UUC/LICENSE.txt
-
-The AJV code is under an MIT license: https://github.com/AdityaSavara/JSONGrapher/tree/main/utils/AJV/LICENSE.txt
-
-This project uses MathJS, which is licensed under Apache-2.0 and is copyright (c) Jos de Jong  https://github.com/josdejong/mathjs?tab=Apache-2.0-1-ov-file#readme 
-https://github.com/AdityaSavara/JSONGrapher/tree/main/utils/mathjs/11.11.1/LICENSE.txt
-
-This project uses plotly, which is under an MIT License, copyright (c) 2016-2024 Plotly Technologies Inc. https://github.com/plotly/plotly.js/?tab=MIT-1-ov-file#readme
-https://github.com/AdityaSavara/JSONGrapher/tree/main/utils/Plotly/LICENSE.txt
-
-The main code in the repository is under the BSD 3-Clause License, included below.
+JSONGrapher is provided under a BSD 3-Clause License, located below. Third party licenses are located in NOTICE.txt
 
 ***
-
+BSD 3-Clause License
 
 Copyright 2025 Aditya Savara
 
