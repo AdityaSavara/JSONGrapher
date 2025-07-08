@@ -1,19 +1,7 @@
-BSD 3-Clause License
-
-The UUC code is under an MIT License, located in the subdirectory ./src/UUC/LICENSE.txt
-
-The AJV code is under an MIT license, located in the subdirectory ./src/AJV/LICENSE.txt
-
-This project uses MathJS, which is licensed under Apache-2.0 and is copyright (c) Jos de Jong  https://github.com/josdejong/mathjs?tab=Apache-2.0-1-ov-file#readme 
-The MathJS license is located in the subdirectory ./src/mathjs/11.11.1/LICENSE.txt
-
-This project uses Plotly, which is under an MIT License, copyright (c) 2016-2024 Plotly Technologies Inc. https://github.com/plotly/plotly.js/?tab=MIT-1-ov-file#readme
-The Plotly license is located in located in the subdirectory ./src/Plotly/LICENSE.txt
-
-The main code of JSONGrapher is provided under the BSD 3-Clause License, included below.
+JSONGrapher is provided under a BSD 3-Clause License, located below. Third party licenses are located in NOTICE.txt
 
 ***
-
+BSD 3-Clause License
 
 Copyright 2025 Aditya Savara
 
