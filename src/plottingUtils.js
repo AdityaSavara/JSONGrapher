@@ -27,7 +27,7 @@ const Plotly = await loadLibrary('Plotly', 'Plotly/plotly-2.14.0.min.js');
         // If we receive a string, we'll add it to the errorDiv and then set to null for next step.
         if (typeof messagesToUserDiv === 'string') {
           if (errorDiv && typeof errorDiv.innerText !== 'undefined') {
-            errorDiv.innerText += `\n${messagesToUserDiv}`;
+            errorDiv.innerText = `${messagesToUserDiv}`;
           }
           messagesToUserDiv = null;
         }
