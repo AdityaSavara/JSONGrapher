@@ -1,0 +1,10 @@
+comments: Frogs
+DataType: Frogs
+Chart_label: Frogs
+x_label: Time (years)
+y_label: Geography (meters)
+series_names: sasdfsdf
+x_values,y_1
+1,1
+6,6
+8,20
