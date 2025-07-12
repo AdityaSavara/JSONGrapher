@@ -188,7 +188,7 @@ export function clearData(graphDivName, domDoc = document) {
         document.addEventListener('DOMContentLoaded', () => {
           //I have hardcoded this event listener to plot to the Graph1 div.
           //It is also hardcoded to pass in the globalFigDict.
-          loadFromUrlParams(globalFigDict, urlParamsString, "graph1", errorDiv);
+          loadFromUrlParams(globalFigDict, urlParamsString, "graph1", messagesToUserDiv, errorDiv);
           //This function needs to toggle the reveal/hide blocks directly, since it is like an independent event listener.
           const toggleSection1 = document.getElementById("toggleSection2");
           const toggleSection2 = document.getElementById("toggleSection2");
@@ -303,11 +303,11 @@ export function clearData(graphDivName, domDoc = document) {
 
       //This loads from url params. Url params are variables in the url after a "?", for example:
       // http://www.jsongrapher.com?fromUrl=https%3A%2F%2Fraw.githubusercontent.com%2FAdityaSavara%2FJSONGrapherExamples%2Fmain%2FExampleDataRecords%2F9-3DArrhenius%2FRate_Constant_scatter3d.json
-      async function loadFromUrlParams(existingFigDict, urlInput, graphDivName, errorDiv){
+      async function loadFromUrlParams(existingFigDict, urlInput, graphDivName, messagesToUserDiv, errorDiv){
         if (isValidUrl(urlInput)){ 
           const url = parseUrl(urlInput);
           let urlReceived
-          [globalFigDict, urlReceived] = await loadMergeAndPlotData(existingFigDict, url, "url", graphDivName, errorDiv);
+          [globalFigDict, urlReceived] = await loadMergeAndPlotData(existingFigDict, url, "url", graphDivName, messagesToUserDiv, errorDiv);
           // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
           //should  make an if statement here to give newestFigDict with filename if only one record has been uploaded
           // and to otherwise give the full data with name like "mergedGraphRecord.json" for the filename.
