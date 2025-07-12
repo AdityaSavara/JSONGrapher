@@ -165,14 +165,32 @@
       </div>
     </div>
     <script type="module">
-      import { clearData, startJSONGrapherWebGUIListenersWithCallBack, loadMergeAndPlotData } from './src/index.js';
+      import { clearData, startJSONGrapherWebGUIListenersWithCallBack, loadMergeAndPlotData,loadFromUrlParamsProcedureWrapper } from './src/index.js';
       // Start the JSONGrapherWebGUI listeners and give them the loadAndPlotData function to use when they receive something.
       // Here, I am using graph1 for the graphDivName.
       // There is also an "implied" argument of globalFigDict.
-      // type="module" would also let us use awit for the below funciton call, but we shouldn't need await here.      
+      // type="module" would also let us use await for the below funciton call, but we shouldn't need await here.      
       const messagesToUserDiv = document.getElementById("messagesToUserDiv");
       const errorDiv = document.getElementById("errorDiv");
       startJSONGrapherWebGUIListenersWithCallBack(loadMergeAndPlotData, "graph1", messagesToUserDiv, errorDiv);
+
+      //The above also loaded the dependencies. 
+      // Now let's check if we recieved a "graph from url" request from the address bar.
+      // Build the query string from URL parameters.
+      // Note: I thought I could put this higher up to have the query start sooner,
+      // but it failed when I tried that, and getting it to work early in the page loading is not a priority.
+      let url = window.location.href; // Get the current page URL   
+      let params = new URLSearchParams(new URL(url).search);
+      let urlParamsString = params.get("fromUrl"); //default ends up as null.
+      if (urlParamsString) { // if it's not null, we'll use it.
+        //we will call a wrapper, because we don't just want to load, we also want to
+        //do some manipulation of the divs on the webpage.
+        loadFromUrlParamsProcedureWrapper(
+          urlParamsString,
+          messagesToUserDiv,
+          errorDiv
+        );
+      }
     </script> 
   </body>
   <footer>

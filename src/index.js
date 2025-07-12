@@ -4,6 +4,7 @@
       import {mergeAndplotData, prepareForPlotting} from './plottingUtils.js'
       import { loadLibrary } from './loadingUtils.js';
       import {Convert} from './UUC/app/convert.js';
+      import { getConfig } from './config.js';
       export {mergeAndplotData} //make this function available more widely.
       
       //start of block to get Plotly ready.
@@ -180,24 +181,27 @@ export function clearData(graphDivName, domDoc = document) {
 
 
       ///############################ BELOW IS THE MAIN BLOCK OF CODE FOR JSON GRAPHER ##################################
-      if (urlParamsString) {
-        //This waiting of the DOM to be loaded line is because the "isValidURL" and other functions need to load from the modules.
-        //After the main block of code is also moved to a module, perhaps this could be changed.
-        //More likely, those functions should stay in this file, while the main function should be moved into a module.
-        //That way, an external json can be called and downloaded even before the DOM is finished loading.
-        document.addEventListener('DOMContentLoaded', () => {
-          //I have hardcoded this event listener to plot to the Graph1 div.
-          //It is also hardcoded to pass in the globalFigDict.
-          loadFromUrlParams(globalFigDict, urlParamsString, "graph1", messagesToUserDiv, errorDiv);
-          //This function needs to toggle the reveal/hide blocks directly, since it is like an independent event listener.
-          const toggleSection1 = document.getElementById("toggleSection2");
-          const toggleSection2 = document.getElementById("toggleSection2");
-          const toRevealSection = document.getElementById("toReveal"); //get toReveal section so actions can reveal
-          toggleSection1.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
-          toggleSection2.style.display = "none"; // "none" to hide and "block" to show. Those are built in keywords.
-          toRevealSection.style.display = "block"; // "none" to hide and "block" to show. Those are built in keywords.
-        });
-      };
+
+      // This function wraps the logic that previously relied on DOMContentLoaded.
+      export async function loadFromUrlParamsProcedureWrapper(
+                                                  urlParamsString,
+                                                  messagesToUserDiv,
+                                                  errorDiv){
+        // I have hardcoded this event listener to plot to the Graph1 div.
+        // It is also hardcoded to pass in the globalFigDict.
+        await loadFromUrlParams(globalFigDict, urlParamsString, "graph1", messagesToUserDiv, errorDiv);
+
+        // This function needs to toggle the reveal/hide blocks directly, since it is like an independent event listener.
+        const toggleSection1 = document.getElementById("toggleSection1"); 
+        const toggleSection2 = document.getElementById("toggleSection2");
+        const toRevealSection = document.getElementById("toReveal"); // Get toReveal section so actions can reveal.
+
+        // "none" to hide and "block" to show — those are built-in keywords.
+        toggleSection1.style.display = "none";
+        toggleSection2.style.display = "none";
+        toRevealSection.style.display = "block";
+      }
+
       
       //callbackForPlotting is a function that gets passed in.
       // When a new figDict is passed, in, the callBack does things like the merging and plotting, and returns the revised globalFigDict.
