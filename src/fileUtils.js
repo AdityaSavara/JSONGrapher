@@ -30,77 +30,33 @@ export function findFileType(fileName) {
 
 // A function that jsonifies a TSV file
 export function jsonifyTSV(fileContent, plotlyTemplate) {
-    // Separate rows
-    let arr = fileContent.split("\n");
-    // If last row is empty, remove it
-    if (arr[arr.length - 1].length < 2) {
-        arr = arr.slice(0, arr.length - 1);
-    }
-    // Count number of columns
-    let number_of_columns = arr[0].split("\t").length;
-    // Extract the config information
-    let comments     = arr[0].split("\t")[0].split(":")[1].trim();
-    let data_type    = arr[1].split("\t")[0].split(":")[1].trim();
-    let chart_label  = arr[2].split("\t")[0].split(":")[1].trim();
-    let x_label      = arr[3].split("\t")[0].split(":")[1].trim();
-    let y_label      = arr[4].split("\t")[0].split(":")[1].trim();
-    let custom       = arr[5]; // This field is for custom JSON objects and is currently ignored.
-    // Extract the series names
-    let series_names_array = arr[5]
-        .split(":")[1]
-        .split('"')[0]
-        .split("\t")
-        .map(n => n.trim());
-    // Ignore arr[7], which is custom_variables:
-    // Extract the data
-    let data = arr
-        .slice(8)
-        .map(row => row.split("\t").map(str => Number(str)));
-    let resultJSON = JSON.parse(JSON.stringify(plotlyTemplate, null, 2)); // clone of the template. The ", null, 2" is optional to make the json more human readable.
-    resultJSON.comments = comments;
-    resultJSON.datatype = data_type;
-    resultJSON.layout.title = { text: chart_label };
-    resultJSON.layout.xaxis.title = { text: x_label };
-    resultJSON.layout.yaxis.title = { text: y_label };
-    let newData = [];
-    series_names_array.forEach((series_name, index) => {
-        let dataClone = JSON.parse(
-            JSON.stringify(plotlyTemplate.data[0], null, 2)
-        ); // the ", null, 2" is optional to make the json more human readable.
-        dataClone.name = series_name;
-        dataClone.x = data.map(row => row[0]);
-        dataClone.y = data.map(row => row[index + 1]);
-        dataClone.uid += String(index);
-        newData.push(dataClone);
-    });
-    resultJSON.data = newData;
-    return resultJSON;
+    return jsonifyCSV(fileContent, plotlyTemplate, "\t");
 }
 
 // A function that jsonifies a CSV file
-export function jsonifyCSV(fileContent, plotlyTemplate) {
+export function jsonifyCSV(fileContent, plotlyTemplate, delimiter = ",") {
     // Split the file into lines
     let arr = fileContent.split("\n");
     // Remove trailing empty row if present
     if (arr[arr.length - 1].length < 2) arr = arr.slice(0, arr.length - 1);
 
     // Extract metadata from header rows
-    let comments    = arr[0].split(",")[0].split(":")[1].trim();
-    let data_type   = arr[1].split(",")[0].split(":")[1].trim();
-    let chart_label = arr[2].split(",")[0].split(":")[1].trim();
-    let x_label     = arr[3].split(",")[0].split(":")[1].trim();
-    let y_label     = arr[4].split(",")[0].split(":")[1].trim();
+    let comments    = arr[0].split(delimiter)[0].split(":")[1].trim();
+    let data_type   = arr[1].split(delimiter)[0].split(":")[1].trim();
+    let chart_label = arr[2].split(delimiter)[0].split(":")[1].trim();
+    let x_label     = arr[3].split(delimiter)[0].split(":")[1].trim();
+    let y_label     = arr[4].split(delimiter)[0].split(":")[1].trim();
 
     // Parse and clean series names
     let series_names_array = arr[5]
         .split(":")[1]
         .split('"')[0]
-        .split(",")
+        .split(delimiter)
         .map(n => n.trim())
         .filter(name => name !== "");
 
-    // Prepare CSV data rows
-    let rawData = arr.slice(7).map(row => row.split(","));
+    // Prepare delimter separated rows
+    let rawData = arr.slice(7).map(row => row.split(delimiter));
     let columnCount = rawData[0].length;
 
     // Infer format: default to xyyy
@@ -164,6 +120,7 @@ export function jsonifyCSV(fileContent, plotlyTemplate) {
     resultJSON.data = newData;
     return resultJSON;
 }
+
 
 
 // A function that will create a csv string from the jsonified data
