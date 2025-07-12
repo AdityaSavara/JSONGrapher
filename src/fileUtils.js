@@ -62,16 +62,20 @@ export function jsonifyCSV(fileContent, plotlyTemplate, delimiter = ",") {
     // Infer format: default to xyyy
     let series_columns_format = "xyyy";
 
-    // Check for xyxy staggered format based on trailing y-values
+    // Check for xyxy staggered format based on last-row y-values.
+    // If any of the even-numbered columns (which would be y-columns) contain non-numeric values in last row,
+    // we assume this is staggered xyxy format with alternating x/y series.
     if (columnCount >= 4) {
+        const lastRow = rawData[rawData.length - 1];
         for (let i = 1; i < columnCount; i += 2) {
-            let tailCheck = rawData.slice(-5).map(row => row[i]);
-            if (tailCheck.some(val => isNaN(parseFloat(val)))) {
+            const val = lastRow[i];
+            if (val && isNaN(parseFloat(val))) {
                 series_columns_format = "xyxy";
                 break;
             }
         }
     }
+
     let newData = [];
     if (series_columns_format === "xyyy") {
         // Format: x column followed by multiple y columns
