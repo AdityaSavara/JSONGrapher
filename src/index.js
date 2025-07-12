@@ -215,8 +215,17 @@ export function clearData(graphDivName, domDoc = document) {
             const fileSelector = document.getElementById("file-selector");
             if (fileSelector) {
               fileSelector.addEventListener("change", async (event) => {
+                //Passing the actual event object forward was causing problems (it was emptying downstream).
+                //However, creating a javascript object with the expected structure
+                //and calling it a 'clonedEvent' fixed the problem.
+                // The idea of a 'clonedEvent' to solve the issue was actually an idea by copilot, though copilot didn't understand why passing the event
+                // was resulting it becoming emptied downstream.
                 const file = event.target.files[0]; //this is a local temporary variable.
                 const fileName = file.name; //this is a local temporary variable
+                const clonedEvent = {
+                  target: { files: [file] },
+                  dataTransfer: { files: [file] }
+                };                
                 if (
                   fileName !== "Example1_JSONGrapher.json" &&
                   fileName !== "Example2_JSONGrapher.json" &&
@@ -228,7 +237,7 @@ export function clearData(graphDivName, domDoc = document) {
                 };
                 let urlReceived
                 //These callbacks are hardcoded to use the globalFigDict.
-                [globalFigDict, urlReceived] = await callbackForMergingAndPlotting(globalFigDict, event, "change", graphDivName, messagesToUserDiv, errorDiv);
+                [globalFigDict, urlReceived] = await callbackForMergingAndPlotting(globalFigDict, clonedEvent, "change", graphDivName, messagesToUserDiv, errorDiv);
                 // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
                 //should  make an if statement here to give newestFigDict with filename if only one record has been uploaded
                 // and to otherwise give the full data with name like "mergedGraphRecord.json" for the filename.
@@ -246,8 +255,17 @@ export function clearData(graphDivName, domDoc = document) {
               });
               dropArea.addEventListener("drop", async (event) => {
                 event.preventDefault();
+                //Passing the actual event object forward was causing problems (it was emptying downstream).
+                //However, creating a javascript object with the expected structure
+                //and calling it a 'clonedEvent' fixed the problem.
+                // The idea of a 'clonedEvent' to solve the issue was actually an idea by copilot, though copilot didn't understand why passing the event
+                // was resulting it becoming emptied downstream.
                 const file = event.dataTransfer.files[0]; //this is a local temporary variable
                 const fileName = file.name; //this is a local temporary variable
+                const clonedEvent = {
+                  target: { files: [file] },
+                  dataTransfer: { files: [file] }
+                };                
                 if (
                   fileName !== "Example1_JSONGrapher.json" &&
                   fileName !== "Example2_JSONGrapher.json" &&
@@ -259,7 +277,7 @@ export function clearData(graphDivName, domDoc = document) {
                 };
                 let urlReceived
                 //These callbacks are hardcoded to use the globalFigDict.
-                [globalFigDict, urlReceived] = await callbackForMergingAndPlotting(globalFigDict, event, "drop", graphDivName, messagesToUserDiv, errorDiv);
+                [globalFigDict, urlReceived] = await callbackForMergingAndPlotting(globalFigDict, clonedEvent, "drop", graphDivName, messagesToUserDiv, errorDiv);
                 // STEP 6: Provide file with converted units for download as JSON and CSV by buttons
                 //should  make an if statement here to give newestFigDict with filename if only one record has been uploaded
                 // and to otherwise give the full data with name like "mergedGraphRecord.json" for the filename.
