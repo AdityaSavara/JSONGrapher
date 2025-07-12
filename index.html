@@ -165,7 +165,26 @@
       </div>
     </div>
     <script type="module">
-      import { clearData, startJSONGrapherWebGUIListenersWithCallBack, loadMergeAndPlotData,loadFromUrlParamsProcedureWrapper } from './src/index.js';
+      // Script block for when web browser address bar has a url to load from.
+      // We put this before the main GUI so that JSONGrapher can begin retrieving any records
+      // even before beginning to load the rest of the GUI.
+      import { loadFromUrlParamsProcedureWrapper } from './src/index.js';
+      const messagesToUserDiv = document.getElementById("messagesToUserDiv");
+      const errorDiv = document.getElementById("errorDiv");
+      // After defining divs, check if we recieved a "graph from url" request from the address bar.
+      let url = window.location.href; // Get the current page URL   
+      // Get any query string from URL parameters.
+      let params = new URLSearchParams(new URL(url).search);
+      let urlParamsString = params.get("fromUrl"); //get the url out, with default as null.
+      if (urlParamsString) {  //check if urlParamsString is null.
+        //  If a fromUrl requesst is received, we will call a wrapper function,
+        //  because we don't just want to load the record, we also want to
+        //  do some manipulation of the divs on the webpage.
+        loadFromUrlParamsProcedureWrapper(urlParamsString, messagesToUserDiv, errorDiv);
+      }
+    </script>   
+    <script type="module">
+      import { clearData, startJSONGrapherWebGUIListenersWithCallBack, loadMergeAndPlotData } from './src/index.js';
       // Start the JSONGrapherWebGUI listeners and give them the loadAndPlotData function to use when they receive something.
       // Here, I am using graph1 for the graphDivName.
       // There is also an "implied" argument of globalFigDict.
@@ -173,24 +192,6 @@
       const messagesToUserDiv = document.getElementById("messagesToUserDiv");
       const errorDiv = document.getElementById("errorDiv");
       startJSONGrapherWebGUIListenersWithCallBack(loadMergeAndPlotData, "graph1", messagesToUserDiv, errorDiv);
-
-      //The above also loaded the dependencies. 
-      // Now let's check if we recieved a "graph from url" request from the address bar.
-      // Build the query string from URL parameters.
-      // Note: I thought I could put this higher up to have the query start sooner,
-      // but it failed when I tried that, and getting it to work early in the page loading is not a priority.
-      let url = window.location.href; // Get the current page URL   
-      let params = new URLSearchParams(new URL(url).search);
-      let urlParamsString = params.get("fromUrl"); //default ends up as null.
-      if (urlParamsString) { // if it's not null, we'll use it.
-        //we will call a wrapper, because we don't just want to load, we also want to
-        //do some manipulation of the divs on the webpage.
-        loadFromUrlParamsProcedureWrapper(
-          urlParamsString,
-          messagesToUserDiv,
-          errorDiv
-        );
-      }
     </script> 
   </body>
   <footer>
