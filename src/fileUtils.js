@@ -43,7 +43,7 @@ export function jsonifyCSV(fileContent, plotlyTemplate, delimiter = ",") {
     // Extract metadata from header rows
     let comments    = arr[0].split(delimiter)[0].split(":")[1].trim();
     let data_type   = arr[1].split(delimiter)[0].split(":")[1].trim();
-    let chart_label = arr[2].split(delimiter)[0].split(":")[1].trim();
+    let graph_title = arr[2].split(delimiter)[0].split(":")[1].trim();
     let x_label     = arr[3].split(delimiter)[0].split(":")[1].trim();
     let y_label     = arr[4].split(delimiter)[0].split(":")[1].trim();
 
@@ -118,7 +118,7 @@ export function jsonifyCSV(fileContent, plotlyTemplate, delimiter = ",") {
     let resultJSON = JSON.parse(JSON.stringify(plotlyTemplate));
     resultJSON.comments = comments;
     resultJSON.datatype = data_type;
-    resultJSON.layout.title = { text: chart_label };
+    resultJSON.layout.title = { text: graph_title };
     resultJSON.layout.xaxis.title = { text: x_label };
     resultJSON.layout.yaxis.title = { text: y_label };
     resultJSON.data = newData;
