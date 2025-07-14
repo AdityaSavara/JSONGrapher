@@ -125,25 +125,31 @@ export function jsonifyCSV(fileContent, plotlyTemplate, delimiter = ",") {
     return resultJSON;
 }
 
-
-
 // A function that will create a csv string from the jsonified data
 // Supports both XYYY and XYXY formats for CSV export
 export function createCSV(jsonified) {
+    //Ensure valid input.
+    if (!jsonified || typeof jsonified !== "object") {
+        console.warn("Invalid input to createCSV:", jsonified);
+        return {
+            csv: "",
+            filename: "invalid.csv"
+        };
+    }
     // Defining the variables
     let csv = "";
     const xLabel = jsonified.layout?.xaxis?.title?.text || "";
     const yLabel = jsonified.layout?.yaxis?.title?.text || "";
-    const comments = jsonified.comments;
-    const dataType = jsonified.datatype;
-    const chartLabel = jsonified.layout.title.text;
-    const dataSets = jsonified.data;
+    const comments = jsonified?.comments || "";
+    const dataType = jsonified?.datatype || "";
+    const chartLabel = jsonified.layout?.title?.text || "UntitledGraph";
+    const dataSets = Array.isArray(jsonified?.data) ? jsonified.data : [];
     let seriesName = "";
     // Adding the name of each dataset separated by comma
     dataSets.forEach((dataSet, dataSetIndex) => {
         const last = dataSetIndex === dataSets.length - 1;
         const suffix = !last ? "," : "";
-        seriesName += dataSet.name + suffix;
+        seriesName += (dataSet?.name || "") + suffix;
     });
     // Concatenating the values into the string
     csv += "comments: " + comments + "\r\n";
@@ -154,7 +160,7 @@ export function createCSV(jsonified) {
     csv += "series_names:, " + seriesName + "\r\n";
     // Determine whether x arrays are equal across datasets
     const allXEqual = dataSets.every(dataSet =>
-        JSON.stringify(dataSet.x) === JSON.stringify(dataSets[0].x)
+        JSON.stringify(dataSet?.x || []) === JSON.stringify(dataSets[0]?.x || [])
     );
     if (allXEqual) {
         // XYYY format: All series share the same x-axis
@@ -164,8 +170,8 @@ export function createCSV(jsonified) {
             const suffix = dataSetIndex === dataSets.length - 1 ? "\r\n" : "";
             csv += ",y" + idx + suffix;
         });
-        const xValues = dataSets[0].x || [];
-        const yValuesArray = dataSets.map(dataSet => dataSet.y || []);
+        const xValues = dataSets[0]?.x || [];
+        const yValuesArray = dataSets.map(dataSet => dataSet?.y || []);
         xValues.forEach((xValue, rowIndex) => {
             let row = xValue;
             yValuesArray.forEach(yArray => {
@@ -181,7 +187,7 @@ export function createCSV(jsonified) {
         // Note: Math.max could have been used here for conciseness
         let maxLength = 0;
         dataSets.forEach(dataSet => {
-            const length = dataSet.x.length;
+            const length = (dataSet?.x || []).length;
             if (length > maxLength) {
                 maxLength = length;
             }
@@ -191,8 +197,10 @@ export function createCSV(jsonified) {
         // If a value is missing at that index, fallback to empty string
         for (let rowIndex = 0; rowIndex < maxLength; rowIndex++) {
             const row = dataSets.map(dataSet => {
-                const xVal = dataSet.x[rowIndex] !== undefined ? dataSet.x[rowIndex] : "";
-                const yVal = dataSet.y[rowIndex] !== undefined ? dataSet.y[rowIndex] : "";
+                const xArray = dataSet?.x || [];
+                const yArray = dataSet?.y || [];
+                const xVal = xArray[rowIndex] !== undefined ? xArray[rowIndex] : "";
+                const yVal = yArray[rowIndex] !== undefined ? yArray[rowIndex] : "";
                 return `${xVal},${yVal}`;
             }).join(",");
             csv += row + "\r\n";
@@ -200,9 +208,10 @@ export function createCSV(jsonified) {
     }
     return {
         csv: csv,
-        filename: chartLabel + ".csv"
+        filename: "mergedRecord" + ".csv"
     };
 }
+
 
 
 // Gets the name of the uploaded file with the extension removed.
