@@ -1,26 +1,20 @@
 // Function to retrieve JSON record from URL
 export async function loadJsonFromUrl(url) {
-    url = parseUrl(url)
+    url = parseUrl(url);
     try {
         const response = await fetch(url);
-        const jsonData = await response.json();
-        return {
-            status: response.status,
-            data: jsonData,
-            failed: false,
-            error: null,
-        };
+
+        if (!response.ok) {
+            console.warn(`Non-OK HTTP status ${response.status} from ${url}`);
+            return null;
+        }
+
+        return await response.json();
     } catch (error) {
         console.error(`Error fetching JSON from ${url}:`, error);
-        return {
-            status: null,
-            data: null,
-            failed: true,            
-            error: error.message,
-        };
+        return null;
     }
 }
-
 
 // Function to validate a URL string
 export function isValidUrl(urlString) {
