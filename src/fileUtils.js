@@ -128,6 +128,14 @@ export function jsonifyCSV(fileContent, plotlyTemplate, delimiter = ",") {
 // A function that will create a csv string from the jsonified data
 // Supports both XYYY and XYXY formats for CSV export
 export function createCSV(jsonified) {
+    //Ensure valid input.
+    if (!jsonified || typeof jsonified !== "object") {
+        console.warn("Invalid input to createCSV:", jsonified);
+        return {
+            csv: "",
+            filename: "invalid.csv"
+        };
+    }
     // Defining the variables
     let csv = "";
     const xLabel = jsonified.layout?.xaxis?.title?.text || "";
