@@ -172,7 +172,7 @@
       // type="module" would also let us use awit for the below funciton call, but we shouldn't need await here.      
       const messagesToUserDiv = document.getElementById("messagesToUserDiv");
       const errorDiv = document.getElementById("errorDiv");
-      startJSONGrapherWebGUIListenersWithCallBack(loadMergeAndPlotData, "graph1", messagesToUserDiv, errorDiv);
+      await startJSONGrapherWebGUIListenersWithCallBack(loadMergeAndPlotData, "graph1", messagesToUserDiv, errorDiv);
     </script> 
   </body>
   <footer>
