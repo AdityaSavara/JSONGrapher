@@ -290,7 +290,6 @@ export function clearData(graphDivName, domDoc = document) {
               });
             }
           }
-
           // User inputs URL via a prompt instead of selecting/dropping a file
           const loadFromUrlButton = document.getElementById("load-from-url");
           if (loadFromUrlButton) {
@@ -405,7 +404,7 @@ export function clearData(graphDivName, domDoc = document) {
           if (responsePayload.failed===true) { //
             errorDiv.innerText = `Failed to load JSON: ${responsePayload.error || "Unknown error"}`;
           }
-          jsonified = responsePayload.data;
+          jsonified = responsePayload;
         }
 
         // STEP 2 (If needed): If the file is a .csv or .tsv file it is converted to a .json file
