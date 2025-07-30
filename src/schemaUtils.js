@@ -60,8 +60,8 @@ const ajvInstance = new AjvConstructor();
       export async function getSchemaType(jsonified, errorDiv) {
         const baseURL = await setSchemaBaseURL()
         let schema2body;
-        const schema_location = getSchemaLocation(jsonified);
-        const schema_template_location = getSchemaLocation(jsonified, true);
+        const schema_location = getSchemaLocation(jsonified, false, errorDiv);
+        const schema_template_location = getSchemaLocation(jsonified, true, errorDiv);
         try {
           const schema1 = await fetch(schema_location);
           const schema2 = await fetch(schema_template_location);
