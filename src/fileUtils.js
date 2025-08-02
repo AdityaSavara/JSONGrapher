@@ -33,6 +33,8 @@ export function jsonifyTSV(fileContent, plotlyTemplate) {
     return jsonifyCSV(fileContent, plotlyTemplate, "\t");
 }
 
+// A function that jsonifies a CSV file (comma delimeted), or other delimeter.
+// The delimeter must not be a ":" since that is preserved for use with metadata.
 export function jsonifyCSV(fileContent, plotlyTemplate, delimiter = ",") {
     // Split file content into lines and remove empty trailing lines
     const arr = fileContent.split("\n").filter(line => line.trim().length > 0);
@@ -80,17 +82,22 @@ export function jsonifyCSV(fileContent, plotlyTemplate, delimiter = ",") {
     const rawData = arr.slice(headerIndex + 1).map(row => row.split(delimiter));
     const columnCount = rawData[0].length;
 
-    // Infer data format: default to "xyyy" (shared x column, multiple y columns)
-    let series_columns_format = "xyyy";
+    // Determine series_columns_format from metadata or fallback to autodetection
+    let series_columns_format = "xyyy"; // default
 
-    // Detect "xyxy" format (alternating x/y pairs) by inspecting last row's y-values
-    if (columnCount >= 4) {
-        const lastRow = rawData[rawData.length - 1];
-        for (let i = 1; i < columnCount; i += 2) {
-            const val = lastRow[i];
-            if (val && isNaN(parseFloat(val))) {
-                series_columns_format = "xyxy";
-                break;
+    const formatFromMetadata = metadata.series_columns_format?.trim().toLowerCase();
+    if (formatFromMetadata === "xyyy" || formatFromMetadata === "xyxy") {
+        series_columns_format = formatFromMetadata;
+    } else {
+        // Autodetect format if metadata is missing or invalid
+        if (columnCount >= 4) {
+            const lastRow = rawData[rawData.length - 1];
+            for (let i = 1; i < columnCount; i += 2) {
+                const val = lastRow[i];
+                if (val && isNaN(parseFloat(val))) {
+                    series_columns_format = "xyxy";
+                    break;
+                }
             }
         }
     }
@@ -154,6 +161,7 @@ export function jsonifyCSV(fileContent, plotlyTemplate, delimiter = ",") {
 
     return resultJSON;
 }
+
 
 
 
