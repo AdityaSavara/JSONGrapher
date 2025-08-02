@@ -365,10 +365,13 @@ export function evaluateEquationForDataSeriesByIndex(figDict, dataSeriesIndex, v
             dataDictFilled.y_label = dataDictFilled.equation.y_variable;
             dataDictFilled.x = equationDictEvaluated.x_points;
             dataDictFilled.y = equationDictEvaluated.y_points;
+            dataDictFilled.x_units = equationDictEvaluated.x_units;
+            dataDictFilled.y_units = equationDictEvaluated.y_units;
 
             if (graphical_dimensionality === 3) {
                 dataDictFilled.z_label = dataDictFilled.equation.z_variable;
                 dataDictFilled.z = equationDictEvaluated.z_points;
+                dataDictFilled.z_units = equationDictEvaluated.z_units;
             }
 
             // Unit scaling logic
@@ -379,35 +382,38 @@ export function evaluateEquationForDataSeriesByIndex(figDict, dataSeriesIndex, v
                 let existingRecordZLabel = "";
                 // Check for zaxis title in both layout and layout.scene for 3D plots
                 if (dataDictFilled.z_label && updatedFigDict.layout?.scene?.zaxis?.title?.text) {
-                    existingRecordZLabel = updatedFigDict.layout.scene.zaxis.title.text;
+                    existingRecordZLabel = updatedFigDict.layout.scene.zaxis?.title?.text || "";
                 } else if (dataDictFilled.z_label && updatedFigDict.layout?.zaxis?.title?.text) {
                     // Fallback for non-scene 3D plots if applicable
-                    existingRecordZLabel = updatedFigDict.layout.zaxis.title.text;
+                    existingRecordZLabel = updatedFigDict.layout?.zaxis?.title?.text || "";
                 }
 
-                const existingRecordXUnits = separateLabelTextFromUnits(existingRecordXLabel).units; // Calls your separateLabelTextFromUnits
-                const existingRecordYUnits = separateLabelTextFromUnits(existingRecordYLabel).units; // Calls your separateLabelTextFromUnits
-                //const existingRecordZUnits = separateLabelTextFromUnits(existingRecordZLabel).units; // Calls your separateLabelTextFromUnits
-
-
+                const existingRecordXUnits = separateLabelTextFromUnits(existingRecordXLabel).units; 
+                const existingRecordYUnits = separateLabelTextFromUnits(existingRecordYLabel).units; 
+                const existingRecordZUnits = separateLabelTextFromUnits(existingRecordZLabel).units; 
                 if (existingRecordXUnits !== '' || existingRecordYUnits !== '' || existingRecordZUnits !== '') {
                     // Now, get the units from the evaluated equation output.
-                    const simulatedDataSeriesXUnits = separateLabelTextFromUnits(dataDictFilled.x_label).units; // Calls your separateLabelTextFromUnits
-                    const simulatedDataSeriesYUnits = separateLabelTextFromUnits(dataDictFilled.y_label).units; // Calls your separateLabelTextFromUnits
-                    //const simulatedDataSeriesZUnits = separateLabelTextFromUnits(dataDictFilled.z_label).units; // Calls your separateLabelTextFromUnits
-
-                    const xUnitsRatio = getUnitsScalingRatio(simulatedDataSeriesXUnits, existingRecordXUnits); // Calls your getUnitsScalingRatio
-                    const yUnitsRatio = getUnitsScalingRatio(simulatedDataSeriesYUnits, existingRecordYUnits); // Calls your getUnitsScalingRatio
-                    //const zUnitsRatio = getUnitsScalingRatio(simulatedDataSeriesZUnits, existingRecordZUnits); // Calls your getUnitsScalingRatio
-
+                    const simulatedDataSeriesXUnits = dataDictFilled.x_units;
+                    const simulatedDataSeriesYUnits = dataDictFilled.y_units;
+                    const xUnitsRatio = getUnitsScalingRatio(simulatedDataSeriesXUnits, existingRecordXUnits); 
+                    const yUnitsRatio = getUnitsScalingRatio(simulatedDataSeriesYUnits, existingRecordYUnits); 
+                    let zUnitsRatio = 1
+                    if (dataDictFilled.z_label){
+                        const simulatedDataSeriesZUnits = dataDictFilled.z_units;
+                        zUnitsRatio = getUnitsScalingRatio(simulatedDataSeriesZUnits, existingRecordZUnits); 
+                    }
                     // Scale the dataseries
-                    scaleDataseriesDict(dataDictFilled, xUnitsRatio, yUnitsRatio); // Calls your scaleDataseriesDict
+                    scaleDataseriesDict(dataDictFilled, xUnitsRatio, yUnitsRatio, zUnitsRatio); 
                 }
 
                 // Remove the "x_label", "y_label", and "z_label" to be compatible with Plotly.
+                // These deletes are safe even if the field is not present.
                 delete dataDictFilled.x_label;
                 delete dataDictFilled.y_label;
-                //delete dataDictFilled.z_label; // Use delete operator for properties
+                delete dataDictFilled.z_label;
+                delete dataDictFilled.x_units;
+                delete dataDictFilled.y_units;
+                delete dataDictFilled.z_units;
             }
 
             if (!dataDictFilled.type) {

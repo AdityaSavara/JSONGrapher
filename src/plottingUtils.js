@@ -37,8 +37,6 @@ const Plotly = await loadLibrary('Plotly', 'Plotly/plotly-2.14.0.min.js');
           messagesToUserDiv.innerText = ""
         }
 
-
-
         // STEP 4 and STEP 5 is done in the prepareForPlotting function
         const { mergedFigDict, fileName, newestFigDict } = await prepareForPlotting(existingFigDict, newFigDict, newFigDictFileName, errorDiv); 
         if (mergedFigDict) {
