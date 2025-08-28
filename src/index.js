@@ -11,9 +11,16 @@
       const Plotly = await loadLibrary('Plotly', 'Plotly/plotly-2.14.0.min.js');
       //end of block to get Plotly ready.
 
-      function copyJson(obj) { //for debugging.
-        return JSON.parse(JSON.stringify(obj));
-      }
+/**
+ * Creates a deep copy of a JSON-compatible object.
+ * Useful for debugging or isolating mutations.
+ *
+ * @param {Object} obj - The object to deep copy.
+ * @returns {Object} A new object that is a deep clone of the input.
+ */
+function copyJson(obj) { //for debugging.
+  return JSON.parse(JSON.stringify(obj));
+}
       //JSONGrapher has the following steps, which will be commented in the MAIN BLOCK OF CODE of JSONGrapher:
       // STEP 0: Prepare the 'universal' schemas
       // STEP 1: User selects a file from computer or drops a file on the browser

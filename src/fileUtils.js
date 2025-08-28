@@ -1,267 +1,319 @@
 // A function checks the extension of the file and calls the appropriate function to jsonify the file
+/**
+ * Converts raw data into a Plotly-compatible JSON format based on the specified file type.
+ * Supports CSV and TSV formats via dedicated handlers; defaults to parsing JSON directly.
+ *
+ * @param {String} filetype - The type of input file ("csv", "tsv", or other).
+ * @param {String} dataLoaded - The raw data string to be converted.
+ * @param {Object} plotlyTemplate - A template object used for formatting the output.
+ * @returns {Object} A Plotly-compatible JSON object.
+ */
 export function jsonifyData(filetype, dataLoaded, plotlyTemplate) {
-    switch (filetype) {
-        case "csv": {
-            return jsonifyCSV(dataLoaded, plotlyTemplate);
-        }
-        case "tsv": {
-            return jsonifyTSV(dataLoaded, plotlyTemplate);
-        }
-        default: {
-            return JSON.parse(dataLoaded);
-        }
+  switch (filetype) {
+    case "csv": {
+      return jsonifyCSV(dataLoaded, plotlyTemplate);
     }
+    case "tsv": {
+      return jsonifyTSV(dataLoaded, plotlyTemplate);
+    }
+    default: {
+      return JSON.parse(dataLoaded);
+    }
+  }
 }
 
 // A function that checks the uploaded file extension
+/**
+ * Determines the file type based on the file name extension.
+ * Supports "csv", "tsv", and defaults to "json" if no match is found.
+ *
+ * @param {String} fileName - The name of the file to evaluate.
+ * @returns {String} The inferred file type ("csv", "tsv", or "json").
+ */
 export function findFileType(fileName) {
-    let arrayName = fileName.split(".");
-    let fileType;
-    if (arrayName.includes("csv")) {
-        fileType = "csv";
-    } else if (arrayName.includes("tsv")) {
-        fileType = "tsv";
-    } else {
-        fileType = "json";
-    }
-    return fileType;
+  let arrayName = fileName.split(".");
+  let fileType;
+  if (arrayName.includes("csv")) {
+    fileType = "csv";
+  } else if (arrayName.includes("tsv")) {
+    fileType = "tsv";
+  } else {
+    fileType = "json";
+  }
+  return fileType;
 }
 
 
-// A function that jsonifies a TSV file (tab delimited)
+/**
+ * Converts a TSV file into a Plotly-compatible JSON format using tab as the delimiter.
+ *
+ * @param {String} fileContent - The raw TSV file content.
+ * @param {Object} plotlyTemplate - A template object used for formatting the output.
+ * @returns {Object} A Plotly-compatible JSON object.
+ */
 export function jsonifyTSV(fileContent, plotlyTemplate) {
-    return jsonifyCSV(fileContent, plotlyTemplate, "\t");
+  return jsonifyCSV(fileContent, plotlyTemplate, "\t");
 }
 
-// A function that jsonifies a CSV file (comma delimeted), or other delimeter.
-// The delimeter must not be a ":" since that is preserved for use with metadata.
+/**
+ * Converts a CSV (or other delimited) file into a Plotly-compatible JSON format.
+ * Parses metadata from lines containing colons, and supports two data formats: 'xyyy' and 'xyxy'.
+ * The delimiter must not be ':' since that is reserved for metadata parsing.
+ *
+ * @param {String} fileContent - The raw file content.
+ * @param {Object} plotlyTemplate - A template object used for formatting the output.
+ * @param {String} [delimiter=','] - The delimiter used in the file (e.g., ',' or '\t').
+ * @returns {Object} A Plotly-compatible JSON object.
+ */
 export function jsonifyCSV(fileContent, plotlyTemplate, delimiter = ",") {
-    // Split file content into lines and remove empty trailing lines
-    const arr = fileContent.split("\n").filter(line => line.trim().length > 0);
+  // Split file content into lines and remove empty trailing lines
+  const arr = fileContent.split("\n").filter(line => line.trim().length > 0);
 
-    // Find the first line that doesn't contain a colon — marks start of data header
-    const headerIndex = arr.findIndex(line => !line.includes(":"));
+  // Find the first line that doesn't contain a colon — marks start of data header
+  const headerIndex = arr.findIndex(line => !line.includes(":"));
 
-    // Extract metadata lines (everything before the header)
-    const metadataLines = arr.slice(0, headerIndex);
-    const metadata = {};
+  // Extract metadata lines (everything before the header)
+  const metadataLines = arr.slice(0, headerIndex);
+  const metadata = {};
 
-    metadataLines.forEach(line => {
-        if (line.includes(":")) {
-            const [rawKey, rawValue] = line.split(":", 2);
-            const normalizedKey = rawKey.replace(/\s+/g, "").replace("\ufeff", "").toLowerCase();
-            let cleanedValue = rawValue.trim();
+  metadataLines.forEach(line => {
+    if (line.includes(":")) {
+      const [rawKey, rawValue] = line.split(":", 2);
+      const normalizedKey = rawKey.replace(/\s+/g, "").replace("\ufeff", "").toLowerCase();
+      let cleanedValue = rawValue.trim();
 
-            // Remove all trailing delimiters (e.g., ",,,") unless it's series_names
-            // This prevents accidental empty values or parsing errors
-            if (normalizedKey !== "series_names") {
-                const trailingDelimRegex = new RegExp(`${delimiter}+$`);
-                cleanedValue = cleanedValue.replace(trailingDelimRegex, "").trim();
-            }
+      // Remove all trailing delimiters (e.g., ",,,") unless it's series_names
+      // This prevents accidental empty values or parsing errors
+      if (normalizedKey !== "series_names") {
+        const trailingDelimRegex = new RegExp(`${delimiter}+$`);
+        cleanedValue = cleanedValue.replace(trailingDelimRegex, "").trim();
+      }
 
-            metadata[normalizedKey] = cleanedValue;
+      metadata[normalizedKey] = cleanedValue;
+    }
+  });
+
+  // Extract known metadata fields with defaults
+  const comments     = metadata.comments || "";
+  const data_type    = metadata.datatype || "";
+  const graph_title  = metadata.chart_label || "";
+  const x_label      = metadata.x_label || "";
+  const y_label      = metadata.y_label || "";
+
+  // Parse series names from metadata
+  // We preserve the raw value and clean it during splitting
+  const series_names_line = metadata.series_names || "";
+  const series_names_array = series_names_line
+    .split(delimiter)
+    .map(name => name.trim())
+    .filter(name => name.length > 0);
+
+  // Extract raw data rows (everything after the header line)
+  const rawData = arr.slice(headerIndex + 1).map(row => row.split(delimiter));
+  const columnCount = rawData[0].length;
+
+  // Determine series_columns_format from metadata or fallback to autodetection
+  let series_columns_format = "xyyy"; // default
+
+  const formatFromMetadata = metadata.series_columns_format?.trim().toLowerCase();
+  if (formatFromMetadata === "xyyy" || formatFromMetadata === "xyxy") {
+    series_columns_format = formatFromMetadata;
+  } else {
+    // Autodetect format if metadata is missing or invalid
+    if (columnCount >= 4) {
+      const lastRow = rawData[rawData.length - 1];
+      for (let i = 1; i < columnCount; i += 2) {
+        const val = lastRow[i];
+        if (val && isNaN(parseFloat(val))) {
+          series_columns_format = "xyxy";
+          break;
         }
-    });
+      }
+    }
+  }
 
-    // Extract known metadata fields with defaults
-    const comments     = metadata.comments || "";
-    const data_type    = metadata.datatype || "";
-    const graph_title  = metadata.chart_label || "";
-    const x_label      = metadata.x_label || "";
-    const y_label      = metadata.y_label || "";
+  // Prepare array to hold parsed series data
+  const newData = [];
 
-    // Parse series names from metadata
-    // We preserve the raw value and clean it during splitting
-    const series_names_line = metadata.series_names || "";
-    const series_names_array = series_names_line
-        .split(delimiter)
-        .map(name => name.trim())
-        .filter(name => name.length > 0);
+  if (series_columns_format === "xyyy") {
+    // Format: one shared x column followed by multiple y columns
+    const parsedData = rawData.map(row => row.map(val => parseFloat(val)));
 
-    // Extract raw data rows (everything after the header line)
-    const rawData = arr.slice(headerIndex + 1).map(row => row.split(delimiter));
-    const columnCount = rawData[0].length;
+    for (let i = 1; i < columnCount; i++) {
+      const series_number = i - 1;
 
-    // Determine series_columns_format from metadata or fallback to autodetection
-    let series_columns_format = "xyyy"; // default
+      const x_series = parsedData.map(row => row[0]).filter(val => !isNaN(val));
+      const y_series = parsedData.map(row => row[i]).filter(val => !isNaN(val));
 
-    const formatFromMetadata = metadata.series_columns_format?.trim().toLowerCase();
-    if (formatFromMetadata === "xyyy" || formatFromMetadata === "xyxy") {
-        series_columns_format = formatFromMetadata;
-    } else {
-        // Autodetect format if metadata is missing or invalid
-        if (columnCount >= 4) {
-            const lastRow = rawData[rawData.length - 1];
-            for (let i = 1; i < columnCount; i += 2) {
-                const val = lastRow[i];
-                if (val && isNaN(parseFloat(val))) {
-                    series_columns_format = "xyxy";
-                    break;
-                }
-            }
-        }
+      const seriesJSON = JSON.parse(JSON.stringify(plotlyTemplate.data[0]));
+      seriesJSON.name = series_names_array[series_number] || `Series ${i}`;
+      seriesJSON.x = x_series;
+      seriesJSON.y = y_series;
+      seriesJSON.uid = String(series_number);
+
+      newData.push(seriesJSON);
     }
 
-    // Prepare array to hold parsed series data
-    const newData = [];
+  } else {
+    // Format: alternating x/y column pairs for each series
+    for (let i = 0; i < columnCount; i += 2) {
+      const series_number = i / 2;
+      const x_vals = [];
+      const y_vals = [];
 
-    if (series_columns_format === "xyyy") {
-        // Format: one shared x column followed by multiple y columns
-        const parsedData = rawData.map(row => row.map(val => parseFloat(val)));
-
-        for (let i = 1; i < columnCount; i++) {
-            const series_number = i - 1;
-
-            const x_series = parsedData.map(row => row[0]).filter(val => !isNaN(val));
-            const y_series = parsedData.map(row => row[i]).filter(val => !isNaN(val));
-
-            const seriesJSON = JSON.parse(JSON.stringify(plotlyTemplate.data[0]));
-            seriesJSON.name = series_names_array[series_number] || `Series ${i}`;
-            seriesJSON.x = x_series;
-            seriesJSON.y = y_series;
-            seriesJSON.uid = String(series_number);
-
-            newData.push(seriesJSON);
+      rawData.forEach(row => {
+        const x = parseFloat(row[i]);
+        const y = parseFloat(row[i + 1]);
+        if (!isNaN(x) && !isNaN(y)) {
+          x_vals.push(x);
+          y_vals.push(y);
         }
+      });
 
-    } else {
-        // Format: alternating x/y column pairs for each series
-        for (let i = 0; i < columnCount; i += 2) {
-            const series_number = i / 2;
-            const x_vals = [];
-            const y_vals = [];
+      const seriesJSON = JSON.parse(JSON.stringify(plotlyTemplate.data[0]));
+      seriesJSON.name = series_names_array[series_number] || `Series ${series_number + 1}`;
+      seriesJSON.x = x_vals;
+      seriesJSON.y = y_vals;
+      seriesJSON.uid = String(series_number);
 
-            rawData.forEach(row => {
-                const x = parseFloat(row[i]);
-                const y = parseFloat(row[i + 1]);
-                if (!isNaN(x) && !isNaN(y)) {
-                    x_vals.push(x);
-                    y_vals.push(y);
-                }
-            });
-
-            const seriesJSON = JSON.parse(JSON.stringify(plotlyTemplate.data[0]));
-            seriesJSON.name = series_names_array[series_number] || `Series ${series_number + 1}`;
-            seriesJSON.x = x_vals;
-            seriesJSON.y = y_vals;
-            seriesJSON.uid = String(series_number);
-
-            newData.push(seriesJSON);
-        }
+      newData.push(seriesJSON);
     }
+  }
 
-    // Build final result object using the template and parsed metadata
-    const resultJSON = JSON.parse(JSON.stringify(plotlyTemplate));
-    resultJSON.comments = comments;
-    resultJSON.datatype = data_type;
-    resultJSON.layout.title = { text: graph_title };
-    resultJSON.layout.xaxis.title = { text: x_label };
-    resultJSON.layout.yaxis.title = { text: y_label };
-    resultJSON.data = newData;
+  // Build final result object using the template and parsed metadata
+  const resultJSON = JSON.parse(JSON.stringify(plotlyTemplate));
+  resultJSON.comments = comments;
+  resultJSON.datatype = data_type;
+  resultJSON.layout.title = { text: graph_title };
+  resultJSON.layout.xaxis.title = { text: x_label };
+  resultJSON.layout.yaxis.title = { text: y_label };
+  resultJSON.data = newData;
 
-    return resultJSON;
+  return resultJSON;
 }
 
 
 
 
-// A function that will create a csv string from the jsonified data
-// Supports both XYYY and XYXY formats for CSV export
+
+/**
+ * Converts a Plotly-style JSON figure dictionary into a CSV string.
+ * Supports both 'xyyy' format (shared x-axis) and 'xyxy' format (independent x/y pairs).
+ * Includes metadata headers and series names.
+ *
+ * @param {Object} jsonified - The Plotly-compatible figure dictionary.
+ * @returns {Object} An object containing the CSV string and a default filename.
+ */
 export function createCSV(jsonified) {
-    //Ensure valid input.
-    if (!jsonified || typeof jsonified !== "object") {
-        console.warn("Invalid input to createCSV:", jsonified);
-        return {
-            csv: "",
-            filename: "invalid.csv"
-        };
-    }
-    // Defining the variables
-    let csv = "";
-    const xLabel = jsonified.layout?.xaxis?.title?.text || "";
-    const yLabel = jsonified.layout?.yaxis?.title?.text || "";
-    const comments = jsonified?.comments || "";
-    const dataType = jsonified?.datatype || "";
-    const chartLabel = jsonified.layout?.title?.text || "UntitledGraph";
-    const dataSets = Array.isArray(jsonified?.data) ? jsonified.data : [];
-    let seriesName = "";
-    // Adding the name of each dataset separated by comma
-    dataSets.forEach((dataSet, dataSetIndex) => {
-        const last = dataSetIndex === dataSets.length - 1;
-        const suffix = !last ? "," : "";
-        seriesName += (dataSet?.name || "") + suffix;
-    });
-    // Concatenating the values into the string
-    csv += "comments: " + comments + "\r\n";
-    csv += "DataType: " + dataType + "\r\n";
-    csv += "Chart_label: " + chartLabel + "\r\n";
-    csv += "x_label: " + xLabel + "\r\n";
-    csv += "y_label: " + yLabel + "\r\n";
-    csv += "series_names:, " + seriesName + "\r\n";
-    // Determine whether x arrays are equal across datasets
-    const allXEqual = dataSets.every(dataSet =>
-        JSON.stringify(dataSet?.x || []) === JSON.stringify(dataSets[0]?.x || [])
-    );
-    if (allXEqual) {
-        // XYYY format: All series share the same x-axis
-        csv += "x_values";
-        dataSets.forEach((dataSet, dataSetIndex) => {
-            const idx = `_${dataSetIndex + 1}`;
-            const suffix = dataSetIndex === dataSets.length - 1 ? "\r\n" : "";
-            csv += ",y" + idx + suffix;
-        });
-        const xValues = dataSets[0]?.x || [];
-        const yValuesArray = dataSets.map(dataSet => dataSet?.y || []);
-        xValues.forEach((xValue, rowIndex) => {
-            let row = xValue;
-            yValuesArray.forEach(yArray => {
-                row += "," + yArray[rowIndex];
-            });
-            csv += row + "\r\n";
-        });
-    } else {
-        // XYXY format: Each series has its own x and y values
-        // Writing headers for each pair of x/y columns
-        csv += dataSets.map((dataSet, dataSetIndex) => `x_${dataSetIndex + 1},y_${dataSetIndex + 1}`).join(",") + "\r\n";
-        // Compute the longest x-array length among all datasets using a loop
-        // Note: Math.max could have been used here for conciseness
-        let maxLength = 0;
-        dataSets.forEach(dataSet => {
-            const length = (dataSet?.x || []).length;
-            if (length > maxLength) {
-                maxLength = length;
-            }
-        });
-        // Loop through each row index up to maxLength
-        // For each series, get the x and y value at current index
-        // If a value is missing at that index, fallback to empty string
-        for (let rowIndex = 0; rowIndex < maxLength; rowIndex++) {
-            const row = dataSets.map(dataSet => {
-                const xArray = dataSet?.x || [];
-                const yArray = dataSet?.y || [];
-                const xVal = xArray[rowIndex] !== undefined ? xArray[rowIndex] : "";
-                const yVal = yArray[rowIndex] !== undefined ? yArray[rowIndex] : "";
-                return `${xVal},${yVal}`;
-            }).join(",");
-            csv += row + "\r\n";
-        }
-    }
+  // Ensure valid input.
+  if (!jsonified || typeof jsonified !== "object") {
+    console.warn("Invalid input to createCSV:", jsonified);
     return {
-        csv: csv,
-        filename: "mergedRecord" + ".csv"
+      csv: "",
+      filename: "invalid.csv"
     };
+  }
+
+  // Defining the variables
+  let csv = "";
+  const xLabel = jsonified.layout?.xaxis?.title?.text || "";
+  const yLabel = jsonified.layout?.yaxis?.title?.text || "";
+  const comments = jsonified?.comments || "";
+  const dataType = jsonified?.datatype || "";
+  const chartLabel = jsonified.layout?.title?.text || "UntitledGraph";
+  const dataSets = Array.isArray(jsonified?.data) ? jsonified.data : [];
+  let seriesName = "";
+
+  // Adding the name of each dataset separated by comma
+  dataSets.forEach((dataSet, dataSetIndex) => {
+    const last = dataSetIndex === dataSets.length - 1;
+    const suffix = !last ? "," : "";
+    seriesName += (dataSet?.name || "") + suffix;
+  });
+
+  // Concatenating the values into the string
+  csv += "comments: " + comments + "\r\n";
+  csv += "DataType: " + dataType + "\r\n";
+  csv += "Chart_label: " + chartLabel + "\r\n";
+  csv += "x_label: " + xLabel + "\r\n";
+  csv += "y_label: " + yLabel + "\r\n";
+  csv += "series_names:, " + seriesName + "\r\n";
+
+  // Determine whether x arrays are equal across datasets
+  const allXEqual = dataSets.every(dataSet =>
+    JSON.stringify(dataSet?.x || []) === JSON.stringify(dataSets[0]?.x || [])
+  );
+
+  if (allXEqual) {
+    // XYYY format: All series share the same x-axis
+    csv += "x_values";
+    dataSets.forEach((dataSet, dataSetIndex) => {
+      const idx = `_${dataSetIndex + 1}`;
+      const suffix = dataSetIndex === dataSets.length - 1 ? "\r\n" : "";
+      csv += ",y" + idx + suffix;
+    });
+
+    const xValues = dataSets[0]?.x || [];
+    const yValuesArray = dataSets.map(dataSet => dataSet?.y || []);
+    xValues.forEach((xValue, rowIndex) => {
+      let row = xValue;
+      yValuesArray.forEach(yArray => {
+        row += "," + yArray[rowIndex];
+      });
+      csv += row + "\r\n";
+    });
+
+  } else {
+    // XYXY format: Each series has its own x and y values
+    // Writing headers for each pair of x/y columns
+    csv += dataSets.map((dataSet, dataSetIndex) => `x_${dataSetIndex + 1},y_${dataSetIndex + 1}`).join(",") + "\r\n";
+
+    // Compute the longest x-array length among all datasets using a loop
+    let maxLength = 0;
+    dataSets.forEach(dataSet => {
+      const length = (dataSet?.x || []).length;
+      if (length > maxLength) {
+        maxLength = length;
+      }
+    });
+
+    // Loop through each row index up to maxLength
+    for (let rowIndex = 0; rowIndex < maxLength; rowIndex++) {
+      const row = dataSets.map(dataSet => {
+        const xArray = dataSet?.x || [];
+        const yArray = dataSet?.y || [];
+        const xVal = xArray[rowIndex] !== undefined ? xArray[rowIndex] : "";
+        const yVal = yArray[rowIndex] !== undefined ? yArray[rowIndex] : "";
+        return `${xVal},${yVal}`;
+      }).join(",");
+      csv += row + "\r\n";
+    }
+  }
+
+  return {
+    csv: csv,
+    filename: "mergedRecord.csv"
+  };
 }
-
-
-
-// Gets the name of the uploaded file with the extension removed.
-export function getBaseFileName(fileName) {
-    let arrayName = fileName.split(".");
-    return arrayName[0];
-}
-
 
 // Helper function to read file as text using Promises, so we can use await.
+/**
+ * Extracts the base file name (without extension) from a full file name string.
+ *
+ * @param {String} fileName - The full name of the file (e.g., "data.csv").
+ * @returns {String} The base file name (e.g., "data").
+ */
+export function getBaseFileName(fileName) {
+  let arrayName = fileName.split(".");
+  return arrayName[0];
+}
+
+/**
+ * Reads a File object as text using Promises, allowing use with async/await.
+ *
+ * @param {File} file - The File object to read.
+ * @returns {Promise<String>} A promise that resolves with the file's text content.
+ */
 export async function readFileAsText(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();

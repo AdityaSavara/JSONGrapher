@@ -42,18 +42,31 @@ import { getConfig } from './config.js';
  * @param {boolean} [forceReload=false] - Optional force reload flag
  * @returns {Promise<any>} - Resolves with loaded global object
  */
+/**
+ * Dynamically loads a JavaScript library by constructing its full path from config.
+ * Supports remote or local sources and optionally forces reload.
+ *
+ * @param {String} globalVarName - The global variable name expected after the script loads.
+ * @param {String} relativePath - The relative path to the script file.
+ * @param {Boolean} [forceReload=false] - Whether to reload the script even if already present.
+ * @returns {Promise<any>} A promise that resolves when the script is loaded.
+ */
 export async function loadLibrary(globalVarName, relativePath, forceReload = false) {
-  const config = await getConfig()
+  const config = await getConfig();
   let baseURL;
+
   if (config.useRemote) {
     baseURL = config.moduleSourceBaseURL;
   } else {
     baseURL = config.localBaseURL;
   }
+
   const fullPath = baseURL + relativePath;
-  console.log("Library for global loaded:", globalVarName)
+  console.log("Library for global loaded:", globalVarName);
+
   return loadScript(globalVarName, fullPath, forceReload);
 }
+
 
 
 
@@ -65,6 +78,15 @@ export async function loadLibrary(globalVarName, relativePath, forceReload = fal
  * @param {string} scriptUrl - The script URL to load (GitHub, CDN, etc.).
  * @param {boolean} [forceReload=false] - Whether to force script reinjection.
  * @returns {Promise<any>} - Resolves with the loaded global object.
+ */
+/**
+ * Dynamically loads a JavaScript script into the document and resolves with its global variable.
+ * Supports optional reload if the script is already present.
+ *
+ * @param {String} globalVarName - The name of the global variable expected after script execution.
+ * @param {String} scriptUrl - The URL of the script to load.
+ * @param {Boolean} [forceReload=false] - Whether to reload the script even if already present.
+ * @returns {Promise<any>} A promise that resolves with the global object or rejects on failure.
  */
 export async function loadScript(globalVarName, scriptUrl, forceReload = false) {
   return new Promise((resolve, reject) => {
@@ -78,8 +100,8 @@ export async function loadScript(globalVarName, scriptUrl, forceReload = false) 
         resolve(globalObj); // Global already available — resolve immediately
       } else {
         // Wait for the existing script to finish loading
-        existingScript.addEventListener('load', () => resolve(window[globalVarName]));
-        existingScript.addEventListener('error', () =>
+        existingScript.addEventListener("load", () => resolve(window[globalVarName]));
+        existingScript.addEventListener("error", () =>
           reject(new Error(`Script load failed: ${finalURL}`))
         );
       }
@@ -91,7 +113,7 @@ export async function loadScript(globalVarName, scriptUrl, forceReload = false) 
       console.log(`Previous script for ${globalVarName} removed. Reloading...`);
     }
 
-    const script = document.createElement('script');
+    const script = document.createElement("script");
     script.src = finalURL;
     script.async = true;
 
@@ -115,12 +137,20 @@ export async function loadScript(globalVarName, scriptUrl, forceReload = false) 
 
 
 
+
 /**
  * Converts GitHub blob or raw URLs into jsDelivr CDN URLs if applicable.
  * If the input is not a supported GitHub URL, errors or returns the original URL.
  *
  * @param {string} inputUrl - Original script URL (GitHub blob/raw or standard CDN)
  * @returns {string} A jsDelivr-compatible CDN URL if conversion applies, or the original URL
+ */
+/**
+ * Converts GitHub or raw GitHub URLs into jsDelivr CDN-compatible URLs.
+ * Leaves relative paths untouched and gracefully handles invalid URLs.
+ *
+ * @param {String} inputUrl - The original URL or relative path.
+ * @returns {String} A CDN-compatible URL if applicable, or the original input.
  */
 function createCDNURLasNeeded(inputUrl) {
   // Handle relative URLs:
@@ -138,20 +168,20 @@ function createCDNURLasNeeded(inputUrl) {
 
     // Convert GitHub "blob" URLs to jsDelivr CDN format
     // Example: https://github.com/user/repo/blob/branch/file.js
-    if (url.hostname === 'github.com') {
-      const [, user, repo, blob, branch, ...pathParts] = url.pathname.split('/');
-      if (blob === 'blob' && user && repo && branch && pathParts.length) {
-        const path = pathParts.join('/');
+    if (url.hostname === "github.com") {
+      const [, user, repo, blob, branch, ...pathParts] = url.pathname.split("/");
+      if (blob === "blob" && user && repo && branch && pathParts.length) {
+        const path = pathParts.join("/");
         return `https://cdn.jsdelivr.net/gh/${user}/${repo}@${branch}/${path}`;
       }
     }
 
     // Convert raw.githubusercontent.com URLs to jsDelivr CDN format
     // Example: https://raw.githubusercontent.com/user/repo/branch/file.js
-    if (url.hostname === 'raw.githubusercontent.com') {
-      const [, user, repo, branch, ...pathParts] = url.pathname.split('/');
+    if (url.hostname === "raw.githubusercontent.com") {
+      const [, user, repo, branch, ...pathParts] = url.pathname.split("/");
       if (user && repo && branch && pathParts.length) {
-        const path = pathParts.join('/');
+        const path = pathParts.join("/");
         return `https://cdn.jsdelivr.net/gh/${user}/${repo}@${branch}/${path}`;
       }
     }
