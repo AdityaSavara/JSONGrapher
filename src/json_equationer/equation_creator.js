@@ -1,18 +1,22 @@
 // equation.js
 import { evaluateEquationDict } from './equation_evaluator.js'; // Import the evaluator function
 
+/**
+ * A class to manage mathematical equations with units and to evaluate them.
+ * Provides utilities for evaluating, formatting, exporting, and printing.
+ *
+ * Initialization:
+ * - Initialized as a blank plain JavaScript object.
+ * - Defaults to an empty equation with predefined structure.
+ * - Accepts an optional plain object (`initialDict`) to prepopulate the equation object.
+ */
 class Equation {
     /**
-     * A class to manage mathematical equations with units and to evaluate them.
-     * Provides utilities for evaluating, formatting, exporting, and printing.
+     * Constructs an Equation instance with optional initial values.
      *
-     * Initialization:
-     * - Now initialized as a blank plain JavaScript object.
-     * - Defaults to an empty equation with predefined structure.
-     * - Accepts an optional plain object (`initialDict`) to prepopulate the equation object.
-     *
-     * Example structure:
-     * ```
+     * @param {Object|null} initialDict - Optional plain object to initialize the equation dictionary.
+     * @throws {TypeError} If initialDict is not a plain object.
+     * @example
      * const customDict = {
      * equation_string: "k = A * (e ** (-Ea / (R * T)))",
      * x_variable: "T (K)",
@@ -24,13 +28,9 @@ class Equation {
      * points_spacing: "Linear",
      * graphical_dimensionality: 2
      * };
-     *
      * const equationInstance = new Equation(customDict);
-     * ```
      */
-
     constructor(initialDict = null) {
-        /**Initialize an empty equation plain object.*/
         this.equationDict = {
             equation_string: '',
             x_variable: '',
@@ -56,7 +56,14 @@ class Equation {
         }
     }
 
-    // Helper for deep merging objects (important for 'constants')
+    /**
+     * Deeply merges two plain objects, preserving nested structure.
+     *
+     * @param {Object} target - The target object to merge into.
+     * @param {Object} source - The source object to merge from.
+     * @returns {Object} The merged object.
+     * @private
+     */
     #deepMerge(target, source) {
         for (const key in source) {
             if (source.hasOwnProperty(key)) {
@@ -76,16 +83,27 @@ class Equation {
     }
 
 
+    /**
+     * Validates that the input value is either a pure number or a number followed by a unit.
+     *
+     * @param {string} value - The value to validate.
+     * @throws {Error} If the value does not match the expected numeric format.
+     */
     validateUnit(value) {
-        /**Ensure that the value is either a pure number or contains a unit.*/
         const unitPattern = /^\d+(\.\d+)?(.*)?$/;
         if (!unitPattern.test(value)) {
             throw new Error(`Invalid format: '${value}'. Expected a numeric value, optionally followed by a unit.`);
         }
     }
 
+    /**
+     * Adds constants to the equation object, supporting both single and multiple additions.
+     *
+     * @param {Object|Object[]} constants - A plain object of name-value pairs or an array of such objects.
+     * @throws {TypeError} If the input is neither a plain object nor an array of plain objects.
+     * @throws {Error} If any item in the array is not a valid constant object.
+     */
     addConstants(constants) {
-        /**Add constants to the equation object, supporting both single and multiple additions.*/
         if (typeof constants === 'object' && constants !== null && !Array.isArray(constants)) {
             // Single constant case (constants is a plain object)
             for (let [name, value] of Object.entries(constants)) {
@@ -108,52 +126,59 @@ class Equation {
         }
     }
 
+    /**
+     * Sets the x-variable in the equation object.
+     *
+     * @param {string} xVariable - A descriptive string including the variable name and its unit.
+     * Example: "T (K)" for temperature in Kelvin.
+     */
     setXVariable(xVariable) {
-        /**
-         * Set the x-variable in the equation object.
-         * Expected format: A descriptive string including the variable name and its unit.
-         * Example: "T (K)" for temperature in Kelvin.
-         */
         this.equationDict.x_variable = xVariable; // Direct property assignment
     }
 
+    /**
+     * Sets the y-variable in the equation object.
+     *
+     * @param {string} yVariable - A descriptive string including the variable name and its unit.
+     * Example: "k (s**-1)" for a rate constant with inverse seconds as the unit.
+     */
     setYVariable(yVariable) {
-        /**
-         * Set the y-variable in the equation object.
-         * Expected format: A descriptive string including the variable name and its unit.
-         * Example: "k (s**-1)" for a rate constant with inverse seconds as the unit.
-         */
         this.equationDict.y_variable = yVariable; // Direct property assignment
     }
 
+    /**
+     * Sets the z-variable in the equation object.
+     *
+     * @param {string} zVariable - A descriptive string including the variable name and its unit.
+     * Example: "E (J)" for energy with joules as the unit.
+     */
     setZVariable(zVariable) {
-        /**
-         * Set the z-variable in the equation object.
-         * Expected format: A descriptive string including the variable name and its unit.
-         * Example: "E (J)" for energy with joules as the unit.
-         */
         this.equationDict.z_variable = zVariable; // Direct property assignment
     }
 
+    /**
+     * Sets the default x range.
+     *
+     * @param {number[]} xRange - An array of two numeric values representing the range boundaries.
+     * Example: [200, 500] for temperatures between 200K and 500K.
+     * @throws {Error} If the input is not a valid array of two numbers.
+     */
     setXRangeDefault(xRange) {
-        /**
-         * Set the default x range.
-         * Expected format: An array of two numeric values representing the range boundaries.
-         * Example: setXRange([200, 500]) for temperatures between 200K and 500K.
-         */
         if (!Array.isArray(xRange) || xRange.length !== 2 || !xRange.every(i => typeof i === 'number')) {
             throw new Error("x_range must be an array of two numeric values.");
         }
         this.equationDict.x_range_default = xRange; // Direct property assignment
     }
 
+    /**
+     * Sets the hard limits for x values.
+     *
+     * @param {(number|null)[]} xLimits - An array of two values (numeric or null) defining absolute boundaries.
+     * Example: [100, 600] to prevent x values outside this range.
+     * Example: [null, 500] allows an open lower limit.
+     * @throws {Error} If the input is not a valid array of two numeric or null values.
+     */
     setXRangeLimits(xLimits) {
-        /**
-         * Set the hard limits for x values.
-         * Expected format: An array of two values (numeric or null) defining absolute boundaries.
-         * Example: setXRangeLimits([100, 600]) to prevent x values outside this range.
-         * Example: setXRangeLimits([null, 500]) allows an open lower limit.
-         */
         if (!Array.isArray(xLimits) || xLimits.length !== 2) {
             throw new Error("x_limits must be an array of two elements (numeric or null).");
         }
@@ -163,24 +188,28 @@ class Equation {
         this.equationDict.x_range_limits = xLimits; // Direct property assignment
     }
 
+    /**
+     * Sets the default y range.
+     *
+     * @param {number[]} yRange - An array of two numeric values representing the range boundaries.
+     * Example: [0, 100] for a percentage scale.
+     * @throws {Error} If the input is not a valid array of two numbers.
+     */
     setYRangeDefault(yRange) {
-        /**
-         * Set the default y range.
-         * Expected format: An array of two numeric values representing the range boundaries.
-         * Example: setYRange([0, 100]) for a percentage scale.
-         */
         if (!Array.isArray(yRange) || yRange.length !== 2 || !yRange.every(i => typeof i === 'number')) {
             throw new Error("y_range must be an array of two numeric values.");
         }
         this.equationDict.y_range_default = yRange; // Direct property assignment
     }
 
+    /**
+     * Sets the hard limits for y values.
+     *
+     * @param {(number|null)[]} yLimits - An array of two values (numeric or null) defining absolute boundaries.
+     * Example: [null, 50] allows an open lower limit but restricts the upper limit.
+     * @throws {Error} If the input is not a valid array of two numeric or null values.
+     */
     setYRangeLimits(yLimits) {
-        /**
-         * Set the hard limits for y values.
-         * Expected format: An array of two values (numeric or null) defining absolute boundaries.
-         * Example: setYRangeLimits([null, 50]) allows an open lower limit but restricts the upper limit.
-         */
         if (!Array.isArray(yLimits) || yLimits.length !== 2) {
             throw new Error("y_limits must be an array of two elements (numeric or null).");
         }
@@ -190,24 +219,28 @@ class Equation {
         this.equationDict.y_range_limits = yLimits; // Direct property assignment
     }
 
+    /**
+     * Sets the default z range.
+     *
+     * @param {number[]} zRange - An array of two numeric values representing the range boundaries.
+     * Example: [0, 5000] for energy values in Joules.
+     * @throws {Error} If the input is not a valid array of two numbers.
+     */
     setZRangeDefault(zRange) {
-        /**
-         * Set the default z range.
-         * Expected format: An array of two numeric values representing the range boundaries.
-         * Example: setZRange([0, 5000]) for energy values in Joules.
-         */
         if (!Array.isArray(zRange) || zRange.length !== 2 || !zRange.every(i => typeof i === 'number')) {
             throw new Error("z_range must be an array of two numeric values.");
         }
         this.equationDict.z_range_default = zRange; // Direct property assignment
     }
 
+    /**
+     * Sets the hard limits for z values.
+     *
+     * @param {(number|null)[]} zLimits - An array of two values (numeric or null) defining absolute boundaries.
+     * Example: [100, null] allows an open upper limit but restricts the lower boundary.
+     * @throws {Error} If the input is not a valid array of two numeric or null values.
+     */
     setZRangeLimits(zLimits) {
-        /**
-         * Set the hard limits for z values.
-         * Expected format: An array of two values (numeric or null) defining absolute boundaries.
-         * Example: setZRangeLimits([100, null]) allows an open upper limit but restricts the lower boundary.
-         */
         if (!Array.isArray(zLimits) || zLimits.length !== 2) {
             throw new Error("z_limits must be an array of two elements (numeric or null).");
         }
@@ -217,18 +250,15 @@ class Equation {
         this.equationDict.z_range_limits = zLimits; // Direct property assignment
     }
 
+    /**
+     * Constructs a Z matrix mapping unique (x, y) values to corresponding z values.
+     *
+     * @param {Array} [xPoints=null] - Array of x coordinates.
+     * @param {Array} [yPoints=null] - Array of y coordinates.
+     * @param {Array} [zPoints=null] - Array of z values.
+     * @returns {Array<Array>} Matrix of z values.
+     */
     getZMatrix(xPoints = null, yPoints = null, zPoints = null) {
-        /**
-         * Constructs a Z matrix mapping unique (x, y) values to corresponding z values.
-         *
-         * Parameters:
-         * - xPoints (Array): Array of x coordinates.
-         * - yPoints (Array): Array of y coordinates.
-         * - zPoints (Array): Array of z values.
-         *
-         * Returns:
-         * - zMatrix (2D Array): Matrix of z values.
-         */
         if (xPoints === null) {
             xPoints = this.equationDict.x_points; // Accessing directly
         }
@@ -273,28 +303,48 @@ class Equation {
     }
 
 
+    /**
+     * Sets the number of calculation points.
+     *
+     * @param {number} numPoints - Integer specifying the number of discrete points for calculations.
+     * @throws {Error} If numPoints is not a positive integer.
+     *
+     * @example
+     * setNumOfPoints(10); // Sets number of points to 10
+     */
     setNumOfPoints(numPoints) {
-        /**
-         * Set the number of calculation points.
-         * Expected format: Integer, specifies the number of discrete points for calculations.
-         * Example: setNumOfPoints(10) for ten data points.
-         */
         if (!Number.isInteger(numPoints) || numPoints <= 0) {
             throw new Error("Number of points must be a positive integer.");
         }
         this.equationDict.num_of_points = numPoints; // Direct property assignment
     }
 
+    /**
+     * Modifies the equation string used in the equation dictionary.
+     *
+     * @param {string} equationString - The new equation string to set.
+     */
     setEquation(equationString) {
-        /**Modify the equation string.*/
         this.equationDict.equation_string = equationString; // Direct property assignment
     }
 
+    /**
+     * Returns the complete equation dictionary as a plain object.
+     *
+     * @returns {Object} equationDict - The full equation configuration object.
+     */
     getEquationDict() {
-        /**Return the complete equation plain object.*/
         return this.equationDict; // Now returns a plain object
     }
 
+    /**
+     * Evaluates the current equation dictionary and updates its fields with computed values.
+     * Optionally removes original equation fields after evaluation.
+     *
+     * @param {boolean} [removeEquationFields=false] - If true, strips original equation fields from the dictionary.
+     * @param {boolean} [verbose=false] - If true, enables verbose output during evaluation.
+     * @returns {Object} equationDict - The updated equation dictionary.
+     */
     evaluateEquation(removeEquationFields = false, verbose = false) {
         // Direct call to the imported function, passing the plain object
         const evaluatedDict = evaluateEquationDict(this.equationDict, verbose);
@@ -330,6 +380,14 @@ class Equation {
         return this.equationDict;
     }
 
+    /**
+     * Prints the current equation dictionary to the console.
+     * Optionally evaluates the equation and removes original equation fields before printing.
+     *
+     * @param {boolean} [prettyPrint=true] - If true, prints formatted JSON; otherwise prints raw object.
+     * @param {boolean} [evaluateEquation=true] - If true, evaluates the equation before printing.
+     * @param {boolean} [removeEquationFields=false] - If true, strips original equation fields before printing.
+     */
     printEquationDict(prettyPrint = true, evaluateEquation = true, removeEquationFields = false) {
         let equationDictToPrint;
 
@@ -361,6 +419,14 @@ class Equation {
         }
     }
 
+    /**
+     * Exports the current equation dictionary to a JSON file.
+     * Optionally evaluates the equation and removes original equation fields before exporting.
+     *
+     * @param {string} filename - The name of the file to export to.
+     * @param {boolean} [evaluateEquation=true] - If true, evaluates the equation before exporting.
+     * @param {boolean} [removeEquationFields=false] - If true, strips original equation fields before exporting.
+     */
     exportToJsonFile(filename, evaluateEquation = true, removeEquationFields = false) {
         let equationDictToExport;
 
