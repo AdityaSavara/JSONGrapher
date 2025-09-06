@@ -4,7 +4,13 @@ import {getUnitsScalingRatio} from '../unitUtils.js';
 import {scaleDataseriesDict} from '../unitUtils.js'; 
 import {checkSimulate, simulateByIndexAndPopulateFigDict} from '../simulateUtils.js';
 
-//Utility function for during debugging.
+/**
+ * Creates a deep copy of a JSON-compatible object.
+ * Note: This method does not preserve functions, `undefined`, or circular references.
+ *
+ * @param {Object} obj - The object to copy.
+ * @returns {Object} A deep copy of the input object.
+ */
 function copyJson(obj) {
     return JSON.parse(JSON.stringify(obj));
 }
@@ -227,7 +233,6 @@ export function unitsPluralRemoval(unitsToCheck) {
     return [unitsChangedFlag, unitsSingularized];
 }
 
-
 /**
  * Separates the main text from units within a label string enclosed in parentheses.
  *
@@ -287,17 +292,16 @@ export function separateLabelTextFromUnits(labelWithUnits) {
  * @returns {object} The figure dictionary with simulated data.
  */
     export async function simulateAsNeededInFigDict(_jsonified) {
-        //This loop iterates across data_series dictionary objects objects to see if any require simulation.
-                for (const dataSet of _jsonified.data) {
-                  const index = _jsonified.data.indexOf(dataSet);
-                  const hasSimulate = checkSimulate(dataSet);
-                  if (hasSimulate) {
-                    //Below, the "result" has named fields inside, which we will extract.
-                    const result = await simulateByIndexAndPopulateFigDict(_jsonified, index);
-                    const simulatedJsonified = result.simulatedJsonified
-                    _jsonified = result._jsonified;                
-                  } 
-                }
+        for (const dataSet of _jsonified.data) {
+          const index = _jsonified.data.indexOf(dataSet);
+          const hasSimulate = checkSimulate(dataSet);
+          if (hasSimulate) {
+            //Below, the "result" has named fields inside, which we will extract.
+            const result = await simulateByIndexAndPopulateFigDict(_jsonified, index);
+            const simulatedJsonified = result.simulatedJsonified
+            _jsonified = result._jsonified;                
+          } 
+        }
         return _jsonified
       }
 
