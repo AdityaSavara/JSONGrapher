@@ -4,6 +4,13 @@ import { loadLibrary } from './../loadingUtils.js';
 const math = await loadLibrary('math', 'mathjs/11.11.1/math.min.js');
 //end of block to get mathJS ready.
 
+/**
+ * Parses a variable string containing a numeric value and unit, and returns a math.js unit object.
+ *
+ * @param {string} variableString - A string containing a number followed by a unit (e.g., "30000 J/mol").
+ * @returns {math.Unit} A math.js unit object representing the parsed value.
+ * @throws {Error} If the input string is not in a valid format.
+ */
 function parseVariable(variableString) {
     // Split numeric part and unit using a regular expression.
     const match = variableString.match(/([\d.]+)\s*(.*)/);
@@ -16,6 +23,14 @@ function parseVariable(variableString) {
     return math.multiply(numericValue, math.unit(unit));
 }
 
+
+/**
+ * Detects numeric values followed by units in an equation string and formats them as "(value unit)".
+ * This is used by parseEquation to standardize unit formatting.
+ *
+ * @param {string} equationStr - The input equation string containing numeric values and units.
+ * @returns {string} The formatted equation string with units wrapped in parentheses.
+ */
 function detectAndFormatUnits(equationStr) {
     // Regular expression to detect standalone numbers followed by units
     // This is called by parseEquation
@@ -57,6 +72,20 @@ function detectAndFormatUnits(equationStr) {
 }
 
 
+
+/**
+ * Parses an equation string by replacing variable names with their corresponding values and units.
+ * Ensures correct formatting for math.js evaluation by wrapping values with units in parentheses.
+ * Calls detectAndFormatUnits to handle standalone numeric-unit pairs.
+ *
+ * @param {string} equationStr - The raw equation string to parse (e.g., "(10 m - y) / x").
+ * @param {Object} variables - A dictionary of variable names mapped to either primitive values or unit objects.
+ * @returns {string} The formatted equation string ready for math.js evaluation.
+ *
+ * @example
+ * // input: "(10 m - y) / x"
+ * // output: "((10 m) - ((3 meter))) / ((2 m) / s)"
+ */
 function parseEquation(equationStr, variables) {
     // Sort variable names by length in descending order to avoid partial replacements
     // this calls detectAndFormatUnits
@@ -93,9 +122,10 @@ function parseEquation(equationStr, variables) {
 }
 
 
+
 /**
- * removeSuperscriptParentheses normalizes exponent notation in a unit string.
- * For example, it converts "mol^(-1)" to "mol^-1".
+ * Normalizes exponent notation in a unit string.
+ * Converts expressions like "mol^(-1)" to "mol^-1".
  *
  * @param {string} unitStr - The unit string to normalize.
  * @returns {string} The normalized unit string.
@@ -104,18 +134,19 @@ function removeSuperscriptParentheses(unitStr) {
     return unitStr.replace(/([a-zA-Z]+)\^\(([-+]?[0-9]*\.?[0-9]+)\)/g, '$1^$2');
 }
 
+
 /**
  * Solves for the specified dependent variable in an equation involving multiple independent variables.
  * This function calls helper functions (parseEquation, parseVariable, and detectAndFormatUnits) as needed
  * to properly format the equation and evaluate it using math.js.
  *
- * Example usage:
+ * @example
  * const independentVariablesValuesAndUnits = {
- *   x: "2 m/s",
- *   y: "3 meter"
+ *     x: "2 m/s",
+ *     y: "3 meter"
  * };
  * const equationString = "t = (10 m - y) / x"; // Equation rearranged so that t is isolated.
- * const dependentVariable = "t"
+ * const dependentVariable = "t";
  * const solutions = solveEquation(equationString, independentVariablesValuesAndUnits, dependentVariable);
  * // Returns: [math.js Unit object representing t] which prints as 3.5 s
  *
@@ -128,6 +159,7 @@ function removeSuperscriptParentheses(unitStr) {
 function solveEquation(equationString, independentVariablesValuesAndUnits, dependentVariable) {
     // Step 1: Replace any '**' with '^' for exponentiation.
     equationString = equationString.replace(/\*\*/g, '^');
+
     // Step 2: Split the equation at '='.
     const parts = equationString.split('=');
     if (parts.length !== 2) {
@@ -150,24 +182,40 @@ function solveEquation(equationString, independentVariablesValuesAndUnits, depen
     // This function replaces variable names with their "(value unit)" strings and internally calls detectAndFormatUnits.
     expressionToEvaluate = parseEquation(expressionToEvaluate, independentVariablesValuesAndUnits);
     expressionToEvaluate = expressionToEvaluate.replace(/\*\*/g, '^'); // replace because the independent variables can introduce ** style exponents back in.
+
     // Step 5: Build the evaluation scope for math.js.
     // For each independent variable, use parseVariable to convert its string (e.g., "2 m/s")
     // into a math.js Unit object. (Your parseVariable function should now call removeSuperscriptParentheses.)
-    //let scope = {};
-    //for (let varName in independentVariablesValuesAndUnits) {
-    //            const parsedVariable = parseVariable(independentVariablesValuesAndUnits[varName]);
-    //            scope[varName] = parsedVariable;
-    //        }
+    // let scope = {};
+    // for (let varName in independentVariablesValuesAndUnits) {
+    //     const parsedVariable = parseVariable(independentVariablesValuesAndUnits[varName]);
+    //     scope[varName] = parsedVariable;
+    // }
 
     // Step 6: Evaluate the processed expression using math.js.
-    //let result = math.evaluate(expressionToEvaluate, scope);
-    
-    let result = math.evaluate(expressionToEvaluate); //without scope
+    // let result = math.evaluate(expressionToEvaluate, scope);
+
+    let result = math.evaluate(expressionToEvaluate); // without scope
+
     // Return the result as an array (to mimic the Python version's list output).
     return [result];
-    }
+}
 
+
+/**
+ * Parses an equation dictionary and extracts value-unit pairs from its entries.
+ * Intended for use with constants or variables defined as strings like "30000 J/mol".
+ *
+ * @param {Object} equationDict - The equation dictionary containing string entries.
+ * @returns {void} This function currently defines a helper but does not return anything directly.
+ */
 function parseEquationDict(equationDict) {
+    /**
+     * Extracts the numeric value and unit from a string entry.
+     *
+     * @param {string} entry - A string containing a value and optional unit (e.g., "30000 J/mol").
+     * @returns {[string, string|null]} A tuple containing the value and unit, or null if no unit is present.
+     */
     function extractValueUnits(entry) {
         const trimmedEntry = entry.trim(); // Remove leading/trailing whitespace
         const splitEntry = trimmedEntry.split(" ", 2); // Split on the first space
@@ -180,6 +228,13 @@ function parseEquationDict(equationDict) {
         }
     }
 
+    /**
+     * Extracts value-unit pairs from a dictionary of constants.
+     * Each constant string (e.g., "30000 J/mol") is parsed into [value, unit].
+     *
+     * @param {Object} constantsDict - A dictionary mapping constant names to string values with units.
+     * @returns {Object} A dictionary mapping constant names to [value, unit] tuples.
+     */
     function extractConstants(constantsDict) {
         const extractedConstants = {};
         for (const [name, value] of Object.entries(constantsDict)) {
@@ -188,10 +243,19 @@ function parseEquationDict(equationDict) {
         return extractedConstants;
     }
 
+
+    /**
+     * Extracts variable names from an equation string.
+     * Returns both the original equation string and a list of detected variables.
+     *
+     * @param {string} equationString - The equation string to analyze.
+     * @returns {{equationString: string, variablesList: string[]}} An object containing the original string and extracted variable names.
+     */
     function extractEquation(equationString) {
         const variablesList = equationString.match(/[A-Za-z]+/g) || [];
         return { equationString, variablesList };
     }
+
 
     const graphicalDimensionality = equationDict.hasOwnProperty("graphical_dimensionality")
         ? equationDict["graphical_dimensionality"]
@@ -225,33 +289,46 @@ function parseEquationDict(equationDict) {
     const independentVariablesDict = prepareIndependentVariables(constantsExtractedDict);
 
     if (graphicalDimensionality === 2) {
-        return [independentVariablesDict, constantsExtractedDict, equationExtractedDict, xVariableExtractedDict, yVariableExtractedDict];
+        return [
+            independentVariablesDict,
+            constantsExtractedDict,
+            equationExtractedDict,
+            xVariableExtractedDict,
+            yVariableExtractedDict
+        ];
     } else if (graphicalDimensionality === 3) {
-        return [independentVariablesDict, constantsExtractedDict, equationExtractedDict, xVariableExtractedDict, yVariableExtractedDict, zVariableExtractedDict];
+        return [
+            independentVariablesDict,
+            constantsExtractedDict,
+            equationExtractedDict,
+            xVariableExtractedDict,
+            yVariableExtractedDict,
+            zVariableExtractedDict
+        ];
     }
 }
 
 
-function generateMultiplicativePoints(rangeMin, rangeMax, numOfPoints = null, factor = null, reverseScaling = false) {
-    /**
-     * Generates a sequence of points using relative spacing within a normalized range.
-     * 
-     * - Spacing between points changes multiplicatively (e.g., doubling means each interval doubles).
-     * - Returns rangeMin and rangeMax explicitly in all cases.
-     * - Works for negative values and cases where min is negative while max is positive.
-     * - If `reverseScaling` is true, exponential scaling occurs from the max end instead.
-     * 
-     * @param {number} rangeMin - The starting value of the sequence.
-     * @param {number} rangeMax - The maximum limit for generated values.
-     * @param {number} [numOfPoints=null] - Desired number of points (excluding min/max).
-     * @param {number} [factor=null] - Multiplication factor for spacing between successive values.
-     * @param {boolean} [reverseScaling=false] - If true, spacing is applied in reverse direction.
-     * 
-     * @returns {number[]} List of generated points.
-     * 
-     * @throws {Error} If neither numOfPoints nor factor is provided.
-     */
 
+/**
+ * Generates a sequence of points using relative spacing within a normalized range.
+ *
+ * - Spacing between points changes multiplicatively (e.g., doubling means each interval doubles).
+ * - Returns rangeMin and rangeMax explicitly in all cases.
+ * - Works for negative values and cases where min is negative while max is positive.
+ * - If `reverseScaling` is true, exponential scaling occurs from the max end instead.
+ *
+ * @param {number} rangeMin - The starting value of the sequence.
+ * @param {number} rangeMax - The maximum limit for generated values.
+ * @param {number} [numOfPoints=null] - Desired number of points (excluding min/max).
+ * @param {number} [factor=null] - Multiplication factor for spacing between successive values.
+ * @param {boolean} [reverseScaling=false] - If true, spacing is applied in reverse direction.
+ *
+ * @returns {number[]} List of generated points.
+ *
+ * @throws {Error} If neither numOfPoints nor factor is provided.
+ */
+function generateMultiplicativePoints(rangeMin, rangeMax, numOfPoints = null, factor = null, reverseScaling = false) {
     // Define normalized bounds
     const relativeMin = 0;
     const relativeMax = 1;
@@ -320,6 +397,7 @@ function generateMultiplicativePoints(rangeMin, rangeMax, numOfPoints = null, fa
     return scaledPoints;
 }
 
+
 /**
  * Generates a sequence of points based on the specified spacing method.
  *
@@ -346,15 +424,15 @@ function generatePointsBySpacing(numOfPoints = 10, rangeMin = 0, rangeMax = 1, p
     if (spacingType === "none" || spacingType === "") spacingType = "linear";
 
     if (spacingType === "linear") {
-        pointsList = Array.from({ length: numOfPoints }, (_, i) => 
+        pointsList = Array.from({ length: numOfPoints }, (_, i) =>
             rangeMin + (i * (rangeMax - rangeMin) / (numOfPoints - 1))
         );
     } else if (spacingType === "logarithmic") {
-        pointsList = Array.from({ length: numOfPoints }, (_, i) => 
+        pointsList = Array.from({ length: numOfPoints }, (_, i) =>
             rangeMin * math.pow(rangeMax / rangeMin, i / (numOfPoints - 1))
         );
     } else if (spacingType === "exponential") {
-        pointsList = Array.from({ length: numOfPoints }, (_, i) => 
+        pointsList = Array.from({ length: numOfPoints }, (_, i) =>
             rangeMin * math.exp(i * math.log(rangeMax / rangeMin) / (numOfPoints - 1))
         );
     } else if (typeof pointsSpacing === "number" && pointsSpacing > 0) {
@@ -365,6 +443,7 @@ function generatePointsBySpacing(numOfPoints = 10, rangeMin = 0, rangeMax = 1, p
 
     return pointsList;
 }
+
 
 
 /**
@@ -417,6 +496,7 @@ function generatePointsFromRangeDict(rangeDict, variableName = "x") {
 }
 
 
+
 /**
  * ## Start of Portion of code for parsing out tagged custom units and returning them ##
  */
@@ -434,6 +514,7 @@ function generatePointsFromRangeDict(rangeDict, variableName = "x") {
 function returnCustomUnitsMarkup(unitsString, customUnitsList) {
     // Sort the custom_units_list from longest to shortest.
     const sortedCustomUnitsList = customUnitsList.slice().sort((a, b) => b.length - a.length);
+
     // For each custom unit, replace all occurrences in the string.
     for (const customUnit of sortedCustomUnitsList) {
         // Escape special regex characters in the custom unit.
@@ -441,8 +522,10 @@ function returnCustomUnitsMarkup(unitsString, customUnitsList) {
         const regex = new RegExp(escapedCustomUnit, 'g');
         unitsString = unitsString.replace(regex, '<' + customUnit + '>');
     }
+
     return unitsString;
 }
+
 
 /**
  * Extracts tags surrounded by '<' and '>' from a given string.
@@ -457,13 +540,16 @@ function extractTaggedStrings(text) {
     const regex = /<(.*?)>/g;
     let match;
     const tags = [];
+
     // Loop through all matches of the pattern.
     while ((match = regex.exec(text)) !== null) {
         tags.push(match[1]);
     }
+
     // Remove duplicates by using a Set, then sort from longest to shortest.
     const uniqueTags = Array.from(new Set(tags));
     uniqueTags.sort((a, b) => b.length - a.length);
+
     return uniqueTags;
 }
 
@@ -471,13 +557,13 @@ function extractTaggedStrings(text) {
  * ## End of Portion of code for parsing out tagged custom units and returning them ##
  */
 
-    /**
+/**
  * Converts expressions like "1/bar" to "(bar)**(-1)" iteratively.
  * The function works recursively, stopping when no further changes occur.
  *
  * @param {string} expression - The input mathematical expression.
  * @param {number} [depth=100] - Maximum iterations to refine the expression.
- * @returns {string} - The transformed expression.
+ * @returns {string} The transformed expression.
  */
 function convertInverseUnits(expression, depth = 100) {
     // Patterns to match valid reciprocals while ignoring multiplied units, so "1/bar * bar" is handled correctly.
@@ -494,10 +580,13 @@ function convertInverseUnits(expression, depth = 100) {
         if (newExpression === expression) {
             break;
         }
+
         expression = newExpression;
     }
+
     return expression;
 }
+
 
 /**
  * Splits a string at the first occurrence of a delimiter.
@@ -509,6 +598,7 @@ function convertInverseUnits(expression, depth = 100) {
 function splitAtFirstDelimiter(str, delimiter = " ") {
     return str.split(delimiter, 2);
 }
+
 
 /**
  * Helper function to clean custom unit brackets. Removes '<' and '>' from a string.
@@ -523,19 +613,30 @@ function cleanBrackets(inputString) {
 }
 
 
+
 /**
  * Evaluates an equation dictionary and returns computed x_points, y_points (or z_points for 3D),
- * along with their associated units. For equations with multiple solutions (as in a circle),
- * all solutions are returned.
+ * along with their associated units. For equations with multiple solutions (e.g., circles),
+ * all valid solutions are returned.
  *
- * NOTE: This function calls several helpers which have their own performance considerations.
+ * NOTE: This function calls several helpers, each with its own performance considerations.
  *
- * @param {Object} equationDict - Equation dictionary with keys such as 'equation_string',
- *                                'x_range_default', 'num_of_points', etc.
+ * @param {Object} equationDict - An object containing equation parameters, including:
+ *   - {string} equation_string
+ *   - {Array<number>} x_range_default
+ *   - {number} num_of_points
+ *   - ...additional configuration keys
  * @param {boolean} [verbose=false] - If true, logs debugging information.
- * @returns {Object} evaluatedDict containing keys: graphical_dimensionality, x_units, y_units, 
- *          x_points, y_points and, for 3D, z_units and z_points.
- * @throws {Error} If graphical dimensionality is not supported or missing.
+ * @returns {{
+ *   graphical_dimensionality: number,
+ *   x_units: string,
+ *   y_units: string,
+ *   x_points: number[],
+ *   y_points: number[],
+ *   z_units?: string,
+ *   z_points?: number[]
+ * }} evaluatedDict - The computed results with units and coordinate points.
+ * @throws {Error} If graphical dimensionality is unsupported or missing.
  */
     function evaluateEquationDict(equationDict, verbose = false) {
     // Create a deep copy of the input dictionary to avoid modifying the original mutable object.
